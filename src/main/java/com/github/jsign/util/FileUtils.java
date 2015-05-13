@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
-import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLDecoder;
 import java.security.MessageDigest;
@@ -94,11 +93,11 @@ public class FileUtils {
 		return (contentType != null && !contentType.equals("")) ? contentType : "application/octet-stream";
 	}
 	
-    public static void copiar(File origem, File destino) throws FileNotFoundException, IOException {
+    public static void copy(File from, File to) throws FileNotFoundException, IOException {
         
-        FileInputStream in = new FileInputStream(origem);
+        FileInputStream in = new FileInputStream(from);
                 
-        FileOutputStream out = new FileOutputStream(destino);
+        FileOutputStream out = new FileOutputStream(to);
                 
         byte[] buf = new byte[1024];
                 
@@ -198,4 +197,32 @@ public class FileUtils {
             throw new Exception("Erro ao gerar o hash do arquivo!");
         }
     }
+
+	public static byte[] getInputStreamBytes(InputStream inputStream) throws Exception {
+
+		boolean done = false;
+
+		int bytesread = 0;
+
+		byte[] bytes = new byte[inputStream.available()];
+
+		BufferedInputStream bis = new BufferedInputStream(inputStream);
+			
+		do {
+			int b = bis.read();
+
+			if (b == -1) {
+				done = true;
+				break;
+			} 
+			else {
+				bytes[bytesread++] = (byte) b;
+			}
+
+		} while (!done);
+		
+		bis.close();
+		
+		return bytes;
+	}
 }

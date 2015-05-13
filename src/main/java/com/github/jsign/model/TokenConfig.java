@@ -4,20 +4,20 @@ package com.github.jsign.model;
 public class TokenConfig {
 
 	private Token token;
-	private String libpath;
+	private String library;
 	private Integer slot;
 	private OperatingSystem operatingSystem;
 	
-	public TokenConfig(Token token, OperatingSystem os, String libpath, Integer slot) {
-		this(token, os, libpath);
+	public TokenConfig(Token token, OperatingSystem operatingSystem, String library, Integer slot) {
+		this(token, operatingSystem, library);
 		this.slot = slot;
 	}
 
-	public TokenConfig(Token token, OperatingSystem os, String libpath) {
+	public TokenConfig(Token token, OperatingSystem operatingSystem, String library) {
 		super();
-		this.operatingSystem = os;
+		this.operatingSystem = operatingSystem;
 		this.token = token;
-		this.libpath = libpath;
+		this.library = library;
 	}
 
 	public Token getToken() {
@@ -28,12 +28,12 @@ public class TokenConfig {
 		this.token = token;
 	}
 	
-	public String getLibpath() {
-		return libpath;
+	public String getLibrary() {
+		return library;
 	}
 	
-	public void setLibpath(String libpath) {
-		this.libpath = libpath;
+	public void setLibrary(String library) {
+		this.library = library;
 	}
 
 	public Integer getSlot() {
@@ -50,5 +50,9 @@ public class TokenConfig {
 
 	public void setOperatingSystem(OperatingSystem operatingSystem) {
 		this.operatingSystem = operatingSystem;
+	}
+
+	public boolean isDefinedSlot() {
+		return getSlot() != null;
 	}
 }

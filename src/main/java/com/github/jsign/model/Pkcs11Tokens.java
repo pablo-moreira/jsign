@@ -25,7 +25,7 @@ public class Pkcs11Tokens {
 			.addLibMacOS("/Library/Frameworks/eToken.framework/Versions/4.55.41/libeToken.dylib")
 			.addLibMacOS("/usr/local/lib/libeTPkcs11.dylib")
 			.addLibMacOS("/Library/Frameworks/eToken.framework/Versions/Current/libeToken.dylib")
-			.addLibWindows("c:/windows/system32/eTPKCS11.dll")
+			.addLibWindows("/windows/system32/eTPKCS11.dll")
 			.addLibWindows("eTPKCS11.dll");
 		
 		newToken("OpenSC")
@@ -88,5 +88,16 @@ public class Pkcs11Tokens {
 
 	public List<Token> getTokens() {
 		return tokens;
+	}
+	
+	public List<TokenConfig> getTokensConfigsBySO(OperatingSystem operatingSystem) {
+		
+		List<TokenConfig> tokensConfigs = new ArrayList<TokenConfig>();
+		
+		for (Token token : getTokens()) {
+			tokensConfigs.addAll(token.getConfigsBySO(operatingSystem));
+		}
+
+		return tokensConfigs;
 	}
 }

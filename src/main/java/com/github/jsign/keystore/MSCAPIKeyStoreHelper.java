@@ -14,7 +14,7 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
 
-public class KeyStoreMscapiHelper extends KeyStoreHelper {
+public class MSCAPIKeyStoreHelper extends KeyStoreHelper {
 
 	public static final String TYPE = "Windows-MY";
 	public static final String PROVIDER = "SunMSCAPI";	
@@ -111,7 +111,7 @@ public class KeyStoreMscapiHelper extends KeyStoreHelper {
 		}
 	}
 
-	public KeyStoreMscapiHelper(X509Certificate certificate) throws Exception  {				
+	public MSCAPIKeyStoreHelper(X509Certificate certificate) throws Exception  {				
 		try {
 			keyStore = newKeyStoreInstance();
 			

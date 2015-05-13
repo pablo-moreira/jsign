@@ -1,8 +1,10 @@
 package com.github.jsign;
 
 import java.io.File;
+import java.io.InputStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.Security;
 import java.security.cert.CertStore;
@@ -31,10 +33,11 @@ import com.github.jsign.gui.FrmTipoRepositorio;
 import com.github.jsign.interfaces.SignLog;
 import com.github.jsign.interfaces.SignProgress;
 import com.github.jsign.keystore.KeyStoreHelper;
-import com.github.jsign.keystore.KeyStoreMscapiHelper;
-import com.github.jsign.keystore.KeyStorePkcs12Helper;
-import com.github.jsign.model.Repository;
-import com.github.jsign.model.SignedFile;
+import com.github.jsign.keystore.MSCAPIKeyStoreHelper;
+import com.github.jsign.keystore.PKCS12KeyStoreHelper;
+import com.github.jsign.model.Configuration;
+import com.github.jsign.model.MessageToSign;
+import com.github.jsign.model.SignedMessage;
 import com.github.jsign.util.CertificateUtils;
 import com.github.jsign.util.FileUtils;
 import com.github.jsign.util.JFrameUtils;
@@ -44,7 +47,7 @@ public class Sign {
 	private FrmCertificadoPkcs12Senha frmCertificadoPkcs12Senha;
 	private FrmSelecionarCertificadoMscapi frmSelecionarCertificadoMscapi;
 	private FrmTipoRepositorio dlgKeyStoreType;
-	private Repository repository;
+	private Configuration repository;
 	private SignProgress progresso;
 	private SignLog log;
 	private X509Certificate msCapiCertificado;
@@ -53,8 +56,8 @@ public class Sign {
 		try {						
 			Security.addProvider(new BouncyCastleProvider());
 
-			if (Security.getProvider(KeyStoreMscapiHelper.PROVIDER) == null) {
-				System.out.println(MessageFormat.format("O provider {0} não esta instalado", KeyStoreMscapiHelper.PROVIDER));
+			if (Security.getProvider(MSCAPIKeyStoreHelper.PROVIDER) == null) {
+				System.out.println(MessageFormat.format("O provider {0} não esta instalado", MSCAPIKeyStoreHelper.PROVIDER));
 			}		
 
 			try {
@@ -119,12 +122,12 @@ public class Sign {
 					
 				String type = preferences.get(SignConstants.KEY_KEYSTORE_TYPE, "false");
 					
-				if (Repository.KEY_STORE_TYPE_MSCAPI.equals(type) || Repository.KEY_STORE_TYPE_PKCS12.equals(type)) {
+				if (Configuration.KEY_STORE_TYPE_MSCAPI.equals(type) || Configuration.KEY_STORE_TYPE_PKCS11.equals(type) || Configuration.KEY_STORE_TYPE_PKCS12.equals(type)) {
 
-					repository = new Repository();
+					repository = new Configuration();
 					repository.setType(type);
 
-					File pkcs12File = new File(preferences.get(SignConstants.KEY_PKCS12_FILENAME, "false"));
+					InputStream pkcs12File = new InputStream(preferences.get(SignConstants.KEY_PKCS12_FILENAME, "false"));
 					
 					if (pkcs12File.isFile()) {													
 						repository.setPkcs12File(pkcs12File);
@@ -137,24 +140,24 @@ public class Sign {
 		}
 	}
 
-	private SignedFile assinarArquivo(KeyStoreHelper storeHelper, CertStore certs, boolean assinaturaAtachada, File arquivo) throws Exception {
+	private SignedMessage signMessage(KeyStoreHelper keyStoreHelper, CertStore certs, boolean attached, InputStream message) throws Exception {
 
-		imprimirLogEhProgresso("Assinando: " + arquivo.getName());
+		imprimirLogEhProgresso("Assinando: " + message.getName());
 		
 		try {
-			CMSProcessable msg = new CMSProcessableFile(arquivo);
+			CMSProcessable msg = new CMSProcessableFile(message);
 
 			CMSSignedDataGenerator gen = new CMSSignedDataGenerator();                
-			gen.addSigner(storeHelper.getPrivateKey(), storeHelper.getCertificate(), CMSSignedDataGenerator.DIGEST_SHA1);
+			gen.addSigner(keyStoreHelper.getPrivateKey(), keyStoreHelper.getCertificate(), CMSSignedDataGenerator.DIGEST_SHA1);
 			gen.addCertificatesAndCRLs(certs);
 
-			CMSSignedData signedData = gen.generate(msg, assinaturaAtachada, storeHelper.getKeyStore().getProvider().getName());
+			CMSSignedData signedData = gen.generate(msg, attached, keyStoreHelper.getKeyStore().getProvider().getName());
 
 			ContentInfo contentInfo = signedData.getContentInfo(); 
                 
-			File dirTmp = new File(System.getProperty("java.io.tmpdir"));
+			InputStream dirTmp = new InputStream(System.getProperty("java.io.tmpdir"));
 
-			File arquivoAssinado = new File(dirTmp, arquivo.getName() + ".p7s");
+			InputStream arquivoAssinado = new InputStream(dirTmp, message.getName() + ".p7s");
 
 			imprimirLog("Gravando arquivo assinado: " + arquivoAssinado.getName());
 
@@ -164,7 +167,7 @@ public class Sign {
 			
 			imprimirLog("Arquivo assinado gravado");
 			
-			return new SignedFile(arquivo, arquivoAssinado);
+			return new SignedMessage(message, arquivoAssinado);
 		}
 		catch (OutOfMemoryError e) {
 			// Se o arquivo for muito grande poderar acontecer um java heap space
@@ -178,7 +181,7 @@ public class Sign {
             }
 	}
 
-	private void gravaConfiguracaoes(Repository repositorio) throws Exception {
+	private void gravaConfiguracaoes(Configuration repositorio) throws Exception {
 		
 		this.repository = repositorio;
 		
@@ -188,7 +191,7 @@ public class Sign {
 
 			preferences.clear();
 			
-			preferences.put(SignConstants.KEY_KEYSTORE_TYPE, repositorio.getType());
+			preferences.put(SignConstants.KEY_KEYSTORE_TYPE, repositorio.getKeyStoreType());
 				
 			if (repositorio.isDefinedPkcs12File()) {
 				preferences.put(SignConstants.KEY_PKCS12_FILENAME, repositorio.getPkcs12File().getAbsolutePath());
@@ -198,37 +201,40 @@ public class Sign {
 		}
 	}
 		
-	public SignedFile assinarArquivo(File arquivo, boolean assinaturaAtachada) throws Exception {
+	public SignedMessage signFile(File file, boolean attached) throws Exception {
 				
-		if (arquivo == null) {
+		if (file == null) {
 			throw new Exception("Por favor, selecione algum arquivo para realizar a assinatura digital!");
 		}
-
-		List<SignedFile> arquivosAssinados = assinarArquivos(Arrays.asList(arquivo), assinaturaAtachada);
+	
+		MessageToSign messageToSign = new MessageToSign(file.getName(), new FileInputStream(file));
 		
-		return arquivosAssinados.get(0);
+			
+		List<SignedMessage> signedData = signMessages(Arrays.asList(messageToSign), attached);
+		
+		return signedData.get(0);
 	}
 		
-	public List<SignedFile> assinarArquivos(List<File> arquivos, boolean assinaturaAtachada) throws Exception {
+	public List<SignedMessage> signMessages(List<InputStream> messages, boolean attached) throws Exception {
 
-		if (arquivos == null || arquivos.isEmpty()) {
-			throw new Exception("Por favor, selecione algum arquivo para realizar a assinatura digital!");
+		if (messages == null || messages.isEmpty()) {
+			throw new Exception("Por favor, selecione alguma mensagem para realizar a assinatura digital!");
 		}
-		
-		KeyStoreHelper storeHelper = instanciarRepositorio();
-				
+
+		KeyStoreHelper storeHelper = initKeyStore();
+
 		imprimirLogEhProgresso("Iniciando o processo de assinatura...");
-				
-		imprimirLog("O tipo de assinatura é \"" + (assinaturaAtachada ? "atachada" : "detachada") + "\"");
-		
-		Certificate[] signatarioCertificadoCadeia = storeHelper.getCertsChain();
+
+		imprimirLog("O tipo de assinatura é \"" + (attached ? "atachada" : "detachada") + "\"");
+
+		Certificate[] certsChain = storeHelper.getCertsChain();
 	
 		List<Certificate> certList = new ArrayList<Certificate>();
 
 		imprimirLogEhProgresso("Carregando a cadeia de certificados...");
 		
-		if (signatarioCertificadoCadeia != null && signatarioCertificadoCadeia.length != 0) {
-            certList.addAll(Arrays.asList(signatarioCertificadoCadeia));
+		if (certsChain != null && certsChain.length != 0) {
+            certList.addAll(Arrays.asList(certsChain));
 		}
 		else {
 			certList.add(storeHelper.getCertificate());
@@ -238,26 +244,30 @@ public class Sign {
 		
 		imprimirLogEhProgresso("Iniciando a assinatura");
 		
+		int i=1;
+		
 		// Verifica se tem algum arquivo ja assinado
-		for (File arquivo : arquivos) {
+		for (InputStream message : messages) {
 
-			byte[] mensagem = FileUtils.getArquivoBytes(arquivo);
+			byte[] mensagem = FileUtils.getInputStreamBytes(message);
 
 			if (isSignedData(mensagem)) {
-				throw new Exception (MessageFormat.format("O assinador não suporta co-assinatura! o arquivo ({0}) já foi assinado!", arquivo.getName()));
+				throw new Exception (MessageFormat.format("O assinador não suporta co-assinatura! o arquivo ({0}) já foi assinado!", i));
 			}
+			
+			i++;
 		}
 		
-		List<SignedFile> arquivosAssinados = new ArrayList<SignedFile>();
+		List<SignedMessage> arquivosAssinados = new ArrayList<SignedMessage>();
 
-		for (File arquivo : arquivos) {
-			arquivosAssinados.add(assinarArquivo(storeHelper, certs, assinaturaAtachada, arquivo));
+		for (InputStream message : messages) {
+			arquivosAssinados.add(signMessage(storeHelper, certs, attached, arquivo));
 		}
 		
 		return arquivosAssinados;
 	}
 		
-	public KeyStoreHelper instanciarRepositorio() throws Exception {
+	public KeyStoreHelper initKeyStore() throws Exception {
 		
 		if (repository == null || !repository.isDefinedType()) {
 			
@@ -291,7 +301,7 @@ public class Sign {
 				pkcs12Senha = repository.getPkcs12Password();
 			}
 			
-			KeyStorePkcs12Helper storeHelperPkcs12 = new KeyStorePkcs12Helper(new FileInputStream(
+			PKCS12KeyStoreHelper storeHelperPkcs12 = new PKCS12KeyStoreHelper(new FileInputStream(
 					repository.getPkcs12File()), 
 					pkcs12Senha
 			);
@@ -302,7 +312,7 @@ public class Sign {
 		}
 		else if (repository.isTypeMscapi()) {
 			
-			List<X509Certificate> certificados = KeyStoreMscapiHelper.getCertificatesAvailable();
+			List<X509Certificate> certificados = MSCAPIKeyStoreHelper.getCertificatesAvailable();
 						
 			Collections.sort(certificados, new Comparator<X509Certificate>() {
                                 @Override
@@ -319,10 +329,10 @@ public class Sign {
 				throw new Exception("Por favor, para realizar a assinatura utilizando Windows MsCAPI, deve-se cadastrar os certificados!");
 			}
 			else if (certificados.size() == 1) {					
-				return new KeyStoreMscapiHelper(certificados.get(0));
+				return new MSCAPIKeyStoreHelper(certificados.get(0));
 			}
 			else if (this.msCapiCertificado != null) {
-				return new KeyStoreMscapiHelper(msCapiCertificado);				
+				return new MSCAPIKeyStoreHelper(msCapiCertificado);				
 			}
 			else {
 				frmSelecionarCertificadoMscapi.iniciar(certificados);
@@ -332,7 +342,7 @@ public class Sign {
 				}
 
 				this.msCapiCertificado = frmSelecionarCertificadoMscapi.getCertificado();
-				return new KeyStoreMscapiHelper(msCapiCertificado);
+				return new MSCAPIKeyStoreHelper(msCapiCertificado);
 			}
 		}
 		else {

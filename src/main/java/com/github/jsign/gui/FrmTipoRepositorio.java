@@ -23,7 +23,7 @@ import javax.swing.KeyStroke;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import com.github.jsign.model.OperatingSystem;
-import com.github.jsign.model.Repository;
+import com.github.jsign.model.Configuration;
 import com.github.jsign.util.JFrameUtils;
 
 
@@ -43,7 +43,7 @@ public class FrmTipoRepositorio extends javax.swing.JDialog {
         txtPkcs12Arquivo.setText("");
     }
     
-    public void start(Repository repository) {
+    public void start(Configuration repository) {
 
     	rbMscapi.setEnabled(false);
         rbMscapi.setVisible(false);
@@ -74,13 +74,13 @@ public class FrmTipoRepositorio extends javax.swing.JDialog {
         setVisible(true);        
     }    
     
-    public Repository getTipoRepositorio() {
+    public Configuration getTipoRepositorio() {
 
         if (bgTipoRepositorio.getSelection() != null) {
            
-            Repository tipoRepositorio = new Repository();
+            Configuration tipoRepositorio = new Configuration();
             tipoRepositorio.setType(bgTipoRepositorio.getSelection().getActionCommand());
-            if (Repository.KEY_STORE_TYPE_PKCS12.equals(bgTipoRepositorio.getSelection().getActionCommand())) {
+            if (Configuration.KEY_STORE_TYPE_PKCS12.equals(bgTipoRepositorio.getSelection().getActionCommand())) {
                 tipoRepositorio.setPkcs12File(pkcs12Arquivo);
             }
             return tipoRepositorio;
@@ -258,7 +258,7 @@ public class FrmTipoRepositorio extends javax.swing.JDialog {
             JFrameUtils.showErro("Erro de validação", "Por favor, deve-se informar um tipo de repositório!");
             return;
         }
-        else if (Repository.KEY_STORE_TYPE_PKCS12.equals(bgTipoRepositorio.getSelection().getActionCommand())
+        else if (Configuration.KEY_STORE_TYPE_PKCS12.equals(bgTipoRepositorio.getSelection().getActionCommand())
                 && pkcs12Arquivo == null) {
             JFrameUtils.showErro("Erro de validação", "Por favor, deve-se definir o endereço do arquivo do certificado PKCS12!");
             return;
@@ -346,7 +346,7 @@ public class FrmTipoRepositorio extends javax.swing.JDialog {
     public void atualizarTxtPkcs12Arquivo() {
         
         if (bgTipoRepositorio.getSelection() != null
-                && Repository.KEY_STORE_TYPE_PKCS12.equals(bgTipoRepositorio.getSelection().getActionCommand())
+                && Configuration.KEY_STORE_TYPE_PKCS12.equals(bgTipoRepositorio.getSelection().getActionCommand())
                 && pkcs12Arquivo != null) {
             txtPkcs12Arquivo.setText(pkcs12Arquivo.getAbsolutePath());
         }

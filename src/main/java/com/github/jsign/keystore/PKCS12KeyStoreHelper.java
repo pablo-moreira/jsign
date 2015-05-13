@@ -14,7 +14,7 @@ import java.util.Enumeration;
 
 import javax.crypto.BadPaddingException;
 
-public class KeyStorePkcs12Helper extends KeyStoreHelper {
+public class PKCS12KeyStoreHelper extends KeyStoreHelper {
 
 	private void init(char[] password) throws Exception {
 		
@@ -57,7 +57,7 @@ public class KeyStorePkcs12Helper extends KeyStoreHelper {
 		}
 	}
 	
-	public KeyStorePkcs12Helper(InputStream inputStream, char[] password) throws Exception {
+	public PKCS12KeyStoreHelper(InputStream inputStream, char[] password) throws Exception {
 		
 		try{
 			keyStore = KeyStore.getInstance("PKCS12");

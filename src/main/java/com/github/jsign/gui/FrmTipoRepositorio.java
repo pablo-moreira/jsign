@@ -43,7 +43,7 @@ public class FrmTipoRepositorio extends javax.swing.JDialog {
         txtPkcs12Arquivo.setText("");
     }
     
-    public void iniciar(Repository tipoRepositorio) {
+    public void start(Repository repository) {
 
     	rbMscapi.setEnabled(false);
         rbMscapi.setVisible(false);
@@ -57,15 +57,15 @@ public class FrmTipoRepositorio extends javax.swing.JDialog {
         
         limpar();
 
-        if (tipoRepositorio != null) {        
-	        if (tipoRepositorio.isTypePkcs12()) {
+        if (repository != null) {        
+	        if (repository.isTypePkcs12()) {
 	            rbPkcs12.setSelected(true);
-	            if (tipoRepositorio.isDefinedPkcs12File()) {
-	                this.pkcs12Arquivo = tipoRepositorio.getPkcs12File();
+	            if (repository.isDefinedPkcs12File()) {
+	                this.pkcs12Arquivo = repository.getPkcs12File();
 	                atualizarTxtPkcs12Arquivo();
 	            }
 	        }
-	        else if (tipoRepositorio.isTypeMscapi()) {
+	        else if (repository.isTypeMscapi()) {
 	            rbMscapi.setSelected(true);
 	        }
         }

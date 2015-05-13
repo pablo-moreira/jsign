@@ -4,8 +4,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.security.Security;
 import java.security.cert.CertStore;
 import java.security.cert.Certificate;
@@ -35,17 +33,17 @@ import com.github.jsign.interfaces.SignProgress;
 import com.github.jsign.keystore.KeyStoreHelper;
 import com.github.jsign.keystore.KeyStoreMscapiHelper;
 import com.github.jsign.keystore.KeyStorePkcs12Helper;
-import com.github.jsign.model.SignedFile;
 import com.github.jsign.model.Repository;
-import com.github.jsign.util.FileUtils;
+import com.github.jsign.model.SignedFile;
 import com.github.jsign.util.CertificateUtils;
+import com.github.jsign.util.FileUtils;
 import com.github.jsign.util.JFrameUtils;
 
 public class Sign {
 
 	private FrmCertificadoPkcs12Senha frmCertificadoPkcs12Senha;
 	private FrmSelecionarCertificadoMscapi frmSelecionarCertificadoMscapi;
-	private FrmTipoRepositorio frmTipoRepositorio;
+	private FrmTipoRepositorio dlgKeyStoreType;
 	private Repository repository;
 	private SignProgress progresso;
 	private SignLog log;
@@ -68,7 +66,7 @@ public class Sign {
 			
 			frmSelecionarCertificadoMscapi = new FrmSelecionarCertificadoMscapi(null, true);
 			frmCertificadoPkcs12Senha = new FrmCertificadoPkcs12Senha(null, true);
-			frmTipoRepositorio = new FrmTipoRepositorio(null, true);
+			dlgKeyStoreType = new FrmTipoRepositorio(null, true);
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -190,7 +188,7 @@ public class Sign {
 
 			preferences.clear();
 			
-			preferences.put(SignConstants.KEY_REPOSITORY_TYPE, repositorio.getType());
+			preferences.put(SignConstants.KEY_KEYSTORE_TYPE, repositorio.getType());
 				
 			if (repositorio.isDefinedPkcs12File()) {
 				preferences.put(SignConstants.KEY_PKCS12_FILENAME, repositorio.getPkcs12File().getAbsolutePath());
@@ -245,7 +243,7 @@ public class Sign {
 
 			byte[] mensagem = FileUtils.getArquivoBytes(arquivo);
 
-			if (isAssinado(mensagem)) {
+			if (isSignedData(mensagem)) {
 				throw new Exception (MessageFormat.format("O assinador não suporta co-assinatura! o arquivo ({0}) já foi assinado!", arquivo.getName()));
 			}
 		}
@@ -342,9 +340,9 @@ public class Sign {
 		}
 	}
 
-	public boolean isAssinado(byte[] mensagem) {
+	public boolean isSignedData(byte[] data) {
 		try {
-			CMSSignedData pkcs7 = new CMSSignedData(mensagem);
+			CMSSignedData pkcs7 = new CMSSignedData(data);
 			pkcs7.getSignedContent();
 			return true;
 		}
@@ -354,22 +352,16 @@ public class Sign {
 	}
 	
 	public void mostrarConfiguracao() {
-		AccessController.doPrivileged(new PrivilegedAction<Void>() {			
-			@Override
-			public Void run() {
-
-				frmTipoRepositorio.iniciar(repository);
+		
+		dlgKeyStoreType.start(repository);
 				
-				if (frmTipoRepositorio.getReturnStatus() == FrmTipoRepositorio.RET_OK) {
-					try {
-						gravaConfiguracaoes(frmTipoRepositorio.getTipoRepositorio());
-					}
-					catch (Exception e) {
-						JFrameUtils.showErro("Erro ao gravar as configurações!", e.getMessage(), null);
-					}
-				}
-				return null;
+		if (dlgKeyStoreType.getReturnStatus() == FrmTipoRepositorio.RET_OK) {
+			try {
+				gravaConfiguracaoes(dlgKeyStoreType.getTipoRepositorio());
 			}
-		});
+			catch (Exception e) {
+				JFrameUtils.showErro("Erro ao gravar as configurações!", e.getMessage(), null);
+			}
+		}
 	}
 }

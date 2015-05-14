@@ -12,9 +12,9 @@ import java.util.List;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
+import com.github.jsign.gui.DlgConfiguration;
 import com.github.jsign.gui.FrmCertificadoPkcs12Senha;
 import com.github.jsign.gui.FrmSelecionarCertificadoMscapi;
-import com.github.jsign.gui.FrmTipoRepositorio;
 import com.github.jsign.interfaces.SignLog;
 import com.github.jsign.interfaces.SignLogProgress;
 import com.github.jsign.interfaces.SignProgress;
@@ -32,8 +32,8 @@ import com.github.jsign.util.JFrameUtils;
 public class Sign implements SignLogProgress {
 
 	private FrmCertificadoPkcs12Senha dlgPKCS12Password;
-	private FrmSelecionarCertificadoMscapi dlgPKCS12FileSelection;
-	private FrmTipoRepositorio dlgKeyStoreType;
+	private FrmSelecionarCertificadoMscapi dlgMSCAPISelectCertificate;
+	private DlgConfiguration dlgConfiguration;
 	private Configuration configuration;
 	private SignProgress progress;
 	private SignLog log;
@@ -55,9 +55,9 @@ public class Sign implements SignLogProgress {
 				System.out.println(e.getMessage());
 			}
 			
-			dlgPKCS12FileSelection = new FrmSelecionarCertificadoMscapi(null, true);
+			dlgMSCAPISelectCertificate = new FrmSelecionarCertificadoMscapi(null, true);
 			dlgPKCS12Password = new FrmCertificadoPkcs12Senha(null, true);
-			dlgKeyStoreType = new FrmTipoRepositorio(null, true);
+			dlgConfiguration = new DlgConfiguration(null, true);
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -169,13 +169,13 @@ public class Sign implements SignLogProgress {
 				return new MSCAPIKeyStoreHelper(msCapiCertificate);				
 			}
 			else {
-				dlgPKCS12FileSelection.iniciar(certificados);
+				dlgMSCAPISelectCertificate.iniciar(certificados);
 
-				if (dlgPKCS12FileSelection.getReturnStatus() == FrmSelecionarCertificadoMscapi.RET_CANCEL) {
+				if (dlgMSCAPISelectCertificate.getReturnStatus() == FrmSelecionarCertificadoMscapi.RET_CANCEL) {
 					throw new Exception("Por favor, para realizar a assinatura utilizando Windows MsCAPI, deve-se escolher algum certificado!");
 				}
 
-				this.msCapiCertificate = dlgPKCS12FileSelection.getCertificado();
+				this.msCapiCertificate = dlgMSCAPISelectCertificate.getCertificado();
 				return new MSCAPIKeyStoreHelper(msCapiCertificate);
 			}
 		}
@@ -186,11 +186,11 @@ public class Sign implements SignLogProgress {
 	
 	public void showDlgConfiguration() {
 		
-		dlgKeyStoreType.start(configuration);
+		dlgConfiguration.start(configuration);
 				
-		if (dlgKeyStoreType.getReturnStatus() == FrmTipoRepositorio.RET_OK) {
+		if (dlgConfiguration.getReturnStatus() == DlgConfiguration.RET_OK) {
 			try {
-				this.configuration = ConfigurationManager.writeConfiguration(dlgKeyStoreType.getTipoRepositorio());
+				this.configuration = ConfigurationManager.writeConfiguration(dlgConfiguration.getTipoRepositorio());
 			}
 			catch (Exception e) {
 				JFrameUtils.showErro("Erro ao gravar as configurações!", e.getMessage(), null);

@@ -1,0 +1,51 @@
+Quando iniciar o Sign o sistema ira tentar carregar as configurações persistidas localmente.
+Para os casos que ele não encontrar nenhuma configuração o sistema ira disponibilizar um serviço 
+para tentar procurar um token de forma automatica o qual o usuário poderá invocar em background.
+
+------------------------------------------------------------------------------------------
+
+Formulario Configuracao
+
+	0 Automatica
+	0 Manual		
+
+------------------------------------------------------------------------------------------
+
+Formulario Configuracao
+	
+	* Automatica
+	0 Manual
+	
+	--------------------------------
+	|
+	|  1 - Verifica se mscapi esta disponivel		
+	|  1.1 - Se sim verifica se encontra algum dispositivo no mscapi
+	|
+	|  2 - Percorre todos os tokenConfig
+	|  2.1 - Verifica se encontra algum disponivel
+	|  2.2 - Se encontrar testa o token config						
+	|_______________________________
+
+
+------------------------------------------------------------------------------------------
+
+Formulario Configuracao
+	
+	0 Automatica
+	* Manual
+
+		Tipo de repositório
+			
+			0 PKCS12
+				Arquivo: [__________________] [...]
+
+			0 PKCS11
+				Token:   [eToken            ]
+				Outro:   [__________________] [...]
+
+			0 MSCAPI
+				Certificado: [ Pablo: 205327  ][X]
+			
+			
+			
+			

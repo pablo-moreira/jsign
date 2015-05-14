@@ -44,4 +44,13 @@ public class JSignTest extends TestCase {
         
         assertEquals(1, 1);
     }
+    
+    public static void main(String[] args) throws Exception {
+		
+    	
+    	final Sign sign = new Sign();
+
+        sign.showDlgConfiguration();   	
+    	
+	}
 }

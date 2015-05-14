@@ -6,7 +6,7 @@ public enum OperatingSystem {
 	WINDOWS("Windows"), 
 	MACOS("Macos");
 	
-	private String name;
+	private final String name;
 	
 	private OperatingSystem(String name) {
 		this.name = name;	
@@ -28,7 +28,7 @@ public enum OperatingSystem {
 		return getOsName().startsWith(LINUX.getName());
 	}
 
-	public static boolean isOsWindows() {
+	public static boolean isWindows() {
 		return getOsName().startsWith(WINDOWS.getName());
 	}
 }

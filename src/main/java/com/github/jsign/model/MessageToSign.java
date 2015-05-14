@@ -33,5 +33,9 @@ public class MessageToSign {
 
 	public void setMessage(InputStream message) {
 		this.message = message;
+	}
+
+	public boolean isDefinedName() {
+		return getName() != null;
 	}	
 }

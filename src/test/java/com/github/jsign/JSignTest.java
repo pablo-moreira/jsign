@@ -2,12 +2,9 @@ package com.github.jsign;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.util.List;
 
 import junit.framework.TestCase;
 
-import com.github.jsign.Sign;
-import com.github.jsign.keystore.KeyStoreHelper;
 import com.github.jsign.model.SignedMessage;
 import com.github.jsign.util.FileUtils;
 
@@ -52,7 +49,8 @@ public class JSignTest extends TestCase {
     	
     	final Sign sign = new Sign();
 
-    	List<KeyStoreHelper> keyStoreHelpersAvailable = sign.getManager().getConfigurationManager().getKeyStoreHelpersAvailable();
+    	sign.showDlgConfiguration();
+    	//List<KeyStoreHelper> keyStoreHelpersAvailable = sign.getManager().getConfigurationManager().getKeyStoreHelpersAvailable();
     	
     	
 	}

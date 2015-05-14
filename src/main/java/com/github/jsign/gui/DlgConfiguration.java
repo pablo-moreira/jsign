@@ -5,10 +5,15 @@
  */
 package com.github.jsign.gui;
 
+import com.github.jsign.Sign;
+import com.github.jsign.keystore.KeyStoreHelper;
 import com.github.jsign.model.Configuration;
 import com.github.jsign.model.OperatingSystem;
 import com.github.jsign.util.JFrameUtils;
 import java.io.File;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
@@ -17,13 +22,25 @@ import javax.swing.filechooser.FileNameExtensionFilter;
  * @author pablo-moreira
  */
 public class DlgConfiguration extends javax.swing.JDialog {
+		
+	/** A return status code - returned if Cancel button has been pressed */
+    public static final int RET_CANCEL = 0;
+    /** A return status code - returned if OK button has been pressed */
+    public static final int RET_OK = 1;	
+	
+	private Sign sign;
+	private File pkcs12File;
+	private List<KeyStoreHelper> keyStoreHelpers = new ArrayList<KeyStoreHelper>();
+	private KeyStoreHelper keyStoreHelper;
+	private int returnStatus = RET_CANCEL;	
 
 	/**
 	 * Creates new form DlgConfiguration
 	 */
-	public DlgConfiguration(java.awt.Frame parent, boolean modal) {
+	public DlgConfiguration(java.awt.Frame parent, boolean modal, Sign sign) {
 		super(parent, modal);
 		initComponents();
+		this.sign = sign;
 	}
 
 	/**
@@ -41,6 +58,13 @@ public class DlgConfiguration extends javax.swing.JDialog {
         cancelButton = new javax.swing.JButton();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         pnConfigurationAuto = new javax.swing.JPanel();
+        btnConfigurationAuto = new javax.swing.JButton();
+        jLabel4 = new javax.swing.JLabel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        tblCertificates = new javax.swing.JTable();
+        jLabel5 = new javax.swing.JLabel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        taCertificateInfo = new javax.swing.JTextArea();
         pnConfigurationManual = new javax.swing.JPanel();
         rbPKCS12 = new javax.swing.JRadioButton();
         jLabel1 = new javax.swing.JLabel();
@@ -50,10 +74,9 @@ public class DlgConfiguration extends javax.swing.JDialog {
         rbPKCS11 = new javax.swing.JRadioButton();
         jLabel2 = new javax.swing.JLabel();
         cbPKCS11Token = new javax.swing.JComboBox();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        txtCertificateInfo = new javax.swing.JTextPane();
         jLabel3 = new javax.swing.JLabel();
         btnSelectMSCAPICertificate = new javax.swing.JButton();
+        txtCertificateInfo = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -73,15 +96,90 @@ public class DlgConfiguration extends javax.swing.JDialog {
 
         pnConfigurationAuto.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
 
+        btnConfigurationAuto.setText("Iniciar processo de configuração automática");
+        btnConfigurationAuto.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnConfigurationAutoActionPerformed(evt);
+            }
+        });
+
+        jLabel4.setText("Lista de certificados:");
+
+        tblCertificates.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Tipo", "Certificado do Usuário", "Certificado do Emissor"
+            }
+        ) {
+            Class[] types = new Class [] {
+                java.lang.String.class, java.lang.String.class, java.lang.String.class
+            };
+            boolean[] canEdit = new boolean [] {
+                false, false, false
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        tblCertificates.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
+        tblCertificates.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        tblCertificates.getTableHeader().setReorderingAllowed(false);
+        tblCertificates.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tblCertificatesMouseClicked(evt);
+            }
+        });
+        jScrollPane1.setViewportView(tblCertificates);
+        if (tblCertificates.getColumnModel().getColumnCount() > 0) {
+            tblCertificates.getColumnModel().getColumn(0).setPreferredWidth(80);
+            tblCertificates.getColumnModel().getColumn(1).setPreferredWidth(180);
+            tblCertificates.getColumnModel().getColumn(2).setPreferredWidth(190);
+        }
+        tblCertificates.getColumnModel().getColumn(0).setPreferredWidth(188);
+        tblCertificates.getColumnModel().getColumn(1).setPreferredWidth(188);
+
+        jLabel5.setText("Informações do certificado selecionado:");
+
+        taCertificateInfo.setEditable(false);
+        taCertificateInfo.setColumns(20);
+        taCertificateInfo.setRows(5);
+        jScrollPane2.setViewportView(taCertificateInfo);
+
         javax.swing.GroupLayout pnConfigurationAutoLayout = new javax.swing.GroupLayout(pnConfigurationAuto);
         pnConfigurationAuto.setLayout(pnConfigurationAutoLayout);
         pnConfigurationAutoLayout.setHorizontalGroup(
             pnConfigurationAutoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
+            .addGroup(pnConfigurationAutoLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(pnConfigurationAutoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(btnConfigurationAuto, javax.swing.GroupLayout.DEFAULT_SIZE, 456, Short.MAX_VALUE)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 456, Short.MAX_VALUE)
+                    .addComponent(jLabel5)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 456, Short.MAX_VALUE)
+                    .addComponent(jLabel4))
+                .addContainerGap())
         );
         pnConfigurationAutoLayout.setVerticalGroup(
             pnConfigurationAutoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
+            .addGroup(pnConfigurationAutoLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(btnConfigurationAuto)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jLabel4)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jLabel5)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 74, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         jTabbedPane1.addTab("Automática", pnConfigurationAuto);
@@ -128,8 +226,6 @@ public class DlgConfiguration extends javax.swing.JDialog {
 
         cbPKCS11Token.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
-        jScrollPane1.setViewportView(txtCertificateInfo);
-
         jLabel3.setText("Certificado:");
 
         btnSelectMSCAPICertificate.setText("...");
@@ -144,32 +240,33 @@ public class DlgConfiguration extends javax.swing.JDialog {
         pnConfigurationManualLayout.setHorizontalGroup(
             pnConfigurationManualLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pnConfigurationManualLayout.createSequentialGroup()
-                .addContainerGap()
                 .addGroup(pnConfigurationManualLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(rbPKCS12)
-                    .addComponent(rbMSCAPI)
-                    .addComponent(rbPKCS11))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnConfigurationManualLayout.createSequentialGroup()
-                .addGroup(pnConfigurationManualLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(pnConfigurationManualLayout.createSequentialGroup()
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnConfigurationManualLayout.createSequentialGroup()
                         .addGap(49, 49, 49)
                         .addGroup(pnConfigurationManualLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(jLabel1)
                             .addComponent(jLabel2))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(pnConfigurationManualLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(txtPKCS12File)
-                            .addComponent(cbPKCS11Token, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                    .addGroup(pnConfigurationManualLayout.createSequentialGroup()
-                        .addContainerGap(27, Short.MAX_VALUE)
-                        .addComponent(jLabel3)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 336, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(pnConfigurationManualLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(btnSelectPKCS12File)
-                    .addComponent(btnSelectMSCAPICertificate)))
+                            .addGroup(pnConfigurationManualLayout.createSequentialGroup()
+                                .addComponent(txtPKCS12File)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(btnSelectPKCS12File))
+                            .addComponent(cbPKCS11Token, 0, 361, Short.MAX_VALUE)))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnConfigurationManualLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(pnConfigurationManualLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(pnConfigurationManualLayout.createSequentialGroup()
+                                .addGap(18, 18, 18)
+                                .addComponent(jLabel3)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(txtCertificateInfo)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(btnSelectMSCAPICertificate))
+                            .addComponent(rbPKCS12)
+                            .addComponent(rbMSCAPI)
+                            .addComponent(rbPKCS11))))
+                .addContainerGap())
         );
         pnConfigurationManualLayout.setVerticalGroup(
             pnConfigurationManualLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -189,23 +286,15 @@ public class DlgConfiguration extends javax.swing.JDialog {
                     .addComponent(cbPKCS11Token, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addComponent(rbMSCAPI)
-                .addGroup(pnConfigurationManualLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(pnConfigurationManualLayout.createSequentialGroup()
-                        .addGap(18, 18, 18)
-                        .addComponent(jLabel3)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(pnConfigurationManualLayout.createSequentialGroup()
-                        .addGap(12, 12, 12)
-                        .addGroup(pnConfigurationManualLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(pnConfigurationManualLayout.createSequentialGroup()
-                                .addComponent(btnSelectMSCAPICertificate)
-                                .addGap(0, 0, Short.MAX_VALUE))
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 115, Short.MAX_VALUE)))))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(pnConfigurationManualLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnSelectMSCAPICertificate)
+                    .addComponent(jLabel3)
+                    .addComponent(txtCertificateInfo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(76, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Manual", pnConfigurationManual);
-
-        jTabbedPane1.setSelectedIndex(-1);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -226,12 +315,12 @@ public class DlgConfiguration extends javax.swing.JDialog {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 330, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jTabbedPane1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(cancelButton)
                     .addComponent(okButton))
-                .addContainerGap(12, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         getRootPane().setDefaultButton(okButton);
@@ -295,6 +384,33 @@ public class DlgConfiguration extends javax.swing.JDialog {
         // TODO add your handling code here:
     }//GEN-LAST:event_btnSelectMSCAPICertificateActionPerformed
 
+    private void btnConfigurationAutoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnConfigurationAutoActionPerformed
+        
+    }//GEN-LAST:event_btnConfigurationAutoActionPerformed
+
+    private void tblCertificatesMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblCertificatesMouseClicked
+
+        if (!tblCertificates.getSelectionModel().isSelectionEmpty()) {
+
+            int row = tblCertificates.getSelectedRow();
+
+			keyStoreHelper = keyStoreHelpers.get(row);
+			
+			if (keyStoreHelper != null) {
+				
+				X509Certificate certificate = keyStoreHelper.getCertificate();
+            
+                txtCertificateInfo.setText("");
+
+                String[] items = certificate.getSubjectDN().getName().split(",");
+
+                for (int i=items.length - 1; i >= 0; i--) {
+                    taCertificateInfo.append(items[i].trim() + "\n");
+                }
+            }
+        }
+    }//GEN-LAST:event_tblCertificatesMouseClicked
+
 	/**
 	 * @param args the command line arguments
 	 */
@@ -325,7 +441,7 @@ public class DlgConfiguration extends javax.swing.JDialog {
 		/* Create and display the dialog */
 		java.awt.EventQueue.invokeLater(new Runnable() {
 			public void run() {
-				DlgConfiguration dialog = new DlgConfiguration(new javax.swing.JFrame(), true);
+				DlgConfiguration dialog = new DlgConfiguration(new javax.swing.JFrame(), true, null);
 				dialog.addWindowListener(new java.awt.event.WindowAdapter() {
 					@Override
 					public void windowClosing(java.awt.event.WindowEvent e) {
@@ -336,17 +452,11 @@ public class DlgConfiguration extends javax.swing.JDialog {
 			}
 		});
 	}
-		
-	private File pkcs12File;
-	private int returnStatus = RET_CANCEL;	
-	/** A return status code - returned if Cancel button has been pressed */
-    public static final int RET_CANCEL = 0;
-    /** A return status code - returned if OK button has been pressed */
-    public static final int RET_OK = 1;
 	
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup bgConfigurationType;
     private javax.swing.ButtonGroup bgKeyStoreType;
+    private javax.swing.JButton btnConfigurationAuto;
     private javax.swing.JButton btnSelectMSCAPICertificate;
     private javax.swing.JButton btnSelectPKCS12File;
     private javax.swing.JButton cancelButton;
@@ -354,7 +464,10 @@ public class DlgConfiguration extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JButton okButton;
     private javax.swing.JPanel pnConfigurationAuto;
@@ -362,7 +475,9 @@ public class DlgConfiguration extends javax.swing.JDialog {
     private javax.swing.JRadioButton rbMSCAPI;
     private javax.swing.JRadioButton rbPKCS11;
     private javax.swing.JRadioButton rbPKCS12;
-    private javax.swing.JTextPane txtCertificateInfo;
+    private javax.swing.JTextArea taCertificateInfo;
+    private javax.swing.JTable tblCertificates;
+    private javax.swing.JTextField txtCertificateInfo;
     private javax.swing.JTextField txtPKCS12File;
     // End of variables declaration//GEN-END:variables
 
@@ -378,7 +493,7 @@ public class DlgConfiguration extends javax.swing.JDialog {
         }
     }
     
-    public void limpar() {
+    public void clear() {
         pkcs12File = null;
         txtPKCS12File.setText("");
     }
@@ -395,7 +510,7 @@ public class DlgConfiguration extends javax.swing.JDialog {
     	
         pack();
         
-        limpar();
+        clear();
 
         if (configuration != null) {        
 	        if (configuration.isTypePkcs12()) {
@@ -413,7 +528,7 @@ public class DlgConfiguration extends javax.swing.JDialog {
         setVisible(true);        
     }    
     
-    public Configuration getTipoRepositorio() {
+    public Configuration getConfiguration() {
 
         if (bgKeyStoreType.getSelection() != null) {
            

@@ -12,8 +12,8 @@ import java.util.List;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import com.github.jsign.gui.DlgConfiguration;
+import com.github.jsign.gui.DlgSelectCertificate;
 import com.github.jsign.gui.FrmCertificadoPkcs12Senha;
-import com.github.jsign.gui.FrmSelecionarCertificadoMscapi;
 import com.github.jsign.interfaces.SignLog;
 import com.github.jsign.interfaces.SignLogProgress;
 import com.github.jsign.interfaces.SignProgress;
@@ -32,7 +32,7 @@ import com.github.jsign.util.JFrameUtils;
 public class Sign implements SignLogProgress {
 
 	private FrmCertificadoPkcs12Senha dlgPKCS12Password;
-	private FrmSelecionarCertificadoMscapi dlgMSCAPISelectCertificate;
+	private DlgSelectCertificate dlgSelectCertificate;
 	private DlgConfiguration dlgConfiguration;
 	private Configuration configuration;
 	private SignProgress progress;
@@ -52,9 +52,9 @@ public class Sign implements SignLogProgress {
 				System.out.println(e.getMessage());
 			}
 			
-			dlgMSCAPISelectCertificate = new FrmSelecionarCertificadoMscapi(null, true);
+			dlgSelectCertificate = new DlgSelectCertificate(null, true, this);
 			dlgPKCS12Password = new FrmCertificadoPkcs12Senha(null, true);
-			dlgConfiguration = new DlgConfiguration(null, true);
+			dlgConfiguration = new DlgConfiguration(null, true, this);
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -149,8 +149,8 @@ public class Sign implements SignLogProgress {
 				@Override
 				public int compare(X509Certificate item1, X509Certificate item2) {
 					
-					String alias1 = CertificateUtils.getCertificadoCN(item1.getSubjectDN().getName());
-					String alias2 = CertificateUtils.getCertificadoCN(item2.getSubjectDN().getName());
+					String alias1 = CertificateUtils.getCertificateCN(item1.getSubjectDN().getName());
+					String alias2 = CertificateUtils.getCertificateCN(item2.getSubjectDN().getName());
 
 					return alias1.compareToIgnoreCase(alias2);
 				}
@@ -166,13 +166,13 @@ public class Sign implements SignLogProgress {
 				return new MSCAPIKeyStoreHelper(msCapiCertificate);				
 			}
 			else {
-				dlgMSCAPISelectCertificate.iniciar(certificados);
+				dlgSelectCertificate.iniciar(certificados);
 
-				if (dlgMSCAPISelectCertificate.getReturnStatus() == FrmSelecionarCertificadoMscapi.RET_CANCEL) {
+				if (dlgSelectCertificate.getReturnStatus() == DlgSelectCertificate.RET_CANCEL) {
 					throw new Exception("Por favor, para realizar a assinatura utilizando Windows MsCAPI, deve-se escolher algum certificado!");
 				}
 
-				this.msCapiCertificate = dlgMSCAPISelectCertificate.getCertificado();
+				this.msCapiCertificate = dlgSelectCertificate.getCertificado();
 				return new MSCAPIKeyStoreHelper(msCapiCertificate);
 			}
 		}
@@ -187,7 +187,7 @@ public class Sign implements SignLogProgress {
 				
 		if (dlgConfiguration.getReturnStatus() == DlgConfiguration.RET_OK) {
 			try {
-				this.configuration = ConfigurationManager.writeConfiguration(dlgConfiguration.getTipoRepositorio());
+				this.configuration = ConfigurationManager.writeConfiguration(dlgConfiguration.getConfiguration());
 			}
 			catch (Exception e) {
 				JFrameUtils.showErro("Erro ao gravar as configurações!", e.getMessage(), null);

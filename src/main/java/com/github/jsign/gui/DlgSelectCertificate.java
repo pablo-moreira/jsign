@@ -5,12 +5,13 @@
  */
 package com.github.jsign.gui;
 
-import static com.github.jsign.gui.FrmSelecionarCertificadoMscapi.RET_CANCEL;
-import static com.github.jsign.gui.FrmSelecionarCertificadoMscapi.RET_OK;
+import com.github.jsign.Sign;
 import com.github.jsign.util.CertificateUtils;
 import com.github.jsign.util.JFrameUtils;
+
 import java.security.cert.X509Certificate;
 import java.util.List;
+
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -24,11 +25,15 @@ public class DlgSelectCertificate extends javax.swing.JDialog {
     /** A return status code - returned if OK button has been pressed */
     public static final int RET_OK = 1;
 	
+    private Sign sign;
+	
 	/**
 	 * Creates new form DlgSelectCertificate
+	 * @param sign 
 	 */
-	public DlgSelectCertificate(java.awt.Frame parent, boolean modal) {
+	public DlgSelectCertificate(java.awt.Frame parent, boolean modal, Sign sign) {
 		super(parent, modal);
+		this.sign = sign;
 		initComponents();
 	}
 
@@ -44,8 +49,6 @@ public class DlgSelectCertificate extends javax.swing.JDialog {
         jLabel1 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         tblCertificates = new javax.swing.JTable();
-        tblCertificates.getColumnModel().getColumn(0).setPreferredWidth(188);
-        tblCertificates.getColumnModel().getColumn(1).setPreferredWidth(188);
         jLabel2 = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
         txtCertificateInfo = new javax.swing.JTextArea();
@@ -88,6 +91,13 @@ public class DlgSelectCertificate extends javax.swing.JDialog {
             }
         });
         jScrollPane1.setViewportView(tblCertificates);
+        if (tblCertificates.getColumnModel().getColumnCount() > 0) {
+            tblCertificates.getColumnModel().getColumn(0).setResizable(false);
+            tblCertificates.getColumnModel().getColumn(0).setPreferredWidth(188);
+            tblCertificates.getColumnModel().getColumn(1).setPreferredWidth(188);
+        }
+        tblCertificates.getColumnModel().getColumn(0).setPreferredWidth(188);
+        tblCertificates.getColumnModel().getColumn(1).setPreferredWidth(188);
 
         jLabel2.setText("Informações do certificado selecionado:");
 
@@ -117,9 +127,9 @@ public class DlgSelectCertificate extends javax.swing.JDialog {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 388, Short.MAX_VALUE)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 381, Short.MAX_VALUE)
                     .addComponent(jLabel2)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 388, Short.MAX_VALUE)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 381, Short.MAX_VALUE)
                     .addComponent(jLabel1)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(btnOK)
@@ -137,7 +147,7 @@ public class DlgSelectCertificate extends javax.swing.JDialog {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jLabel2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 75, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 121, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnCancel)
@@ -212,7 +222,7 @@ public class DlgSelectCertificate extends javax.swing.JDialog {
 		/* Create and display the dialog */
 		java.awt.EventQueue.invokeLater(new Runnable() {
 			public void run() {
-				DlgSelectCertificate dialog = new DlgSelectCertificate(new javax.swing.JFrame(), true);
+				DlgSelectCertificate dialog = new DlgSelectCertificate(new javax.swing.JFrame(), true, null);
 				dialog.addWindowListener(new java.awt.event.WindowAdapter() {
 					@Override
 					public void windowClosing(java.awt.event.WindowEvent e) {
@@ -243,19 +253,19 @@ public class DlgSelectCertificate extends javax.swing.JDialog {
         return certificado;
     }
     
-    public void iniciar(List<X509Certificate> certificados) {
+    public void iniciar(List<X509Certificate> certificates) {
         
     	limpar();
         
-        this.certificados = certificados;
+        this.certificados = certificates;
         
                 
         DefaultTableModel tm = getJTableCertificadosModel();
         tm.setRowCount(0);
                 
-        for (X509Certificate certificado : certificados) {
-        	String nome = CertificateUtils.getCertificadoCN(certificado.getSubjectDN().getName());
-        	String emissor = CertificateUtils.getCertificadoCN(certificado.getIssuerX500Principal().getName());
+        for (X509Certificate certificate : certificates) {
+        	String nome = CertificateUtils.getCertificateCN(certificate.getSubjectDN().getName());
+        	String emissor = CertificateUtils.getCertificateCN(certificate.getIssuerX500Principal().getName());
         	tm.addRow(new Object[]{ nome, emissor });
         }
 

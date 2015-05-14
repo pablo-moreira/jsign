@@ -86,7 +86,7 @@ public class ConfigurationManager {
 		
 		List<KeyStoreHelper> certificates = new ArrayList<KeyStoreHelper>();
 		
-		certificates.addAll(mscapiManager.tryGetKeyStoreHelpersAvailable());
+//		certificates.addAll(mscapiManager.tryGetKeyStoreHelpersAvailable());
 		certificates.addAll(pkcs11Manager.tryGetKeyStoreHelpersAvailable());
 		
 		return certificates;

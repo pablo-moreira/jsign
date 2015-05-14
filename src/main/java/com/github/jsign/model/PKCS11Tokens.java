@@ -18,7 +18,7 @@ public class PKCS11Tokens {
 			.addLibMacOS("/Library/Frameworks/eToken.framework/Versions/4.55.41/libeToken.dylib")
 			.addLibMacOS("/usr/local/lib/libeTPkcs11.dylib")
 			.addLibMacOS("/Library/Frameworks/eToken.framework/Versions/Current/libeToken.dylib")
-			.addLibWindows("/windows/system32/eTPKCS11.dll")
+			.addLibWindows("c:/windows/system32/eTPKCS11.dll")
 			.addLibWindows("eTPKCS11.dll");
 		
 		newToken("OpenSC")

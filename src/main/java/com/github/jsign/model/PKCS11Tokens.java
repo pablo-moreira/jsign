@@ -3,22 +3,15 @@ package com.github.jsign.model;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Pkcs11Tokens {
-
-	private static Pkcs11Tokens instance;
+public class PKCS11Tokens {
 
 	private List<Token> tokens = new ArrayList<Token>();
-	
-	public static Pkcs11Tokens getInstance() {
-		if (instance == null) {
-			instance = new Pkcs11Tokens();
-		}
-		return instance;
-	}
-	
-	public Pkcs11Tokens() {
+		
+	public PKCS11Tokens() {
 		newToken("eToken")
+			.addLibLinux("/lib/libeToken.so.8")
 			.addLibLinux("/lib/libeToken.so.8.0")
+			.addLibLinux("/lib64/libeToken.so.8")
 			.addLibLinux("/lib64/libeToken.so.8.0")
 			.addLibLinux("libeTPkcs11.so")
 			.addLibLinux("libeToken.so")
@@ -90,12 +83,12 @@ public class Pkcs11Tokens {
 		return tokens;
 	}
 	
-	public List<TokenConfig> getTokensConfigsBySO(OperatingSystem operatingSystem) {
+	public List<TokenConfig> getTokensConfigsByOperatingSystem(OperatingSystem operatingSystem) {
 		
 		List<TokenConfig> tokensConfigs = new ArrayList<TokenConfig>();
 		
 		for (Token token : getTokens()) {
-			tokensConfigs.addAll(token.getConfigsBySO(operatingSystem));
+			tokensConfigs.addAll(token.getConfigsByOperatingSystem(operatingSystem));
 		}
 
 		return tokensConfigs;

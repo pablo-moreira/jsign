@@ -1,6 +1,6 @@
 Quando iniciar o Sign o sistema ira tentar carregar as configurações persistidas localmente.
 Para os casos que ele não encontrar nenhuma configuração o sistema ira disponibilizar um serviço 
-para tentar procurar um token de forma automatica o qual o usuário poderá invocar em background.
+para tentar procurar um token de forma automatica o qual o usuário poderá invocar pela tela de configuracao.
 
 ------------------------------------------------------------------------------------------
 

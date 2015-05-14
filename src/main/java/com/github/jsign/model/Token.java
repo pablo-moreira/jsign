@@ -58,7 +58,7 @@ public class Token {
 		return addLib(OperatingSystem.MACOS, libpath);
 	}
 
-	public List<TokenConfig> getConfigsBySO(OperatingSystem operatingSystem) {
+	public List<TokenConfig> getConfigsByOperatingSystem(OperatingSystem operatingSystem) {
 
 		List<TokenConfig> configs = new ArrayList<TokenConfig>();
 

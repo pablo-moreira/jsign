@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.security.Security;
 import java.security.cert.X509Certificate;
-import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -22,6 +21,7 @@ import com.github.jsign.keystore.KeyStoreHelper;
 import com.github.jsign.keystore.MSCAPIKeyStoreHelper;
 import com.github.jsign.keystore.PKCS12KeyStoreHelper;
 import com.github.jsign.manager.ConfigurationManager;
+import com.github.jsign.manager.Manager;
 import com.github.jsign.manager.SignManager;
 import com.github.jsign.model.Configuration;
 import com.github.jsign.model.MessageToSign;
@@ -39,17 +39,14 @@ public class Sign implements SignLogProgress {
 	private SignLog log;
 	private X509Certificate msCapiCertificate;
 	private boolean allowsCoSigning;
+	private Manager manager = new Manager();
 	
 	public Sign() throws Exception {
 		try {						
 			Security.addProvider(new BouncyCastleProvider());
-
-			if (Security.getProvider(MSCAPIKeyStoreHelper.PROVIDER) == null) {
-				System.out.println(MessageFormat.format("O provider {0} não esta instalado", MSCAPIKeyStoreHelper.PROVIDER));
-			}		
-
+			
 			try {
-				this.configuration = ConfigurationManager.loadConfigurations();
+				this.configuration = manager.getConfigurationManager().loadConfigurations();
 			}
 			catch (Exception e) {
 				System.out.println(e.getMessage());
@@ -145,11 +142,11 @@ public class Sign implements SignLogProgress {
 			return storeHelperPkcs12;
 		}
 		else if (configuration.isTypeMscapi()) {
-			
+
 			List<X509Certificate> certificados = MSCAPIKeyStoreHelper.getCertificatesAvailable();
 						
 			Collections.sort(certificados, new Comparator<X509Certificate>() {
-                                @Override
+				@Override
 				public int compare(X509Certificate item1, X509Certificate item2) {
 					
 					String alias1 = CertificateUtils.getCertificadoCN(item1.getSubjectDN().getName());
@@ -224,5 +221,9 @@ public class Sign implements SignLogProgress {
         if (log != null) {
             log.printLog(msg);
         }
+	}
+
+	public Manager getManager() {
+		return manager;
 	}
 }

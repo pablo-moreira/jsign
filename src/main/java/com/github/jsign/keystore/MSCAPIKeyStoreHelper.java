@@ -11,7 +11,6 @@ import java.security.cert.X509Certificate;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.List;
 
 public class MSCAPIKeyStoreHelper extends KeyStoreHelper {
@@ -68,32 +67,22 @@ public class MSCAPIKeyStoreHelper extends KeyStoreHelper {
 			throw new Exception(MessageFormat.format("Erro ao realizar o unificação dos alias dos certificados da MsCAPI, {0}", e.getMessage()));
 		}
 	}
-		
+	
 	public static List<X509Certificate> getCertificatesAvailable() throws Exception {
-		try {		
-			List<X509Certificate> certificates = new ArrayList<X509Certificate>();
-						
+		
+		try {
 			KeyStore keyStore = newKeyStoreInstance();
-
-			Enumeration<String> aliases = keyStore.aliases();
-
-			while (aliases.hasMoreElements()) {
-				
-				String alias = (String) aliases.nextElement();
-
-				if (keyStore.isKeyEntry(alias)) {
-					certificates.add((X509Certificate) keyStore.getCertificate(alias));
-				}
-			}
-
-			return certificates;
+			
+			List<X509Certificate> certificatesAvailable = getCertificatesAvailable(keyStore);
+			
+			return certificatesAvailable;
 		}
-		catch (KeyStoreException e) {
-			throw new Exception("O KeyStore nao foi inicializado corretamente!\n" + e);
+		catch (Exception e) {
+			throw new Exception("Erro ao obter os certificados MSCAPI disponiveis, mensagem interna: " + e.getMessage());
 		}
 	}
 	
-	private static KeyStore newKeyStoreInstance() throws Exception {
+	public static KeyStore newKeyStoreInstance() throws Exception {
 		try {
 			KeyStore ks = KeyStore.getInstance(TYPE);
 			ks.load(null, null);
@@ -104,10 +93,10 @@ public class MSCAPIKeyStoreHelper extends KeyStoreHelper {
 			throw new Exception("O KeyStore nao foi inicializado corretamente!\n" + e);
 		}
 		catch (NoSuchAlgorithmException e) {
-			throw new Exception("Algoritmo não suportado na CAPI!\n" + e);
+			throw new Exception("Algoritmo não suportado na MSCAPI!\n" + e);
 		}
 		catch (IOException e) {
-			throw new Exception("Erro na comunicação com a CAPI!\n" + e);
+			throw new Exception("Erro na comunicação com a MSCAPI!\n" + e);
 		}
 	}
 
@@ -115,6 +104,19 @@ public class MSCAPIKeyStoreHelper extends KeyStoreHelper {
 		try {
 			keyStore = newKeyStoreInstance();
 			
+			init(keyStore, certificate);
+		}
+		catch (KeyStoreException e) {
+			throw new Exception("O KeyStore nao foi inicializado corretamente!\n" + e);
+		}
+	}
+	
+	public MSCAPIKeyStoreHelper(KeyStore keyStore, X509Certificate certificate) throws Exception  {
+		init(keyStore, certificate);
+	}
+	
+	private void init(KeyStore keyStore, X509Certificate certificate) throws Exception  {
+		try {
 			String alias = keyStore.getCertificateAlias(certificate);
 
 			if (alias == null || alias.isEmpty()) {
@@ -124,9 +126,6 @@ public class MSCAPIKeyStoreHelper extends KeyStoreHelper {
 			this.certificate = certificate;
 			this.privateKey = (PrivateKey) keyStore.getKey(alias, null);
 			this.certsChain = keyStore.getCertificateChain(alias);
-		}
-		catch (KeyStoreException e) {
-			throw new Exception("O KeyStore nao foi inicializado corretamente!\n" + e);
 		}
 		catch (Exception e) {
 			throw new Exception("Erro ao obter certificado!\n" + e);

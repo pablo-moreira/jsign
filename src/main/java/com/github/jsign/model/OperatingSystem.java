@@ -24,11 +24,23 @@ public enum OperatingSystem {
 		return System.getProperty("os.name");
 	}
 
-	public static boolean isOsLinux() {
+	public static boolean isLinux() {
 		return getOsName().startsWith(LINUX.getName());
 	}
 
 	public static boolean isWindows() {
 		return getOsName().startsWith(WINDOWS.getName());
+	}
+
+	public static OperatingSystem getOperatingSystem() {
+		if (isWindows()) {
+			return WINDOWS;
+		}
+		else if (isLinux()) {
+			return LINUX;
+		}
+		else {
+			return MACOS;
+		}		
 	}
 }

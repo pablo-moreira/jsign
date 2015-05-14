@@ -105,7 +105,7 @@ public class Sign implements SignLogProgress {
 		
 		if (configuration == null || !configuration.isDefinedType()) {
 			
-			showConfiguration();
+			showDlgConfiguration();
 
 			if (configuration == null || !configuration.isDefinedType()) {
 				throw new Exception("Por favor, para realizar a assinatura deve-se configurar o tipo de repositório!");
@@ -184,7 +184,7 @@ public class Sign implements SignLogProgress {
 		}
 	}
 	
-	public void showConfiguration() {
+	public void showDlgConfiguration() {
 		
 		dlgKeyStoreType.start(configuration);
 				

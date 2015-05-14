@@ -16,7 +16,7 @@ public class JSignTest extends TestCase {
     
         final Sign sign = new Sign();
 
-        sign.showConfiguration();
+        sign.showDlgConfiguration();
         
         Runtime runtime = Runtime.getRuntime();
 

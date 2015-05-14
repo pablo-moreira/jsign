@@ -1,7 +1,5 @@
 package com.github.jsign.manager;
 
-import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
 import java.security.cert.CertStore;
 import java.security.cert.Certificate;
 import java.security.cert.CollectionCertStoreParameters;
@@ -106,14 +104,12 @@ public class SignManager {
 			ContentInfo contentInfo = signedData.getContentInfo(); 
 					
 			logProgress.printLog("Gravando arquivo assinado: ");
-			
-			OutputStream outputStream = new ByteArrayOutputStream();
-			outputStream.write(contentInfo.getDEREncoded());
-			outputStream.close();
+						
+			byte[] bytes = contentInfo.getDEREncoded();
 			
 			logProgress.printLog("Arquivo assinado gravado");
 			
-			return new SignedMessage(messageToSign, outputStream);
+			return new SignedMessage(messageToSign, bytes);
 		}
 		catch (OutOfMemoryError e) {
 			// Se o arquivo for muito grande poderar acontecer um java heap space

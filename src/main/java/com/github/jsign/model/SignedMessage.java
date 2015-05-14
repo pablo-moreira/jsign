@@ -1,13 +1,12 @@
 package com.github.jsign.model;
 
-import java.io.OutputStream;
 
 public class SignedMessage {
 
 	private MessageToSign messageToSign;
-	private OutputStream signedMessage;
+	private byte[] signedMessage;
 
-	public SignedMessage(MessageToSign messageToSign, OutputStream signedMessage) {
+	public SignedMessage(MessageToSign messageToSign, byte[] signedMessage) {
 		this.messageToSign = messageToSign;
 		this.signedMessage = signedMessage;
 	}
@@ -16,7 +15,7 @@ public class SignedMessage {
 		return messageToSign;
 	}
 	
-	public OutputStream getSignedMessage() {
+	public byte[] getSignedMessage() {
 		return signedMessage;
 	}
 }

@@ -1,6 +1,7 @@
 package com.github.jsign;
 
 import java.io.File;
+import java.io.FileOutputStream;
 
 import junit.framework.TestCase;
 
@@ -26,9 +27,11 @@ public class JSignTest extends TestCase {
         System.out.println("Maximo de memoria: " + FileUtils.getTamanhoFormatado(runtime.maxMemory()));
         System.out.println("----------------------------------------------------");
         
-        SignedMessage assinarArquivo = sign.signFile(new File("/home/pablo-moreira/Desktop/teste2.tar.gz"), true);
+        SignedMessage signedMessage = sign.signFile(new File("/home/pablo-moreira/Desktop/teste2.tar.gz"), true);
         
-        FileUtils.copy(assinarArquivo.getSignedData(), new File("/home/pablo-moreira/Desktop/teste2.tar.gz.p7s"));
+        FileOutputStream fos = new FileOutputStream("/home/pablo-moreira/Desktop/teste2.tar.gz.p7s");
+        fos.write(signedMessage.getSignedMessage());
+        fos.close();
         
         System.out.println("arquivo assinado com sucesso!");
         

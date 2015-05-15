@@ -14,6 +14,10 @@ public class ConfigurationManager {
 	public static final String PREFERENCES_PATH = "com/github/jsign";
 	public static final String KEY_KEYSTORE_TYPE = "keyStoreType";
 	public static final String KEY_PKCS12_FILENAME = "pkcs12Filename";
+
+	private PKCS11Manager pkcs11Manager;
+	private MSCAPIManager mscapiManager;
+	private PKCS12Manager pkcs12Manager;
 	
 	public static Configuration writeConfiguration(Configuration configuration) throws BackingStoreException {
 						
@@ -46,10 +50,6 @@ public class ConfigurationManager {
 		}		
 		return preferences;
 	}
-
-	private PKCS11Manager pkcs11Manager;
-	private MSCAPIManager mscapiManager;
-	private PKCS12Manager pkcs12Manager;
 	
 	public Configuration loadConfigurations() throws Exception {
 
@@ -86,7 +86,7 @@ public class ConfigurationManager {
 		
 		List<KeyStoreHelper> certificates = new ArrayList<KeyStoreHelper>();
 		
-//		certificates.addAll(mscapiManager.tryGetKeyStoreHelpersAvailable());
+		certificates.addAll(mscapiManager.tryGetKeyStoreHelpersAvailable());
 		certificates.addAll(pkcs11Manager.tryGetKeyStoreHelpersAvailable());
 		
 		return certificates;

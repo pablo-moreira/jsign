@@ -1,45 +1,25 @@
 package com.github.jsign.keystore;
 
-import java.io.IOException;
 import java.security.KeyStore;
-import java.security.NoSuchAlgorithmException;
-import java.security.Provider;
-import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 
 import javax.security.auth.callback.CallbackHandler;
 
+import com.github.jsign.gui.PKCS11CallbackHandler;
 import com.github.jsign.model.TokenConfig;
 
 
 public class PKCS11KeyStoreHelper extends KeyStoreHelper {
 	
 	private TokenConfig tokenConfig;
-	private Provider provider;
 	private CallbackHandler callbackHandler;
-
-	public PKCS11KeyStoreHelper(TokenConfig tokenConfig, Provider provider, CallbackHandler handler) {
-		this.tokenConfig = tokenConfig;
-		this.provider = provider;
-		this.callbackHandler = handler;
-	}
+	private long slot;
 	
-	public void init() throws Exception {
-		try {
-			if (keyStore == null) {
-				KeyStore.ProtectionParameter protectionParameter = new KeyStore.CallbackHandlerProtection(callbackHandler);
-				KeyStore.Builder kb = KeyStore.Builder.newInstance("PKCS11", provider, protectionParameter);
-				keyStore = kb.getKeyStore();
-				keyStore.load(null, null);
-			}
-		} 
-		catch (IOException e) {
-			throw new Exception("Erro ao carregar o keystore, mensagem interna: " + e.getMessage());
-		} 
-		catch (NoSuchAlgorithmException e) {
-			throw new Exception("Não possível encontrar o algoritmo ao carregar o keystore, mensagem interna: " + e.getMessage());
-		} 
-		catch (CertificateException e) {
-			throw new Exception("Erro ao carregar o keystore, mensagem interna: " + e.getMessage());
-		}
+	public PKCS11KeyStoreHelper(TokenConfig tokenConfig, long slot, PKCS11CallbackHandler callbackHandler, KeyStore keyStore, X509Certificate certificate) {
+		this.tokenConfig = tokenConfig;
+		this.slot = slot;
+		this.callbackHandler = callbackHandler;
+		this.certificate = certificate;
+		this.keyStore = keyStore;
 	}
 }

@@ -25,11 +25,11 @@ public class PKCS11Tokens {
 			.addLibLinux("/lib/opensc-pkcs11.so")
 			.addLibLinux("/usr/lib/pkcs11/opensc-pkcs11.so")
 			.addLibLinux("/usr/lib/opensc-pkcs11.so")
-			.addLibWindows("c:/windows/system32/opensc-pkcs11.dll", 0);				
+			.addLibWindows("c:/windows/system32/opensc-pkcs11.dll");				
 		
 		newToken("AET")
 			.addLibWindows("aetpkcss1.dll")
-			.addLibWindows("c:/windows/system32/aetpkss1.dll", 1);
+			.addLibWindows("c:/windows/system32/aetpkss1.dll");
 		
 		newToken("AETUNX")
 			.addLibLinux("/lib/libaetpkss.so")

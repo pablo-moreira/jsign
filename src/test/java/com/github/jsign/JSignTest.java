@@ -52,7 +52,7 @@ public class JSignTest extends TestCase {
 
     	//sign.showDlgConfiguration();
     	List<KeyStoreHelper> keyStoreHelpersAvailable = sign.getManager().getConfigurationManager().getKeyStoreHelpersAvailable();
-    	
-    	
+
+    	System.out.println(keyStoreHelpersAvailable.size());
 	}
 }

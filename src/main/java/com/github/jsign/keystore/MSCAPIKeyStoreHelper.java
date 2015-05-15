@@ -9,7 +9,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -71,7 +70,7 @@ public class MSCAPIKeyStoreHelper extends KeyStoreHelper {
 	public static List<X509Certificate> getCertificatesAvailable() throws Exception {
 		
 		try {
-			KeyStore keyStore = newKeyStoreInstance();
+			KeyStore keyStore = getNewKeyStore();
 			
 			List<X509Certificate> certificatesAvailable = getCertificatesAvailable(keyStore);
 			
@@ -82,7 +81,7 @@ public class MSCAPIKeyStoreHelper extends KeyStoreHelper {
 		}
 	}
 	
-	public static KeyStore newKeyStoreInstance() throws Exception {
+	public static KeyStore getNewKeyStore() throws Exception {
 		try {
 			KeyStore ks = KeyStore.getInstance(TYPE);
 			ks.load(null, null);
@@ -102,7 +101,7 @@ public class MSCAPIKeyStoreHelper extends KeyStoreHelper {
 
 	public MSCAPIKeyStoreHelper(X509Certificate certificate) throws Exception  {				
 		try {
-			keyStore = newKeyStoreInstance();
+			keyStore = getNewKeyStore();
 			
 			init(keyStore, certificate);
 		}

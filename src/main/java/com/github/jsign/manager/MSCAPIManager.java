@@ -14,13 +14,13 @@ public class MSCAPIManager {
 
 	public boolean isAvailable() {		
 		return OperatingSystem.isWindows() && Security.getProvider(MSCAPIKeyStoreHelper.PROVIDER) != null; 
-	}
-		
+	}	
+
 	public List<MSCAPIKeyStoreHelper> tryGetKeyStoreHelpersAvailable() {
 		
 		if (isAvailable()) {
 			try {
-				KeyStore keyStore = MSCAPIKeyStoreHelper.newKeyStoreInstance();
+				KeyStore keyStore = MSCAPIKeyStoreHelper.getNewKeyStore();
 				
 				List<X509Certificate> certificatesAvailable = KeyStoreHelper.getCertificatesAvailable(keyStore);
 				
@@ -29,7 +29,7 @@ public class MSCAPIManager {
 				for (X509Certificate certificate : certificatesAvailable) {					
 					try {
 						helpers.add(new MSCAPIKeyStoreHelper(keyStore, certificate));
-					} 
+					}
 					catch (Exception e) {
 						// Skip certificate
 					}

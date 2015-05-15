@@ -31,7 +31,7 @@ public abstract class KeyStoreHelper {
 	public PrivateKey getPrivateKey() {
 		return privateKey;
 	}
-	
+		
 	public static List<X509Certificate> getCertificatesAvailable(KeyStore keyStore) throws Exception {
 		try {
 			List<X509Certificate> certificates = new ArrayList<X509Certificate>();

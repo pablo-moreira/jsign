@@ -34,13 +34,6 @@ public class Token {
 		
 		return this;
 	}
-	
-	private Token addLib(OperatingSystem operatingSystem, String library, Integer slot) {
-	
-		getConfigs().add(new TokenConfig(this, operatingSystem, library, slot));
-		
-		return this;
-	}
 
 	public Token addLibLinux(String library) {
 		return addLib(OperatingSystem.LINUX, library);
@@ -48,10 +41,6 @@ public class Token {
 	
 	public Token addLibWindows(String library) {
 		return addLib(OperatingSystem.WINDOWS, library);
-	}
-	
-	public Token addLibWindows(String library, Integer slot) {
-		return addLib(OperatingSystem.WINDOWS, library, slot);
 	}
 
 	public Token addLibMacOS(String libpath) {

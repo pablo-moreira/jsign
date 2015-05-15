@@ -221,4 +221,8 @@ public class PKCS11Wrapper {
             throw new IllegalStateException(msg, e);
         }
     }
+
+	public HashMap<Long, char[]> getLabelMap() {
+		return labelMap;
+	}
 }

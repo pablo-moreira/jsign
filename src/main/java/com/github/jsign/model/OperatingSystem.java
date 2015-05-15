@@ -16,7 +16,7 @@ public enum OperatingSystem {
 		return name;
 	}
 
-	public static String getOsArch() {
+	public static String getJreArch() {
 		return System.getProperty("os.arch");
 	}
 
@@ -42,5 +42,19 @@ public enum OperatingSystem {
 		else {
 			return MACOS;
 		}		
+	}
+
+	public static boolean is64Bit() {
+		
+		boolean is64bit = false;
+		
+		if (isWindows()) {
+		    is64bit = (System.getenv("ProgramFiles(x86)") != null);
+		} 
+		else {
+		    is64bit = (getJreArch().indexOf("64") != -1);
+		}
+		
+		return is64bit; 
 	}
 }

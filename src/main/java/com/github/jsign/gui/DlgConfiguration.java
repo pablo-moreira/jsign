@@ -7,13 +7,16 @@ package com.github.jsign.gui;
 
 import com.github.jsign.Sign;
 import com.github.jsign.keystore.KeyStoreHelper;
+import com.github.jsign.model.AvailableProvider;
 import com.github.jsign.model.Configuration;
 import com.github.jsign.model.OperatingSystem;
 import com.github.jsign.util.JFrameUtils;
+
 import java.io.File;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
@@ -30,7 +33,7 @@ public class DlgConfiguration extends javax.swing.JDialog {
 	
 	private Sign sign;
 	private File pkcs12File;
-	private List<KeyStoreHelper> keyStoreHelpers = new ArrayList<KeyStoreHelper>();
+	private List<AvailableProvider> availableProviders = new ArrayList<AvailableProvider>();
 	private KeyStoreHelper keyStoreHelper;
 	private int returnStatus = RET_CANCEL;	
 
@@ -385,7 +388,7 @@ public class DlgConfiguration extends javax.swing.JDialog {
     }//GEN-LAST:event_btnSelectMSCAPICertificateActionPerformed
 
     private void btnConfigurationAutoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnConfigurationAutoActionPerformed
-        
+        availableProviders = sign.getManager().getConfigurationManager().getAvailableProviders();
     }//GEN-LAST:event_btnConfigurationAutoActionPerformed
 
     private void tblCertificatesMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblCertificatesMouseClicked
@@ -394,20 +397,20 @@ public class DlgConfiguration extends javax.swing.JDialog {
 
             int row = tblCertificates.getSelectedRow();
 
-			keyStoreHelper = keyStoreHelpers.get(row);
-			
-			if (keyStoreHelper != null) {
-				
-				X509Certificate certificate = keyStoreHelper.getCertificate();
-            
-                txtCertificateInfo.setText("");
-
-                String[] items = certificate.getSubjectDN().getName().split(",");
-
-                for (int i=items.length - 1; i >= 0; i--) {
-                    taCertificateInfo.append(items[i].trim() + "\n");
-                }
-            }
+//			keyStoreHelper = availableProviders.get(row);
+//			
+//			if (keyStoreHelper != null) {
+//				
+//				X509Certificate certificate = keyStoreHelper.getCertificate();
+//            
+//                txtCertificateInfo.setText("");
+//
+//                String[] items = certificate.getSubjectDN().getName().split(",");
+//
+//                for (int i=items.length - 1; i >= 0; i--) {
+//                    taCertificateInfo.append(items[i].trim() + "\n");
+//                }
+//            }
         }
     }//GEN-LAST:event_tblCertificatesMouseClicked
 

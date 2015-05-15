@@ -7,7 +7,10 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
 import com.github.jsign.keystore.KeyStoreHelper;
+import com.github.jsign.model.AvailableProvider;
 import com.github.jsign.model.Configuration;
+import com.github.jsign.model.MSCAPIAvailableProvider;
+import com.github.jsign.model.PKCS11AvailableProvider;
 
 public class ConfigurationManager {
 
@@ -82,14 +85,19 @@ public class ConfigurationManager {
 		}
 	}
 
-	public List<KeyStoreHelper> getKeyStoreHelpersAvailable() {
+	public List<AvailableProvider> getAvailableProviders() {
 		
-		List<KeyStoreHelper> certificates = new ArrayList<KeyStoreHelper>();
+		List<AvailableProvider> availableProviders = new ArrayList<AvailableProvider>();
 		
-		certificates.addAll(mscapiManager.tryGetKeyStoreHelpersAvailable());
-		certificates.addAll(pkcs11Manager.tryGetKeyStoreHelpersAvailable());
+		AvailableProvider mscapiAvailableProvider = mscapiManager.getAvailableProvider();
 		
-		return certificates;
+		if (mscapiAvailableProvider != null) {
+			availableProviders.add(mscapiAvailableProvider);
+		}
+			
+		availableProviders.addAll(pkcs11Manager.getAvailableProviders());
+		
+		return availableProviders;
 	}
 
 	public void setPKCS11Manager(PKCS11Manager pkcs11Manager) {
@@ -102,5 +110,19 @@ public class ConfigurationManager {
 
 	public void setPKCS12Manager(PKCS12Manager pkcs12Manager) {
 		this.pkcs12Manager = pkcs12Manager;		
+	}
+
+	public List<KeyStoreHelper> getKeyStoresHelpersAvailable(AvailableProvider availableProvider) {
+		
+		ArrayList<KeyStoreHelper> keyStoreHelpers = new ArrayList<KeyStoreHelper>();
+		
+		if (availableProvider instanceof MSCAPIAvailableProvider) {
+			keyStoreHelpers.addAll(mscapiManager.getKeyStoreHelpers((MSCAPIAvailableProvider) availableProvider));
+		}
+		else if (availableProvider instanceof PKCS11AvailableProvider) {
+			keyStoreHelpers.addAll(pkcs11Manager.getKeyStoreHelpders((PKCS11AvailableProvider) availableProvider));
+		}
+		
+		return keyStoreHelpers;
 	}	
 }

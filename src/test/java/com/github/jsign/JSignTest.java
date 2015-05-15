@@ -4,14 +4,13 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.util.List;
 
-import junit.framework.TestCase;
-
 import com.github.jsign.keystore.KeyStoreHelper;
+import com.github.jsign.model.AvailableProvider;
 import com.github.jsign.model.SignedMessage;
 import com.github.jsign.util.FileUtils;
 
 
-public class JSignTest extends TestCase {
+public class JSignTest {
     
     public static void testSignHugeFile() throws Exception {
     
@@ -42,17 +41,36 @@ public class JSignTest extends TestCase {
         System.out.println("Maximo de memoria: " + FileUtils.getTamanhoFormatado(runtime.maxMemory()));
         
         System.out.println("teste");
-        
-        assertEquals(1, 1);
     }
     
     public static void main(String[] args) throws Exception {
+
+    	testAvailableProviders();
     	
-    	final Sign sign = new Sign();
+	}
 
-    	//sign.showDlgConfiguration();
-    	List<KeyStoreHelper> keyStoreHelpersAvailable = sign.getManager().getConfigurationManager().getKeyStoreHelpersAvailable();
+	private static void testAvailableProviders() throws Exception {
+		
+		final Sign sign = new Sign();
 
-    	System.out.println(keyStoreHelpersAvailable.size());
+    	List<AvailableProvider> availableProviders = sign.getManager().getConfigurationManager().getAvailableProviders();
+    	
+    	for (AvailableProvider availableProvider : availableProviders) {
+    		System.out.println("-------------------------------------");
+			System.out.println(availableProvider.getType());
+			System.out.println(availableProvider.getDescription());
+		}
+
+
+    	AvailableProvider availableProvider = availableProviders.get(1);
+    	
+    	List<KeyStoreHelper> helpers = sign.getManager().getConfigurationManager().getKeyStoresHelpersAvailable(availableProvider);
+    	   
+    	for (KeyStoreHelper keyStoreHelper : helpers) {
+    		System.out.println("-------------------------------------");
+			System.out.println("KeyStoreType:" + keyStoreHelper.getKeyStore().getType());
+			System.out.println("Certificado:" + keyStoreHelper.getCertificate().getSubjectDN().getName());
+		}
+		
 	}
 }

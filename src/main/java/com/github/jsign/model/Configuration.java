@@ -6,9 +6,9 @@ import com.github.jsign.util.StringUtils;
 
 public class Configuration {
 
-	public static final String KEY_STORE_TYPE_MSCAPI = "mscapi";
-	public static final String KEY_STORE_TYPE_PKCS11 = "pkcs11";
-	public static final String KEY_STORE_TYPE_PKCS12 = "pkcs12";	
+	public static final String KEY_STORE_TYPE_MSCAPI = "MSCAPI";
+	public static final String KEY_STORE_TYPE_PKCS11 = "PKCS11";
+	public static final String KEY_STORE_TYPE_PKCS12 = "PKCS12";	
 	
 	private String keyStoreType;
 	private File pkcs12File;

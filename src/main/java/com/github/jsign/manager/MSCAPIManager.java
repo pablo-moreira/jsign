@@ -15,7 +15,6 @@ import com.github.jsign.model.OperatingSystem;
 
 public class MSCAPIManager {
 
-
 	public List<MSCAPIKeyStoreHelper> getKeyStoreHelpers(MSCAPIAvailableProvider availableProvider) {
 		
 		List<MSCAPIKeyStoreHelper> helpers = new ArrayList<MSCAPIKeyStoreHelper>();

@@ -12,6 +12,8 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.security.auth.login.FailedLoginException;
+
 import com.github.jsign.gui.PKCS11CallbackHandler;
 import com.github.jsign.keystore.KeyStoreHelper;
 import com.github.jsign.keystore.PKCS11KeyStoreHelper;
@@ -110,7 +112,7 @@ public class PKCS11Manager {
 		
 		for (TokenConfig tokenConfig : getAvailableTokenConfigs()) {
 
-			long[] slotList = null;//tryGetSlotListWithToken(tokenConfig);
+			long[] slotList = tryGetSlotListWithToken(tokenConfig);
 			
 			if (slotList != null) {
 				for (long slot : slotList) {
@@ -143,7 +145,7 @@ public class PKCS11Manager {
 		}
 	}
 
-	public List<PKCS11KeyStoreHelper> getKeyStoreHelpders(PKCS11AvailableProvider availableProvider) {
+	public List<PKCS11KeyStoreHelper> getKeyStoreHelpders(PKCS11AvailableProvider availableProvider) throws Exception {
 		
 		List<PKCS11KeyStoreHelper> helpers = new ArrayList<PKCS11KeyStoreHelper>();
 
@@ -155,9 +157,18 @@ public class PKCS11Manager {
 
 				Provider provider = tryGetProvider(availableProvider.getTokenConfig(), slot);
 				
-				if (provider != null) {				
+				if (provider != null) {
 					
-					KeyStore keyStore = tryGetKeyStore(provider);
+					KeyStore keyStore = null;
+					
+					try {
+						keyStore = getKeyStore(provider);
+					}
+					catch (Exception e) {
+						if (e.getCause() instanceof FailedLoginException) {
+							throw new Exception("O PIN digitado é inválido!");
+						}
+					}
 				
 					if (keyStore != null) {
 						availableProviders.add(new PKCS11AvailableProvider(provider, availableProvider.getTokenConfig(), slot, keyStore));

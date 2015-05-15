@@ -112,7 +112,7 @@ public class ConfigurationManager {
 		this.pkcs12Manager = pkcs12Manager;		
 	}
 
-	public List<KeyStoreHelper> getKeyStoresHelpersAvailable(AvailableProvider availableProvider) {
+	public List<KeyStoreHelper> getKeyStoresHelpersAvailable(AvailableProvider availableProvider) throws Exception {
 		
 		ArrayList<KeyStoreHelper> keyStoreHelpers = new ArrayList<KeyStoreHelper>();
 		

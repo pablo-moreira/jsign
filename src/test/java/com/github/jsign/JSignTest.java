@@ -2,12 +2,14 @@ package com.github.jsign;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.github.jsign.keystore.KeyStoreHelper;
 import com.github.jsign.model.AvailableProvider;
 import com.github.jsign.model.SignedMessage;
 import com.github.jsign.util.FileUtils;
+import com.github.jsign.util.JFrameUtils;
 
 
 public class JSignTest {
@@ -61,16 +63,29 @@ public class JSignTest {
 			System.out.println(availableProvider.getDescription());
 		}
 
-
-    	AvailableProvider availableProvider = availableProviders.get(1);
-    	
-    	List<KeyStoreHelper> helpers = sign.getManager().getConfigurationManager().getKeyStoresHelpersAvailable(availableProvider);
-    	   
-    	for (KeyStoreHelper keyStoreHelper : helpers) {
-    		System.out.println("-------------------------------------");
-			System.out.println("KeyStoreType:" + keyStoreHelper.getKeyStore().getType());
-			System.out.println("Certificado:" + keyStoreHelper.getCertificate().getSubjectDN().getName());
-		}
+    	if (availableProviders.size() > 1) {
+    		
+    		AvailableProvider availableProvider = availableProviders.get(1);    	
+	
+	    	boolean ok = false;
+	    	List<KeyStoreHelper> helpers = new ArrayList<KeyStoreHelper>();
+	
+	    	while (ok == false) {
+	    		try {
+	    			helpers = sign.getManager().getConfigurationManager().getKeyStoresHelpersAvailable(availableProvider);	
+	    			ok = true;
+	    		}
+	    		catch (Exception e) {
+	    			JFrameUtils.showErro("Erro", e.getMessage());
+	    		}
+	    	}
+	    	   
+	    	for (KeyStoreHelper keyStoreHelper : helpers) {
+	    		System.out.println("-------------------------------------");
+				System.out.println("KeyStoreType:" + keyStoreHelper.getKeyStore().getType());
+				System.out.println("Certificado:" + keyStoreHelper.getCertificate().getSubjectDN().getName());
+			}
+    	}
 		
 	}
 }

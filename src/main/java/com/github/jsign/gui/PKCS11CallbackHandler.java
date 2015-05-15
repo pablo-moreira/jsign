@@ -17,10 +17,11 @@ import javax.swing.JOptionPane;
 import javax.swing.JPasswordField;
 import javax.swing.SwingUtilities;
 
+import com.github.jsign.exceptions.LoginCancelledException;
+
 public class PKCS11CallbackHandler implements CallbackHandler {
 	
 	private String title;
-	private boolean userCanceled;
 		
 	public PKCS11CallbackHandler(String title){
 		this.title = title;
@@ -33,10 +34,8 @@ public class PKCS11CallbackHandler implements CallbackHandler {
 			
 			if(cb instanceof PasswordCallback) {
 				
-				userCanceled = false;
-				
 				final PasswordCallback pc = (PasswordCallback) cb;
-				JLabel label = new JLabel("Insira o PIN: ");
+				JLabel label = new JLabel(title);
 				final JPasswordField passField = new JPasswordField();
 				JOptionPane jop = new JOptionPane(new Object[]{label, passField}, JOptionPane.QUESTION_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
 				JDialog dialog = jop.createDialog(title);
@@ -58,15 +57,10 @@ public class PKCS11CallbackHandler implements CallbackHandler {
 					pc.setPassword(passField.getPassword());
 				}
 				else {
-					pc.clearPassword();
-					userCanceled = true;
-					throw new IOException("O usuário desistiu do procedimento de liberar o certificado!");
+					pc.clearPassword();					
+					throw new IOException(new LoginCancelledException());
 				}
 			}
 		}
-	}
-
-	public boolean isUserCanceled() {
-		return userCanceled;
 	}	
 }

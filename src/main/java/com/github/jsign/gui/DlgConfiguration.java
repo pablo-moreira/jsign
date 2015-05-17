@@ -10,6 +10,7 @@ import com.github.jsign.keystore.KeyStoreHelper;
 import com.github.jsign.model.AvailableProvider;
 import com.github.jsign.model.Configuration;
 import com.github.jsign.model.OperatingSystem;
+import com.github.jsign.util.CertificateUtils;
 import com.github.jsign.util.JFrameUtils;
 
 import java.io.File;
@@ -19,6 +20,8 @@ import java.util.List;
 
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
 
 /**
  *
@@ -31,11 +34,13 @@ public class DlgConfiguration extends javax.swing.JDialog {
     /** A return status code - returned if OK button has been pressed */
     public static final int RET_OK = 1;	
 	
-	private Sign sign;
+	private Sign jSign;
 	private File pkcs12File;
 	private List<AvailableProvider> availableProviders = new ArrayList<AvailableProvider>();
 	private KeyStoreHelper keyStoreHelper;
 	private int returnStatus = RET_CANCEL;	
+	private AvailableProvider availableProvider;
+	private List<KeyStoreHelper> keyStoresHelpersAvailable;
 
 	/**
 	 * Creates new form DlgConfiguration
@@ -43,7 +48,7 @@ public class DlgConfiguration extends javax.swing.JDialog {
 	public DlgConfiguration(java.awt.Frame parent, boolean modal, Sign sign) {
 		super(parent, modal);
 		initComponents();
-		this.sign = sign;
+		this.jSign = sign;
 	}
 
 	/**
@@ -62,12 +67,15 @@ public class DlgConfiguration extends javax.swing.JDialog {
         jTabbedPane1 = new javax.swing.JTabbedPane();
         pnConfigurationAuto = new javax.swing.JPanel();
         btnConfigurationAuto = new javax.swing.JButton();
-        jLabel4 = new javax.swing.JLabel();
-        jScrollPane1 = new javax.swing.JScrollPane();
+        lblCertificates = new javax.swing.JLabel();
+        spTblCertificates = new javax.swing.JScrollPane();
         tblCertificates = new javax.swing.JTable();
-        jLabel5 = new javax.swing.JLabel();
-        jScrollPane2 = new javax.swing.JScrollPane();
+        lblCertificateInfo = new javax.swing.JLabel();
+        spTblCertificateInfo = new javax.swing.JScrollPane();
         taCertificateInfo = new javax.swing.JTextArea();
+        spTblAvailableProviders = new javax.swing.JScrollPane();
+        tblAvailableProviders = new javax.swing.JTable();
+        lblProviders = new javax.swing.JLabel();
         pnConfigurationManual = new javax.swing.JPanel();
         rbPKCS12 = new javax.swing.JRadioButton();
         jLabel1 = new javax.swing.JLabel();
@@ -106,21 +114,21 @@ public class DlgConfiguration extends javax.swing.JDialog {
             }
         });
 
-        jLabel4.setText("Lista de certificados:");
+        lblCertificates.setText("Lista de certificados:");
 
         tblCertificates.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
             },
             new String [] {
-                "Tipo", "Certificado do Usuário", "Certificado do Emissor"
+                "Certificado do Usuário", "Certificado do Emissor"
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.String.class, java.lang.String.class, java.lang.String.class
+                java.lang.String.class, java.lang.String.class
             };
             boolean[] canEdit = new boolean [] {
-                false, false, false
+                false, false
             };
 
             public Class getColumnClass(int columnIndex) {
@@ -139,34 +147,73 @@ public class DlgConfiguration extends javax.swing.JDialog {
                 tblCertificatesMouseClicked(evt);
             }
         });
-        jScrollPane1.setViewportView(tblCertificates);
+        tblCertificates.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                tblCertificatesKeyReleased(evt);
+            }
+        });
+        spTblCertificates.setViewportView(tblCertificates);
         if (tblCertificates.getColumnModel().getColumnCount() > 0) {
-            tblCertificates.getColumnModel().getColumn(0).setPreferredWidth(80);
-            tblCertificates.getColumnModel().getColumn(1).setPreferredWidth(180);
-            tblCertificates.getColumnModel().getColumn(2).setPreferredWidth(190);
+            tblCertificates.getColumnModel().getColumn(0).setPreferredWidth(190);
+            tblCertificates.getColumnModel().getColumn(1).setPreferredWidth(230);
         }
         tblCertificates.getColumnModel().getColumn(0).setPreferredWidth(188);
         tblCertificates.getColumnModel().getColumn(1).setPreferredWidth(188);
 
-        jLabel5.setText("Informações do certificado selecionado:");
+        lblCertificateInfo.setText("Informações do certificado selecionado:");
 
         taCertificateInfo.setEditable(false);
         taCertificateInfo.setColumns(20);
         taCertificateInfo.setRows(5);
-        jScrollPane2.setViewportView(taCertificateInfo);
+        spTblCertificateInfo.setViewportView(taCertificateInfo);
+
+        tblAvailableProviders.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Tipo", "Descrição"
+            }
+        ) {
+            Class[] types = new Class [] {
+                java.lang.String.class, java.lang.String.class
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+        });
+        tblAvailableProviders.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tblAvailableProvidersMouseClicked(evt);
+            }
+        });
+        tblAvailableProviders.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                tblAvailableProvidersKeyReleased(evt);
+            }
+        });
+        spTblAvailableProviders.setViewportView(tblAvailableProviders);
+
+        lblProviders.setText("Providers:");
 
         javax.swing.GroupLayout pnConfigurationAutoLayout = new javax.swing.GroupLayout(pnConfigurationAuto);
         pnConfigurationAuto.setLayout(pnConfigurationAutoLayout);
         pnConfigurationAutoLayout.setHorizontalGroup(
             pnConfigurationAutoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(pnConfigurationAutoLayout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnConfigurationAutoLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(pnConfigurationAutoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(btnConfigurationAuto, javax.swing.GroupLayout.DEFAULT_SIZE, 456, Short.MAX_VALUE)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 456, Short.MAX_VALUE)
-                    .addComponent(jLabel5)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 456, Short.MAX_VALUE)
-                    .addComponent(jLabel4))
+                .addGroup(pnConfigurationAutoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(spTblAvailableProviders)
+                    .addComponent(spTblCertificates, javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(spTblCertificateInfo, javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(btnConfigurationAuto, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, pnConfigurationAutoLayout.createSequentialGroup()
+                        .addGroup(pnConfigurationAutoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(lblCertificateInfo, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(lblCertificates, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(lblProviders, javax.swing.GroupLayout.Alignment.LEADING))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         pnConfigurationAutoLayout.setVerticalGroup(
@@ -175,13 +222,17 @@ public class DlgConfiguration extends javax.swing.JDialog {
                 .addContainerGap()
                 .addComponent(btnConfigurationAuto)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jLabel4)
+                .addComponent(lblProviders)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(spTblAvailableProviders, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jLabel5)
+                .addComponent(lblCertificates)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 74, Short.MAX_VALUE)
+                .addComponent(spTblCertificates, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(lblCertificateInfo)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(spTblCertificateInfo, javax.swing.GroupLayout.DEFAULT_SIZE, 134, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -191,7 +242,7 @@ public class DlgConfiguration extends javax.swing.JDialog {
 
         bgKeyStoreType.add(rbPKCS12);
         rbPKCS12.setText("PKCS12");
-        rbPKCS12.setActionCommand("pkcs12");
+        rbPKCS12.setActionCommand(Configuration.KEY_STORE_TYPE_PKCS12);
         rbPKCS12.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 rbPKCS12ActionPerformed(evt);
@@ -199,6 +250,8 @@ public class DlgConfiguration extends javax.swing.JDialog {
         });
 
         jLabel1.setText("Arquivo:");
+
+        txtPKCS12File.setEditable(false);
 
         btnSelectPKCS12File.setText("...");
         btnSelectPKCS12File.addActionListener(new java.awt.event.ActionListener() {
@@ -209,7 +262,7 @@ public class DlgConfiguration extends javax.swing.JDialog {
 
         bgKeyStoreType.add(rbMSCAPI);
         rbMSCAPI.setText("Windows MSCAPI");
-        rbMSCAPI.setActionCommand("mscapi");
+        rbMSCAPI.setActionCommand(Configuration.KEY_STORE_TYPE_MSCAPI);
         rbMSCAPI.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 rbMSCAPIActionPerformed(evt);
@@ -218,7 +271,7 @@ public class DlgConfiguration extends javax.swing.JDialog {
 
         bgKeyStoreType.add(rbPKCS11);
         rbPKCS11.setText("PKCS11");
-        rbPKCS11.setActionCommand("pkcs12");
+        rbPKCS11.setActionCommand(Configuration.KEY_STORE_TYPE_PKCS11);
         rbPKCS11.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 rbPKCS11ActionPerformed(evt);
@@ -255,7 +308,7 @@ public class DlgConfiguration extends javax.swing.JDialog {
                                 .addComponent(txtPKCS12File)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(btnSelectPKCS12File))
-                            .addComponent(cbPKCS11Token, 0, 361, Short.MAX_VALUE)))
+                            .addComponent(cbPKCS11Token, 0, 359, Short.MAX_VALUE)))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnConfigurationManualLayout.createSequentialGroup()
                         .addContainerGap()
                         .addGroup(pnConfigurationManualLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -294,7 +347,7 @@ public class DlgConfiguration extends javax.swing.JDialog {
                     .addComponent(btnSelectMSCAPICertificate)
                     .addComponent(jLabel3)
                     .addComponent(txtCertificateInfo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(76, Short.MAX_VALUE))
+                .addContainerGap(278, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Manual", pnConfigurationManual);
@@ -388,31 +441,24 @@ public class DlgConfiguration extends javax.swing.JDialog {
     }//GEN-LAST:event_btnSelectMSCAPICertificateActionPerformed
 
     private void btnConfigurationAutoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnConfigurationAutoActionPerformed
-        availableProviders = sign.getManager().getConfigurationManager().getAvailableProviders();
+		loadAvailableProviders();
     }//GEN-LAST:event_btnConfigurationAutoActionPerformed
 
     private void tblCertificatesMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblCertificatesMouseClicked
-
-        if (!tblCertificates.getSelectionModel().isSelectionEmpty()) {
-
-            int row = tblCertificates.getSelectedRow();
-
-//			keyStoreHelper = availableProviders.get(row);
-//			
-//			if (keyStoreHelper != null) {
-//				
-//				X509Certificate certificate = keyStoreHelper.getCertificate();
-//            
-//                txtCertificateInfo.setText("");
-//
-//                String[] items = certificate.getSubjectDN().getName().split(",");
-//
-//                for (int i=items.length - 1; i >= 0; i--) {
-//                    taCertificateInfo.append(items[i].trim() + "\n");
-//                }
-//            }
-        }
+		onSelectCertificate();
     }//GEN-LAST:event_tblCertificatesMouseClicked
+
+    private void tblAvailableProvidersMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblAvailableProvidersMouseClicked
+        onSelectAvailableProvider();
+    }//GEN-LAST:event_tblAvailableProvidersMouseClicked
+
+    private void tblCertificatesKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_tblCertificatesKeyReleased
+        onSelectCertificate();
+    }//GEN-LAST:event_tblCertificatesKeyReleased
+
+    private void tblAvailableProvidersKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_tblAvailableProvidersKeyReleased
+        onSelectAvailableProvider();
+    }//GEN-LAST:event_tblAvailableProvidersKeyReleased
 
 	/**
 	 * @param args the command line arguments
@@ -467,18 +513,21 @@ public class DlgConfiguration extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTabbedPane jTabbedPane1;
+    private javax.swing.JLabel lblCertificateInfo;
+    private javax.swing.JLabel lblCertificates;
+    private javax.swing.JLabel lblProviders;
     private javax.swing.JButton okButton;
     private javax.swing.JPanel pnConfigurationAuto;
     private javax.swing.JPanel pnConfigurationManual;
     private javax.swing.JRadioButton rbMSCAPI;
     private javax.swing.JRadioButton rbPKCS11;
     private javax.swing.JRadioButton rbPKCS12;
+    private javax.swing.JScrollPane spTblAvailableProviders;
+    private javax.swing.JScrollPane spTblCertificateInfo;
+    private javax.swing.JScrollPane spTblCertificates;
     private javax.swing.JTextArea taCertificateInfo;
+    private javax.swing.JTable tblAvailableProviders;
     private javax.swing.JTable tblCertificates;
     private javax.swing.JTextField txtCertificateInfo;
     private javax.swing.JTextField txtPKCS12File;
@@ -500,12 +549,19 @@ public class DlgConfiguration extends javax.swing.JDialog {
         pkcs12File = null;
         txtPKCS12File.setText("");
     }
-	
+		
 	public void start(Configuration configuration) {
 
     	rbMSCAPI.setEnabled(false);
         rbMSCAPI.setVisible(false);
-    	
+		
+		lblProviders.setVisible(false);
+		lblCertificates.setVisible(false);
+		lblCertificateInfo.setVisible(false);
+		spTblAvailableProviders.setVisible(false);
+		spTblCertificates.setVisible(false);
+		spTblCertificateInfo.setVisible(false);
+		    	
         if (OperatingSystem.isWindows()) {
         	rbMSCAPI.setEnabled(true);
             rbMSCAPI.setVisible(true);
@@ -556,4 +612,126 @@ public class DlgConfiguration extends javax.swing.JDialog {
         setVisible(false);
         dispose();
     }
+	
+	private DefaultTableModel getTblAvailableProvidersModel() {
+		return (DefaultTableModel) tblAvailableProviders.getModel();
+	}
+		
+	private DefaultTableModel getTblCertificatesModel() {
+		return (DefaultTableModel) tblCertificates.getModel();
+	}
+	
+	private void loadAvailableProviders() {
+		
+		availableProviders = jSign.getManager().getConfigurationManager().getAvailableProviders();
+		
+		availableProviders.add(new AvailableProvider(null) {
+			
+			@Override
+			public String getType() {
+				return "TESTE";
+			}
+			
+			@Override
+			public String getDescription() {
+				return "TESTE2";
+			}
+		});
+		
+		if (availableProviders.size() > 0) {
+		
+			DefaultTableModel tm = getTblAvailableProvidersModel();
+
+			tm.setRowCount(0);
+
+			for (AvailableProvider ap : availableProviders) {
+				tm.addRow(new Object[]{ ap.getType(), ap.getDescription() });
+			}
+			
+			lblProviders.setVisible(true);
+			spTblAvailableProviders.setVisible(true);
+			tblAvailableProviders.updateUI();
+			
+			if (availableProviders.size() == 1) {
+				tblAvailableProviders.getSelectionModel().setSelectionInterval(0, 0);				
+				onSelectAvailableProvider();
+			}
+		}
+		else {
+			JFrameUtils.showAlerta("Nenhum provider disponível", "Não foi encontrado nenhum provider disponível!", this);
+		}
+	}
+	
+	private void onSelectAvailableProvider() {
+		
+		if (!tblAvailableProviders.getSelectionModel().isSelectionEmpty()) {
+        			
+			int row = tblAvailableProviders.getSelectedRow();
+
+			availableProvider = availableProviders.get(row);
+
+            if (availableProvider != null) {
+                
+				try {
+					keyStoresHelpersAvailable = jSign.getManager().getConfigurationManager().getKeyStoresHelpersAvailable(availableProvider);
+										
+					if (keyStoresHelpersAvailable.size() > 0) {
+
+						DefaultTableModel tm = getTblCertificatesModel();
+
+						tm.setRowCount(0);
+
+						for (KeyStoreHelper ksh : keyStoresHelpersAvailable) {
+							
+				        	String nome = CertificateUtils.getCertificateCN(ksh.getCertificate().getSubjectDN().getName());
+							String emissor = CertificateUtils.getCertificateCN(ksh.getCertificate().getIssuerX500Principal().getName());
+							tm.addRow(new Object[]{ nome, emissor });
+						}
+
+						lblCertificates.setVisible(true);
+						spTblCertificates.setVisible(true);
+						tblCertificates.updateUI();
+
+						if (keyStoresHelpersAvailable.size() == 1) {
+							tblCertificates.getSelectionModel().setSelectionInterval(0, 0);
+							onSelectCertificate();
+						}
+					}
+					else {
+						JFrameUtils.showAlerta("Nenhum certicado disponível", "Não foi possível encontrar nenhum certificado disponível para o provider selecionado!", this);
+					}
+				}
+				catch (Exception e) {
+					JFrameUtils.showErro("Erro", e.getMessage());
+				}
+            }
+    	}
+	}
+	
+	private void onSelectCertificate() { 
+		if (!tblCertificates.getSelectionModel().isSelectionEmpty()) {
+
+            int row = tblCertificates.getSelectedRow();
+
+			keyStoreHelper = keyStoresHelpersAvailable.get(row);
+			
+			if (keyStoreHelper != null) {
+				
+				X509Certificate certificate = keyStoreHelper.getCertificate();
+            
+                txtCertificateInfo.setText("");
+
+                String[] items = certificate.getSubjectDN().getName().split(",");
+
+                for (int i=items.length - 1; i >= 0; i--) {
+                    taCertificateInfo.append(items[i].trim() + "\n");
+                }
+				
+				lblCertificateInfo.setVisible(true);
+				taCertificateInfo.setVisible(true);
+            }
+		}	
+	}
+
+	
 }

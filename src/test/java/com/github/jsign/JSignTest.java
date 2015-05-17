@@ -1,5 +1,6 @@
 package com.github.jsign;
 
+import com.github.jsign.gui.FrmTest;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
@@ -47,7 +48,8 @@ public class JSignTest {
     
     public static void main(String[] args) throws Exception {
 
-    	testAvailableProviders();
+    	FrmTest frm = new FrmTest();
+		frm.setVisible(true);
     	
 	}
 

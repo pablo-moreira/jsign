@@ -1,6 +1,7 @@
 package com.github.jsign;
 
-import com.github.jsign.gui.FrmTest;
+
+import com.github.jsign.gui.DlgProtectionCallback;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
@@ -8,16 +9,19 @@ import java.util.List;
 
 import com.github.jsign.keystore.KeyStoreHelper;
 import com.github.jsign.model.AvailableProvider;
+import com.github.jsign.model.Configuration;
 import com.github.jsign.model.SignedMessage;
 import com.github.jsign.util.FileUtils;
 import com.github.jsign.util.JFrameUtils;
+import java.security.KeyStore;
+import java.util.Enumeration;
 
 
 public class JSignTest {
     
     public static void testSignHugeFile() throws Exception {
     
-        final Sign sign = new Sign();
+        final JSign sign = new JSign();
 
         sign.showDlgConfiguration();
         
@@ -45,19 +49,55 @@ public class JSignTest {
         
         System.out.println("teste");
     }
-    
-    public static void main(String[] args) throws Exception {
-
-    	FrmTest frm = new FrmTest();
-		frm.setVisible(true);
     	
+    public static void main(String[] args) {
+
+		try {
+			DlgProtectionCallback callbackHandler = new DlgProtectionCallback("Insira o PIN:");
+
+			KeyStore.ProtectionParameter protectionParameter = new KeyStore.CallbackHandlerProtection(callbackHandler);
+
+			KeyStore.Builder kb = KeyStore.Builder.newInstance("PKCS12", null, new File("C:\\Advogado_18979.p12"), protectionParameter);
+			KeyStore keyStore = kb.getKeyStore();	
+			
+			boolean keyEntryFound = false;
+			String keyEntry;
+			Enumeration<String> aliases = keyStore.aliases();
+			
+			while(aliases.hasMoreElements()) {
+				
+				keyEntry = aliases.nextElement();
+				
+				System.out.println(keyEntry);
+				
+				if(keyStore.isKeyEntry(keyEntry)){
+					keyEntryFound = true;
+				}
+			}
+			
+//			if(keyEntryFound) {
+//				this.certificate = (X509Certificate) keyStore.getCertificate(keyEntry);
+//				this.privateKey = (PrivateKey) keyStore.getKey(keyEntry, password);
+//				this.certsChain = keyStore.getCertificateChain(keyEntry);				
+//			} 
+//			else {
+//				throw new Exception("Nao foi encontrado nenhum certificado principal no KeyStore!");
+//			}
+			
+			
+			//FrmTest frm = new FrmTest();
+			//frm.setVisible(true);
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	private static void testAvailableProviders() throws Exception {
 		
-		final Sign sign = new Sign();
+		final JSign jSign = new JSign();
 
-    	List<AvailableProvider> availableProviders = sign.getManager().getConfigurationManager().getAvailableProviders();
+    	List<AvailableProvider> availableProviders = jSign.getManager().getConfigurationManager().getAvailableProviders(new Configuration());
     	
     	for (AvailableProvider availableProvider : availableProviders) {
     		System.out.println("-------------------------------------");
@@ -74,7 +114,7 @@ public class JSignTest {
 	
 	    	while (ok == false) {
 	    		try {
-	    			helpers = sign.getManager().getConfigurationManager().getKeyStoresHelpersAvailable(availableProvider);	
+	    			helpers = jSign.getManager().getConfigurationManager().getKeyStoresHelpersAvailable(availableProvider);	
 	    			ok = true;
 	    		}
 	    		catch (Exception e) {

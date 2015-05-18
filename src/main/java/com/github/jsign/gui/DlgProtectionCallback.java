@@ -8,7 +8,6 @@ import java.awt.event.ComponentEvent;
 import java.io.IOException;
 
 import javax.security.auth.callback.Callback;
-import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.swing.JDialog;
@@ -18,12 +17,13 @@ import javax.swing.JPasswordField;
 import javax.swing.SwingUtilities;
 
 import com.github.jsign.exceptions.LoginCancelledException;
+import javax.security.auth.callback.CallbackHandler;
 
-public class PKCS11CallbackHandler implements CallbackHandler {
+public class DlgProtectionCallback implements CallbackHandler {
 	
 	private String title;
 		
-	public PKCS11CallbackHandler(String title){
+	public DlgProtectionCallback(String title){
 		this.title = title;
 	}
 		

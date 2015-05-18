@@ -8,9 +8,10 @@ public class PKCS11AvailableProvider extends AvailableProvider {
 	private Long slot;
 	private TokenConfig tokenConfig;
 	private KeyStore keyStore;
+	private Provider provider;
 
 	public PKCS11AvailableProvider(Provider provider, TokenConfig tokenConfig, Long slot) {
-		super(provider);
+		this.provider = provider;
 		this.tokenConfig = tokenConfig;
 		this.slot = slot;
 	}
@@ -30,7 +31,7 @@ public class PKCS11AvailableProvider extends AvailableProvider {
 
 	@Override
 	public String getType() {
-		return Configuration.KEY_STORE_TYPE_PKCS11;
+		return KeyStoreType.PKCS11.name();
 	}
 
 	@Override
@@ -59,5 +60,9 @@ public class PKCS11AvailableProvider extends AvailableProvider {
 
 	public KeyStore getKeyStore() {
 		return keyStore;
+	}
+
+	public Provider getProvider() {
+		return provider;
 	}
 }

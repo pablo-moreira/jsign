@@ -15,7 +15,9 @@ public abstract class KeyStoreHelper {
 	protected KeyStore keyStore;
 	protected PrivateKey privateKey;
 	protected Certificate[] certsChain;	
-
+	
+	public abstract String getType();
+	
 	public Certificate[] getCertsChain() {
 		return certsChain;
 	}

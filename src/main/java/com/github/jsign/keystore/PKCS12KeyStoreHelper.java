@@ -1,6 +1,9 @@
 
 package com.github.jsign.keystore;
 
+import com.github.jsign.gui.DlgProtectionCallback;
+import com.github.jsign.model.KeyStoreType;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.KeyStore;
@@ -15,6 +18,16 @@ import java.util.Enumeration;
 import javax.crypto.BadPaddingException;
 
 public class PKCS12KeyStoreHelper extends KeyStoreHelper {
+
+	private File pkcs12Certificate;
+	private DlgProtectionCallback dlgProctetionCallback;
+	
+	public PKCS12KeyStoreHelper(File pkcs12Certificate, DlgProtectionCallback dlgProctetionCallback, KeyStore keyStore, X509Certificate certificate) {
+		this.pkcs12Certificate = pkcs12Certificate;
+		this.dlgProctetionCallback = dlgProctetionCallback;
+		this.keyStore = keyStore;
+		this.certificate = certificate;
+	}
 
 	private void init(char[] password) throws Exception {
 		
@@ -82,5 +95,10 @@ public class PKCS12KeyStoreHelper extends KeyStoreHelper {
 				throw new Exception("Ocorreu um problema ao ler o arquivo de KeyStore especificado!\n" + e);
 			}
 		}
+	}
+	
+	@Override
+	public String getType() {
+		return KeyStoreType.PKCS12.name();
 	}
 }

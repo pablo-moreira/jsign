@@ -1,5 +1,6 @@
 package com.github.jsign.keystore;
 
+import com.github.jsign.model.KeyStoreType;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.security.KeyStore;
@@ -129,5 +130,10 @@ public class MSCAPIKeyStoreHelper extends KeyStoreHelper {
 		catch (Exception e) {
 			throw new Exception("Erro ao obter certificado!\n" + e);
 		}
+	}
+
+	@Override
+	public String getType() {
+		return KeyStoreType.MSCAPI.name();
 	}
 }

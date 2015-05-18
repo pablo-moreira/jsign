@@ -5,7 +5,7 @@
  */
 package com.github.jsign.gui;
 
-import com.github.jsign.Sign;
+import com.github.jsign.JSign;
 
 /**
  *
@@ -13,7 +13,7 @@ import com.github.jsign.Sign;
  */
 public class FrmTest extends javax.swing.JFrame {
 
-	private Sign jsign;
+	private JSign jsign;
 	
 	/**
 	 * Creates new form FrmTest
@@ -23,7 +23,7 @@ public class FrmTest extends javax.swing.JFrame {
 		initComponents();
 		
 		try {
-			jsign = new Sign();
+			jsign = new JSign();
 		}
 		catch (Exception e) {
 		}

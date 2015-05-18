@@ -14,13 +14,16 @@ import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
 
-import com.github.jsign.Sign;
+import com.github.jsign.JSign;
 import com.github.jsign.keystore.KeyStoreHelper;
 import com.github.jsign.model.AvailableProvider;
 import com.github.jsign.model.Configuration;
-import com.github.jsign.model.OperatingSystem;
 import com.github.jsign.util.CertificateUtils;
+import com.github.jsign.util.EntityColumnWidthTableModel;
+import com.github.jsign.util.EntityTableModel;
 import com.github.jsign.util.JFrameUtils;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 /**
  *
@@ -33,21 +36,26 @@ public class DlgConfiguration extends javax.swing.JDialog {
     /** A return status code - returned if OK button has been pressed */
     public static final int RET_OK = 1;	
 	
-	private Sign jSign;
+	private JSign jSign;
 	private File pkcs12File;
 	private List<AvailableProvider> availableProviders = new ArrayList<AvailableProvider>();
 	private KeyStoreHelper keyStoreHelper;
 	private int returnStatus = RET_CANCEL;	
 	private AvailableProvider availableProvider;
 	private List<KeyStoreHelper> keyStoresHelpersAvailable;
+	private EntityTableModel<File> tblPkcs12CertificatesModel;
+	private EntityTableModel<File> tblPkcs11DriversModel;
+	private EntityTableModel<AvailableProvider> tblAvailableProvidersModel;
+	private EntityColumnWidthTableModel<KeyStoreHelper> tblCertificatesModel;
 
 	/**
 	 * Creates new form DlgConfiguration
 	 */
-	public DlgConfiguration(java.awt.Frame parent, boolean modal, Sign sign) {
+	public DlgConfiguration(java.awt.Frame parent, boolean modal, JSign sign) {
 		super(parent, modal);
-		initComponents();
 		this.jSign = sign;
+		initComponents();		
+		init();		
 	}
 
 	/**
@@ -61,57 +69,77 @@ public class DlgConfiguration extends javax.swing.JDialog {
 
         bgKeyStoreType = new javax.swing.ButtonGroup();
         bgConfigurationType = new javax.swing.ButtonGroup();
-        okButton = new javax.swing.JButton();
-        cancelButton = new javax.swing.JButton();
+        btnOK = new javax.swing.JButton();
+        btnCancel = new javax.swing.JButton();
         jTabbedPane1 = new javax.swing.JTabbedPane();
-        pnConfigurationAuto = new javax.swing.JPanel();
-        btnConfigurationAuto = new javax.swing.JButton();
+        pnTabConfiguration = new javax.swing.JPanel();
+        btnLoadAvailableProviders = new javax.swing.JButton();
+        lblProviders = new javax.swing.JLabel();
+        spTblAvailableProviders = new javax.swing.JScrollPane();
+        tblAvailableProviders = new javax.swing.JTable();
         lblCertificates = new javax.swing.JLabel();
         spTblCertificates = new javax.swing.JScrollPane();
         tblCertificates = new javax.swing.JTable();
-        lblCertificateInfo = new javax.swing.JLabel();
+        pnTabPkcs11 = new javax.swing.JPanel();
+        spTblPkcs11Drivers = new javax.swing.JScrollPane();
+        tblPkcs11Drivers = new javax.swing.JTable();
+        btnAddPkcs11Driver = new javax.swing.JButton();
+        btnDeletePkcs11Driver = new javax.swing.JButton();
+        pnTabPkcs12 = new javax.swing.JPanel();
+        spTblPkcs12Certificates = new javax.swing.JScrollPane();
+        tblPkcs12Certificates = new javax.swing.JTable();
+        btnAddPkcs12Certificate = new javax.swing.JButton();
+        btnDeletePkcs12Certificate = new javax.swing.JButton();
         spTblCertificateInfo = new javax.swing.JScrollPane();
         taCertificateInfo = new javax.swing.JTextArea();
-        spTblAvailableProviders = new javax.swing.JScrollPane();
-        tblAvailableProviders = new javax.swing.JTable();
-        lblProviders = new javax.swing.JLabel();
-        pnConfigurationManual = new javax.swing.JPanel();
-        rbPKCS12 = new javax.swing.JRadioButton();
-        jLabel1 = new javax.swing.JLabel();
-        txtPKCS12File = new javax.swing.JTextField();
-        btnSelectPKCS12File = new javax.swing.JButton();
-        rbMSCAPI = new javax.swing.JRadioButton();
-        rbPKCS11 = new javax.swing.JRadioButton();
-        jLabel2 = new javax.swing.JLabel();
-        cbPKCS11Token = new javax.swing.JComboBox();
-        jLabel3 = new javax.swing.JLabel();
-        btnSelectMSCAPICertificate = new javax.swing.JButton();
-        txtCertificateInfo = new javax.swing.JTextField();
+        lblCertificateInfo = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setTitle("Formulário de Configuração");
 
-        okButton.setText("OK");
-        okButton.addActionListener(new java.awt.event.ActionListener() {
+        btnOK.setText("OK");
+        btnOK.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                okButtonActionPerformed(evt);
+                btnOKActionPerformed(evt);
             }
         });
 
-        cancelButton.setText("Cancel");
-        cancelButton.addActionListener(new java.awt.event.ActionListener() {
+        btnCancel.setText("Cancel");
+        btnCancel.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cancelButtonActionPerformed(evt);
+                btnCancelActionPerformed(evt);
             }
         });
 
-        pnConfigurationAuto.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
+        pnTabConfiguration.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
 
-        btnConfigurationAuto.setText("Iniciar processo de configuração automática");
-        btnConfigurationAuto.addActionListener(new java.awt.event.ActionListener() {
+        btnLoadAvailableProviders.setText("Carregar providers disponíveis");
+        btnLoadAvailableProviders.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnConfigurationAutoActionPerformed(evt);
+                btnLoadAvailableProvidersActionPerformed(evt);
             }
         });
+
+        lblProviders.setText("Providers:");
+
+        tblAvailableProviders.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Tipo", "Descrição"
+            }
+        ) {
+            Class[] types = new Class [] {
+                java.lang.String.class, java.lang.String.class
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+        });
+        tblAvailableProviders.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        spTblAvailableProviders.setViewportView(tblAvailableProviders);
 
         lblCertificates.setText("Lista de certificados:");
 
@@ -141,85 +169,32 @@ public class DlgConfiguration extends javax.swing.JDialog {
         tblCertificates.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
         tblCertificates.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         tblCertificates.getTableHeader().setReorderingAllowed(false);
-        tblCertificates.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                tblCertificatesMouseClicked(evt);
-            }
-        });
-        tblCertificates.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-                tblCertificatesKeyReleased(evt);
-            }
-        });
         spTblCertificates.setViewportView(tblCertificates);
-        if (tblCertificates.getColumnModel().getColumnCount() > 0) {
-            tblCertificates.getColumnModel().getColumn(0).setPreferredWidth(190);
-            tblCertificates.getColumnModel().getColumn(1).setPreferredWidth(230);
-        }
         tblCertificates.getColumnModel().getColumn(0).setPreferredWidth(188);
         tblCertificates.getColumnModel().getColumn(1).setPreferredWidth(188);
 
-        lblCertificateInfo.setText("Informações do certificado selecionado:");
-
-        taCertificateInfo.setEditable(false);
-        taCertificateInfo.setColumns(20);
-        taCertificateInfo.setRows(5);
-        spTblCertificateInfo.setViewportView(taCertificateInfo);
-
-        tblAvailableProviders.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-
-            },
-            new String [] {
-                "Tipo", "Descrição"
-            }
-        ) {
-            Class[] types = new Class [] {
-                java.lang.String.class, java.lang.String.class
-            };
-
-            public Class getColumnClass(int columnIndex) {
-                return types [columnIndex];
-            }
-        });
-        tblAvailableProviders.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                tblAvailableProvidersMouseClicked(evt);
-            }
-        });
-        tblAvailableProviders.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-                tblAvailableProvidersKeyReleased(evt);
-            }
-        });
-        spTblAvailableProviders.setViewportView(tblAvailableProviders);
-
-        lblProviders.setText("Providers:");
-
-        javax.swing.GroupLayout pnConfigurationAutoLayout = new javax.swing.GroupLayout(pnConfigurationAuto);
-        pnConfigurationAuto.setLayout(pnConfigurationAutoLayout);
-        pnConfigurationAutoLayout.setHorizontalGroup(
-            pnConfigurationAutoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnConfigurationAutoLayout.createSequentialGroup()
+        javax.swing.GroupLayout pnTabConfigurationLayout = new javax.swing.GroupLayout(pnTabConfiguration);
+        pnTabConfiguration.setLayout(pnTabConfigurationLayout);
+        pnTabConfigurationLayout.setHorizontalGroup(
+            pnTabConfigurationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnTabConfigurationLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(pnConfigurationAutoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(spTblAvailableProviders)
-                    .addComponent(spTblCertificates, javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(spTblCertificateInfo, javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(btnConfigurationAuto, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, pnConfigurationAutoLayout.createSequentialGroup()
-                        .addGroup(pnConfigurationAutoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(lblCertificateInfo, javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(pnTabConfigurationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(spTblAvailableProviders, javax.swing.GroupLayout.DEFAULT_SIZE, 423, Short.MAX_VALUE)
+                    .addComponent(spTblCertificates, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 423, Short.MAX_VALUE)
+                    .addComponent(btnLoadAvailableProviders, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, pnTabConfigurationLayout.createSequentialGroup()
+                        .addGroup(pnTabConfigurationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(lblCertificates, javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(lblProviders, javax.swing.GroupLayout.Alignment.LEADING))
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                        .addGap(0, 324, Short.MAX_VALUE)))
                 .addContainerGap())
         );
-        pnConfigurationAutoLayout.setVerticalGroup(
-            pnConfigurationAutoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(pnConfigurationAutoLayout.createSequentialGroup()
+        pnTabConfigurationLayout.setVerticalGroup(
+            pnTabConfigurationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(pnTabConfigurationLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(btnConfigurationAuto)
+                .addComponent(btnLoadAvailableProviders)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(lblProviders)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -227,129 +202,136 @@ public class DlgConfiguration extends javax.swing.JDialog {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(lblCertificates)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(spTblCertificates, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(lblCertificateInfo)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(spTblCertificateInfo, javax.swing.GroupLayout.DEFAULT_SIZE, 134, Short.MAX_VALUE)
+                .addComponent(spTblCertificates, javax.swing.GroupLayout.DEFAULT_SIZE, 111, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
-        jTabbedPane1.addTab("Automática", pnConfigurationAuto);
+        jTabbedPane1.addTab("Configuração", pnTabConfiguration);
 
-        pnConfigurationManual.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
+        tblPkcs11Drivers.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
 
-        bgKeyStoreType.add(rbPKCS12);
-        rbPKCS12.setText("PKCS12");
-        rbPKCS12.setActionCommand(Configuration.KEY_STORE_TYPE_PKCS12);
-        rbPKCS12.addActionListener(new java.awt.event.ActionListener() {
+            },
+            new String [] {
+                "Driver"
+            }
+        ));
+        tblPkcs11Drivers.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        spTblPkcs11Drivers.setViewportView(tblPkcs11Drivers);
+
+        btnAddPkcs11Driver.setText("Adicionar");
+        btnAddPkcs11Driver.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                rbPKCS12ActionPerformed(evt);
+                btnAddPkcs11DriverActionPerformed(evt);
             }
         });
 
-        jLabel1.setText("Arquivo:");
-
-        txtPKCS12File.setEditable(false);
-
-        btnSelectPKCS12File.setText("...");
-        btnSelectPKCS12File.addActionListener(new java.awt.event.ActionListener() {
+        btnDeletePkcs11Driver.setText("Excluir");
+        btnDeletePkcs11Driver.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnSelectPKCS12FileActionPerformed(evt);
+                btnDeletePkcs11DriverActionPerformed(evt);
             }
         });
 
-        bgKeyStoreType.add(rbMSCAPI);
-        rbMSCAPI.setText("Windows MSCAPI");
-        rbMSCAPI.setActionCommand(Configuration.KEY_STORE_TYPE_MSCAPI);
-        rbMSCAPI.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                rbMSCAPIActionPerformed(evt);
-            }
-        });
-
-        bgKeyStoreType.add(rbPKCS11);
-        rbPKCS11.setText("PKCS11");
-        rbPKCS11.setActionCommand(Configuration.KEY_STORE_TYPE_PKCS11);
-        rbPKCS11.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                rbPKCS11ActionPerformed(evt);
-            }
-        });
-
-        jLabel2.setText("Token:");
-
-        cbPKCS11Token.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-
-        jLabel3.setText("Certificado:");
-
-        btnSelectMSCAPICertificate.setText("...");
-        btnSelectMSCAPICertificate.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnSelectMSCAPICertificateActionPerformed(evt);
-            }
-        });
-
-        javax.swing.GroupLayout pnConfigurationManualLayout = new javax.swing.GroupLayout(pnConfigurationManual);
-        pnConfigurationManual.setLayout(pnConfigurationManualLayout);
-        pnConfigurationManualLayout.setHorizontalGroup(
-            pnConfigurationManualLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(pnConfigurationManualLayout.createSequentialGroup()
-                .addGroup(pnConfigurationManualLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnConfigurationManualLayout.createSequentialGroup()
-                        .addGap(49, 49, 49)
-                        .addGroup(pnConfigurationManualLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jLabel1)
-                            .addComponent(jLabel2))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(pnConfigurationManualLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(pnConfigurationManualLayout.createSequentialGroup()
-                                .addComponent(txtPKCS12File)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(btnSelectPKCS12File))
-                            .addComponent(cbPKCS11Token, 0, 359, Short.MAX_VALUE)))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnConfigurationManualLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(pnConfigurationManualLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(pnConfigurationManualLayout.createSequentialGroup()
-                                .addGap(18, 18, 18)
-                                .addComponent(jLabel3)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(txtCertificateInfo)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(btnSelectMSCAPICertificate))
-                            .addComponent(rbPKCS12)
-                            .addComponent(rbMSCAPI)
-                            .addComponent(rbPKCS11))))
-                .addContainerGap())
-        );
-        pnConfigurationManualLayout.setVerticalGroup(
-            pnConfigurationManualLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(pnConfigurationManualLayout.createSequentialGroup()
+        javax.swing.GroupLayout pnTabPkcs11Layout = new javax.swing.GroupLayout(pnTabPkcs11);
+        pnTabPkcs11.setLayout(pnTabPkcs11Layout);
+        pnTabPkcs11Layout.setHorizontalGroup(
+            pnTabPkcs11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(pnTabPkcs11Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(rbPKCS12)
+                .addComponent(spTblPkcs11Drivers, javax.swing.GroupLayout.DEFAULT_SIZE, 338, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(pnConfigurationManualLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel1)
-                    .addComponent(txtPKCS12File, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnSelectPKCS12File))
-                .addGap(18, 18, 18)
-                .addComponent(rbPKCS11)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(pnConfigurationManualLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel2)
-                    .addComponent(cbPKCS11Token, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
-                .addComponent(rbMSCAPI)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(pnConfigurationManualLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnSelectMSCAPICertificate)
-                    .addComponent(jLabel3)
-                    .addComponent(txtCertificateInfo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(278, Short.MAX_VALUE))
+                .addGroup(pnTabPkcs11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(btnAddPkcs11Driver, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnDeletePkcs11Driver, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        pnTabPkcs11Layout.setVerticalGroup(
+            pnTabPkcs11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(pnTabPkcs11Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(pnTabPkcs11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(spTblPkcs11Drivers, javax.swing.GroupLayout.DEFAULT_SIZE, 309, Short.MAX_VALUE)
+                    .addGroup(pnTabPkcs11Layout.createSequentialGroup()
+                        .addComponent(btnAddPkcs11Driver)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnDeletePkcs11Driver)
+                        .addGap(0, 257, Short.MAX_VALUE)))
+                .addContainerGap())
         );
 
-        jTabbedPane1.addTab("Manual", pnConfigurationManual);
+        jTabbedPane1.addTab("PKCS11", pnTabPkcs11);
+
+        pnTabPkcs12.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
+
+        tblPkcs12Certificates.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Certificado"
+            }
+        ) {
+            Class[] types = new Class [] {
+                java.lang.String.class
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+        });
+        tblPkcs12Certificates.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        spTblPkcs12Certificates.setViewportView(tblPkcs12Certificates);
+
+        btnAddPkcs12Certificate.setText("Adicionar");
+        btnAddPkcs12Certificate.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnAddPkcs12CertificateActionPerformed(evt);
+            }
+        });
+
+        btnDeletePkcs12Certificate.setText("Excluir");
+        btnDeletePkcs12Certificate.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDeletePkcs12CertificateActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout pnTabPkcs12Layout = new javax.swing.GroupLayout(pnTabPkcs12);
+        pnTabPkcs12.setLayout(pnTabPkcs12Layout);
+        pnTabPkcs12Layout.setHorizontalGroup(
+            pnTabPkcs12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(pnTabPkcs12Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(spTblPkcs12Certificates, javax.swing.GroupLayout.DEFAULT_SIZE, 336, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(pnTabPkcs12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(btnAddPkcs12Certificate, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnDeletePkcs12Certificate, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        pnTabPkcs12Layout.setVerticalGroup(
+            pnTabPkcs12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(pnTabPkcs12Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(pnTabPkcs12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(spTblPkcs12Certificates, javax.swing.GroupLayout.DEFAULT_SIZE, 307, Short.MAX_VALUE)
+                    .addGroup(pnTabPkcs12Layout.createSequentialGroup()
+                        .addComponent(btnAddPkcs12Certificate)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnDeletePkcs12Certificate)
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addContainerGap())
+        );
+
+        jTabbedPane1.addTab("PKCS12", pnTabPkcs12);
+
+        taCertificateInfo.setEditable(false);
+        taCertificateInfo.setColumns(20);
+        taCertificateInfo.setRows(5);
+        spTblCertificateInfo.setViewportView(taCertificateInfo);
+
+        lblCertificateInfo.setText("Certificado configurado:");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -358,54 +340,57 @@ public class DlgConfiguration extends javax.swing.JDialog {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jTabbedPane1)
+                    .addComponent(spTblCertificateInfo, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(lblCertificateInfo)
+                        .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(okButton, javax.swing.GroupLayout.PREFERRED_SIZE, 67, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(btnOK, javax.swing.GroupLayout.PREFERRED_SIZE, 67, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(cancelButton))
-                    .addComponent(jTabbedPane1))
+                        .addComponent(btnCancel)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jTabbedPane1)
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 359, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(lblCertificateInfo)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(spTblCertificateInfo, javax.swing.GroupLayout.DEFAULT_SIZE, 101, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(cancelButton)
-                    .addComponent(okButton))
+                    .addComponent(btnCancel)
+                    .addComponent(btnOK))
                 .addContainerGap())
         );
 
-        getRootPane().setDefaultButton(okButton);
+        getRootPane().setDefaultButton(btnOK);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
-        if (bgKeyStoreType.getSelection() == null) {
-            JFrameUtils.showErro("Erro de validação", "Por favor, deve-se informar um tipo de repositório!");
-            return;
-        }
-        else if (Configuration.KEY_STORE_TYPE_PKCS12.equals(bgKeyStoreType.getSelection().getActionCommand())
-            && pkcs12File == null) {
-            JFrameUtils.showErro("Erro de validação", "Por favor, deve-se definir o endereço do arquivo do certificado PKCS12!");
-            return;
-        }
+    private void btnOKActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOKActionPerformed
+//        if (bgKeyStoreType.getSelection() == null) {
+//            JFrameUtils.showErro("Erro de validação", "Por favor, deve-se informar um tipo de repositório!");
+//            return;
+//        }
+//        else if (KeyStoreType.PKCS12.KEY_STORE_TYPE_PKCS12.equals(bgKeyStoreType.getSelection().getActionCommand())
+//            && pkcs12File == null) {
+//            JFrameUtils.showErro("Erro de validação", "Por favor, deve-se definir o endereço do arquivo do certificado PKCS12!");
+//            return;
+//        }
         doClose(RET_OK);
-    }//GEN-LAST:event_okButtonActionPerformed
+    }//GEN-LAST:event_btnOKActionPerformed
 
-    private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
+    private void btnCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelActionPerformed
         doClose(RET_CANCEL);
-    }//GEN-LAST:event_cancelButtonActionPerformed
+    }//GEN-LAST:event_btnCancelActionPerformed
 
-    private void rbMSCAPIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rbMSCAPIActionPerformed
-        pkcs12File = null;
-        updateTxtPKCS12File();
-    }//GEN-LAST:event_rbMSCAPIActionPerformed
-
-    private void btnSelectPKCS12FileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSelectPKCS12FileActionPerformed
+    private void btnAddPkcs12CertificateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddPkcs12CertificateActionPerformed
 
         JFileChooser fc = new JFileChooser();
 
@@ -420,44 +405,52 @@ public class DlgConfiguration extends javax.swing.JDialog {
 
         int retorno = fc.showOpenDialog(null);
 
-        if(retorno == JFileChooser.APPROVE_OPTION) {
-            pkcs12File = fc.getSelectedFile();
-            rbPKCS12.setSelected(true);
-            updateTxtPKCS12File();
+        if(retorno == JFileChooser.APPROVE_OPTION) {                        
+			addPkcs12Certificate(fc.getSelectedFile());            
         }
-    }//GEN-LAST:event_btnSelectPKCS12FileActionPerformed
+    }//GEN-LAST:event_btnAddPkcs12CertificateActionPerformed
 
-    private void rbPKCS12ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rbPKCS12ActionPerformed
-        updateTxtPKCS12File();
-    }//GEN-LAST:event_rbPKCS12ActionPerformed
-
-    private void rbPKCS11ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rbPKCS11ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_rbPKCS11ActionPerformed
-
-    private void btnSelectMSCAPICertificateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSelectMSCAPICertificateActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_btnSelectMSCAPICertificateActionPerformed
-
-    private void btnConfigurationAutoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnConfigurationAutoActionPerformed
+    private void btnLoadAvailableProvidersActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLoadAvailableProvidersActionPerformed
 		loadAvailableProviders();
-    }//GEN-LAST:event_btnConfigurationAutoActionPerformed
+    }//GEN-LAST:event_btnLoadAvailableProvidersActionPerformed
 
-    private void tblCertificatesMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblCertificatesMouseClicked
-		onSelectCertificate();
-    }//GEN-LAST:event_tblCertificatesMouseClicked
+    private void btnAddPkcs11DriverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddPkcs11DriverActionPerformed
 
-    private void tblAvailableProvidersMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblAvailableProvidersMouseClicked
-        onSelectAvailableProvider();
-    }//GEN-LAST:event_tblAvailableProvidersMouseClicked
+        JFileChooser fc = new JFileChooser();
 
-    private void tblCertificatesKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_tblCertificatesKeyReleased
-        onSelectCertificate();
-    }//GEN-LAST:event_tblCertificatesKeyReleased
+        fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        fc.setMultiSelectionEnabled(false);
+        fc.setAcceptAllFileFilterUsed(false);
 
-    private void tblAvailableProvidersKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_tblAvailableProvidersKeyReleased
-        onSelectAvailableProvider();
-    }//GEN-LAST:event_tblAvailableProvidersKeyReleased
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("Biblioteca PKCS11 do TOKEN (*.dll,*.dylib,*.so)", "dll", "dylib", "so", "so.8", "so.8.0", "so.1", "so.2");
+
+        fc.setFileFilter(filter);
+        fc.addChoosableFileFilter(filter);
+
+        int result = fc.showOpenDialog(null);
+
+        if(result == JFileChooser.APPROVE_OPTION) {
+            addPkcs11Driver(fc.getSelectedFile());
+        }
+    }//GEN-LAST:event_btnAddPkcs11DriverActionPerformed
+
+    private void btnDeletePkcs12CertificateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeletePkcs12CertificateActionPerformed
+		
+		File pkcs12Certificate = tblPkcs12CertificatesModel.getEntitySelected();
+
+		if (pkcs12Certificate != null) {
+			deletePkcs12Certificate(pkcs12Certificate);
+		}		
+    }//GEN-LAST:event_btnDeletePkcs12CertificateActionPerformed
+
+    private void btnDeletePkcs11DriverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeletePkcs11DriverActionPerformed
+        		
+		File pkcs11Driver = tblPkcs11DriversModel.getEntitySelected();
+
+		if (pkcs11Driver != null) {
+			deletePkcs11Driver(pkcs11Driver);
+		}	
+    }//GEN-LAST:event_btnDeletePkcs11DriverActionPerformed
 
 	/**
 	 * @param args the command line arguments
@@ -504,81 +497,56 @@ public class DlgConfiguration extends javax.swing.JDialog {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup bgConfigurationType;
     private javax.swing.ButtonGroup bgKeyStoreType;
-    private javax.swing.JButton btnConfigurationAuto;
-    private javax.swing.JButton btnSelectMSCAPICertificate;
-    private javax.swing.JButton btnSelectPKCS12File;
-    private javax.swing.JButton cancelButton;
-    private javax.swing.JComboBox cbPKCS11Token;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
+    private javax.swing.JButton btnAddPkcs11Driver;
+    private javax.swing.JButton btnAddPkcs12Certificate;
+    private javax.swing.JButton btnCancel;
+    private javax.swing.JButton btnDeletePkcs11Driver;
+    private javax.swing.JButton btnDeletePkcs12Certificate;
+    private javax.swing.JButton btnLoadAvailableProviders;
+    private javax.swing.JButton btnOK;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JLabel lblCertificateInfo;
     private javax.swing.JLabel lblCertificates;
     private javax.swing.JLabel lblProviders;
-    private javax.swing.JButton okButton;
-    private javax.swing.JPanel pnConfigurationAuto;
-    private javax.swing.JPanel pnConfigurationManual;
-    private javax.swing.JRadioButton rbMSCAPI;
-    private javax.swing.JRadioButton rbPKCS11;
-    private javax.swing.JRadioButton rbPKCS12;
+    private javax.swing.JPanel pnTabConfiguration;
+    private javax.swing.JPanel pnTabPkcs11;
+    private javax.swing.JPanel pnTabPkcs12;
     private javax.swing.JScrollPane spTblAvailableProviders;
     private javax.swing.JScrollPane spTblCertificateInfo;
     private javax.swing.JScrollPane spTblCertificates;
+    private javax.swing.JScrollPane spTblPkcs11Drivers;
+    private javax.swing.JScrollPane spTblPkcs12Certificates;
     private javax.swing.JTextArea taCertificateInfo;
     private javax.swing.JTable tblAvailableProviders;
     private javax.swing.JTable tblCertificates;
-    private javax.swing.JTextField txtCertificateInfo;
-    private javax.swing.JTextField txtPKCS12File;
+    private javax.swing.JTable tblPkcs11Drivers;
+    private javax.swing.JTable tblPkcs12Certificates;
     // End of variables declaration//GEN-END:variables
 
-	public void updateTxtPKCS12File() {
-        
-        if (bgKeyStoreType.getSelection() != null
-                && Configuration.KEY_STORE_TYPE_PKCS12.equals(bgKeyStoreType.getSelection().getActionCommand())
-                && bgKeyStoreType != null) {
-            txtPKCS12File.setText(pkcs12File.getAbsolutePath());
-        }
-        else {
-            txtPKCS12File.setText("");
-        }
-    }
+  	public void start() {
     
-    public void clear() {
-        pkcs12File = null;
-        txtPKCS12File.setText("");
-    }
+		Configuration configuration = jSign.getConfiguration();
 		
-	public void start(Configuration configuration) {
-
-    	rbMSCAPI.setEnabled(false);
-        rbMSCAPI.setVisible(false);
+        reset();
 		
-        hideAvailableProviders();
-        hideCertificates();
-        hideCertificateInfo();
-        		    	
-        if (OperatingSystem.isWindows()) {
-        	rbMSCAPI.setEnabled(true);
-            rbMSCAPI.setVisible(true);
-        }
-    	
+		this.btnOK.setEnabled(false);
+		this.keyStoreHelper = null;
+		
         pack();
-        
-        clear();
-
-        if (configuration != null) {        
-	        if (configuration.isTypePkcs12()) {
-	            rbPKCS12.setSelected(true);
-	            if (configuration.isDefinedPkcs12File()) {
-	                this.pkcs12File = configuration.getPkcs12File();
-	                updateTxtPKCS12File();
-	            }
-	        }
-	        else if (configuration.isTypeMscapi()) {
-	            rbMSCAPI.setSelected(true);
-	        }
-        }        
+		
+		if (configuration.getKeyStoreType() != null) {
+			
+			if (configuration.isTypeMSCAPI()) {
+				
+			}
+			else if (configuration.isTypePKCS11()) {
+				
+			}
+			else if (configuration.isTypePKCS12()) {
+				
+			}
+		}
+        		
         JFrameUtils.setCenterLocation(this);
         setVisible(true);        
     }    
@@ -588,10 +556,10 @@ public class DlgConfiguration extends javax.swing.JDialog {
         if (bgKeyStoreType.getSelection() != null) {
            
             Configuration configuration = new Configuration();
-            configuration.setType(bgKeyStoreType.getSelection().getActionCommand());
-            if (Configuration.KEY_STORE_TYPE_PKCS12.equals(bgKeyStoreType.getSelection().getActionCommand())) {
-                configuration.setPkcs12File(pkcs12File);
-            }
+//            configuration.setType(bgKeyStoreType.getSelection().getActionCommand());
+//            if (Configuration.KEY_STORE_TYPE_PKCS12.equals(bgKeyStoreType.getSelection().getActionCommand())) {
+//                configuration.setPkcs12File(pkcs12File);
+//            }
             return configuration;
         }
         else {
@@ -619,37 +587,16 @@ public class DlgConfiguration extends javax.swing.JDialog {
 	
 	private void loadAvailableProviders() {
 		
-		availableProviders = jSign.getManager().getConfigurationManager().getAvailableProviders();
-		
-		availableProviders.add(new AvailableProvider(null) {
-			
-			@Override
-			public String getType() {
-				return "TESTE";
-			}
-			
-			@Override
-			public String getDescription() {
-				return "TESTE2";
-			}
-		});
+		availableProviders = jSign.getManager().getConfigurationManager().getAvailableProviders(jSign.getConfiguration());
 		
 		if (availableProviders.size() > 0) {
-		
-			DefaultTableModel tm = getTblAvailableProvidersModel();
-
-			tm.setRowCount(0);
-
-			for (AvailableProvider ap : availableProviders) {
-				tm.addRow(new Object[]{ ap.getType(), ap.getDescription() });
-			}
 			
-			lblProviders.setVisible(true);
-			spTblAvailableProviders.setVisible(true);
+			showAvailableProviders();
+			
 			tblAvailableProviders.updateUI();
 			
 			if (availableProviders.size() == 1) {
-				tblAvailableProviders.getSelectionModel().setSelectionInterval(0, 0);				
+				tblAvailableProviders.getSelectionModel().setSelectionInterval(0, 0);
 				onSelectAvailableProvider();
 			}
 		}
@@ -661,87 +608,52 @@ public class DlgConfiguration extends javax.swing.JDialog {
 	private void onSelectAvailableProvider() {
 		
 		hideCertificates();
-		hideCertificateInfo();
-		
-		if (!tblAvailableProviders.getSelectionModel().isSelectionEmpty()) {
-        			
-			int row = tblAvailableProviders.getSelectedRow();
 
-			availableProvider = availableProviders.get(row);
+		availableProvider = tblAvailableProvidersModel.getEntitySelected();
 
-            if (availableProvider != null) {
-                
-				try {
-					keyStoresHelpersAvailable = jSign.getManager().getConfigurationManager().getKeyStoresHelpersAvailable(availableProvider);
-										
-					if (keyStoresHelpersAvailable.size() > 0) {
+		if (availableProvider != null) {
 
-						DefaultTableModel tm = getTblCertificatesModel();
+			try {
+				keyStoresHelpersAvailable = jSign.getManager().getConfigurationManager().getKeyStoresHelpersAvailable(availableProvider);
 
-						tm.setRowCount(0);
+				if (keyStoresHelpersAvailable.size() > 0) {
 
-						for (KeyStoreHelper ksh : keyStoresHelpersAvailable) {
-							
-				        	String nome = CertificateUtils.getCertificateCN(ksh.getCertificate().getSubjectDN().getName());
-							String emissor = CertificateUtils.getCertificateCN(ksh.getCertificate().getIssuerX500Principal().getName());
-							tm.addRow(new Object[]{ nome, emissor });
-						}
+					showCertificates();
 
-						showCertificates();						
-
-						if (keyStoresHelpersAvailable.size() == 1) {							
-							tblCertificates.getSelectionModel().setSelectionInterval(0, 0);
-							onSelectCertificate();
-						}
-					}
-					else {
-						tblAvailableProviders.getSelectionModel().clearSelection();
-						JFrameUtils.showAlerta("Nenhum certicado disponível", "Não foi possível encontrar nenhum certificado disponível para o provider selecionado!", this);						
+					if (keyStoresHelpersAvailable.size() == 1) {
+						tblCertificates.getSelectionModel().setSelectionInterval(0, 0);
+						//onSelectCertificate();
 					}
 				}
-				catch (Exception e) {
-					JFrameUtils.showErro("Erro", e.getMessage());
+				else {
+					tblAvailableProviders.getSelectionModel().clearSelection();
+					JFrameUtils.showAlerta("Nenhum certicado disponível", "Não foi possível encontrar nenhum certificado disponível para o provider selecionado!", this);						
 				}
-            }
-    	}
+			}
+			catch (Exception e) {
+				JFrameUtils.showErro("Erro", e.getMessage());
+			}
+		}
 	}
 	
-	private void onSelectCertificate() { 
-		if (!tblCertificates.getSelectionModel().isSelectionEmpty()) {
+	private void onSelectCertificate(KeyStoreHelper keyStoreHelperSelected) { 
 
-            int row = tblCertificates.getSelectedRow();
+		if (keyStoreHelperSelected != null) {
 
-			keyStoreHelper = keyStoresHelpersAvailable.get(row);
-			
-			if (keyStoreHelper != null) {
-				
-				X509Certificate certificate = keyStoreHelper.getCertificate();
-            
-                taCertificateInfo.setText("");
+			keyStoreHelper = keyStoreHelperSelected;
+			btnOK.setEnabled(true);
 
-                String[] items = certificate.getSubjectDN().getName().split(",");
+			X509Certificate certificate = keyStoreHelperSelected.getCertificate();
 
-                for (int i=items.length - 1; i >= 0; i--) {
-                    taCertificateInfo.append(items[i].trim() + "\n");
-                }
-				                
-				showCertificateInfo();
-            }
-		}	
-	}
-	
-	private void showCertificateInfo() {
-		changeVisibleCertificateInfo(true);
-	}
-	
-	private void hideCertificateInfo() {
-		changeVisibleCertificateInfo(false);
-		taCertificateInfo.setText("");
-	}
-	
-	private void changeVisibleCertificateInfo(boolean visible) {
-		lblCertificateInfo.setVisible(visible);
-		spTblCertificateInfo.setVisible(visible);
+            taCertificateInfo.setText("");
+			taCertificateInfo.append("Tipo de Provider: " + keyStoreHelperSelected.getType() + "\n");
+
+			String[] items = certificate.getSubjectDN().getName().split(",");
+
+			for (int i=items.length - 1; i >= 0; i--) {
+				taCertificateInfo.append(items[i].trim() + "\n");
+			}
+		}
 	}
 	
 	private void showCertificates() {
@@ -772,5 +684,211 @@ public class DlgConfiguration extends javax.swing.JDialog {
 		lblProviders.setVisible(visible);
 		spTblAvailableProviders.setVisible(visible);
 	}
+			
+	private void addPkcs11Driver(File pkcs11Driver) {
+		try {
+			jSign.getManager().getConfigurationManager().addPkcs11Driver(jSign.getConfiguration(), pkcs11Driver);
+			tblPkcs11DriversModel.fireTableDataChanged();
+		}
+		catch (Exception e) {
+			JFrameUtils.showErro("Erro", e.getMessage());
+		}
+	}
 	
+	private void addPkcs12Certificate(File pkcs12Certificate) {
+		try {			
+			jSign.getManager().getConfigurationManager().addPkcs12Certificate(jSign.getConfiguration(), pkcs12Certificate);
+			tblPkcs12CertificatesModel.fireTableDataChanged();
+		}
+		catch (Exception e) {
+			JFrameUtils.showErro("Erro", e.getMessage());
+		}
+	}
+	
+	private void deletePkcs11Driver(File pkcs11Driver) {
+		try {			
+			jSign.getManager().getConfigurationManager().deletePkcs11Driver(jSign.getConfiguration(), pkcs11Driver);
+			tblPkcs11DriversModel.fireTableDataChanged();			
+			resetPkcs11Drivers();
+		}
+		catch (Exception e) {
+			JFrameUtils.showErro("Erro", e.getMessage());
+		}
+	}
+	
+	private void deletePkcs12Certificate(File pkcs12Certificate) {
+		try {
+			jSign.getManager().getConfigurationManager().deletePkcs12Certificate(jSign.getConfiguration(), pkcs12Certificate);			
+			tblPkcs12CertificatesModel.fireTableDataChanged();
+			resetPkcs12Certificates();
+		}
+		catch (Exception e) {
+			JFrameUtils.showErro("Erro", e.getMessage());
+		}
+	}
+
+	private void init() {
+			
+		tblAvailableProvidersModel = new EntityColumnWidthTableModel<AvailableProvider>(tblAvailableProviders) {
+
+			@Override
+			public String[] getColumns() {
+				return new String[] { "Tipo", "Descrição" };
+			}
+
+			@Override
+			public List<AvailableProvider> getEntities() {
+				return availableProviders;
+			}
+
+			@Override
+			public Object getValueAt(AvailableProvider entity, int columnIndex) {
+                switch (columnIndex) {
+                    case 0 :
+                        return entity.getType();
+					case 1 :
+                        return entity.getDescription();
+                    default :
+                        return null;
+                }
+			}			
+
+			@Override
+			public Integer[] getColumnsWidth() {
+				return new Integer[]{ 40, 350 };
+			}
+		};
+		
+		tblAvailableProviders.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                onSelectAvailableProvider();
+            }
+        });
+		
+		tblCertificatesModel = new EntityColumnWidthTableModel<KeyStoreHelper>(tblCertificates) {
+
+			@Override
+			public Integer[] getColumnsWidth() {
+				return new Integer[] { 190, 310 };
+			}
+
+			@Override
+			public String[] getColumns() {
+				return new String[] { "Certificado do Usuário", "Certificado do Emissor"  };
+			}
+
+			@Override
+			public List<KeyStoreHelper> getEntities() {
+				return keyStoresHelpersAvailable;
+			}
+
+			@Override
+			public Object getValueAt(KeyStoreHelper entity, int columnIndex) {
+                switch (columnIndex) {
+                    case 0 :
+						return CertificateUtils.getCertificateCN(entity.getCertificate().getSubjectDN().getName());
+					case 1 :
+                        return CertificateUtils.getCertificateCN(entity.getCertificate().getIssuerX500Principal().getName());
+                    default :
+                        return null;
+                }
+			}
+		};
+		
+		tblCertificates.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+				onSelectCertificate(tblCertificatesModel.getEntitySelected());
+					
+
+            }
+        });
+		
+		tblPkcs12CertificatesModel = new EntityTableModel<File>(tblPkcs12Certificates) {
+
+            @Override
+            public String[] getColumns() {
+                return new String[] { "Certificado" };
+            }
+			
+            @Override
+            public List<File> getEntities() {
+                return jSign.getConfiguration().getPkcs12Certificates();
+            }
+
+            @Override
+            public Object getValueAt(File entity, int columnIndex) {
+                switch (columnIndex) {
+                    case 0 :
+                        return entity.getAbsoluteFile();                   
+                    default :
+                        return null;
+                }
+            }
+        };
+		
+		tblPkcs12Certificates.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                if (tblPkcs12Certificates.getSelectedRowCount() > 0) {
+                    btnDeletePkcs12Certificate.setEnabled(true);
+                }
+            }
+        });
+		
+		tblPkcs11DriversModel = new EntityTableModel<File>(tblPkcs11Drivers) {
+			
+			@Override
+			public String[] getColumns() {
+				return new String[] { "Driver" };
+			}
+			
+			@Override
+			public List<File> getEntities() {
+				return jSign.getConfiguration().getPkcs11Drivers();
+			}
+			
+			@Override
+			public Object getValueAt(File entity, int columnIndex) {
+				switch (columnIndex) {
+                    case 0 :
+                        return entity.getAbsoluteFile();
+                    default :
+                        return null;
+                }
+			}
+		};
+		
+		tblPkcs11Drivers.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                if (tblPkcs11Drivers.getSelectedRowCount() > 0) {
+                    btnDeletePkcs11Driver.setEnabled(true);
+                }
+            }
+        });
+	}
+	
+	private void reset() {
+		
+		hideAvailableProviders();
+		hideCertificates();		
+					
+		availableProviders = new ArrayList<AvailableProvider>();
+		keyStoresHelpersAvailable = new ArrayList<KeyStoreHelper>();
+		
+		resetPkcs11Drivers();
+		resetPkcs12Certificates();
+	}
+	
+	private void resetPkcs11Drivers() {
+		tblPkcs11Drivers.clearSelection();
+		btnDeletePkcs11Driver.setEnabled(false);
+	}
+	
+	private void resetPkcs12Certificates() {
+		tblPkcs12Certificates.clearSelection();
+		btnDeletePkcs12Certificate.setEnabled(false);
+	}
 }

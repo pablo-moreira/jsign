@@ -19,7 +19,6 @@ import com.github.jsign.interfaces.SignLogProgress;
 import com.github.jsign.interfaces.SignProgress;
 import com.github.jsign.keystore.KeyStoreHelper;
 import com.github.jsign.keystore.MSCAPIKeyStoreHelper;
-import com.github.jsign.keystore.PKCS12KeyStoreHelper;
 import com.github.jsign.manager.ConfigurationManager;
 import com.github.jsign.manager.Manager;
 import com.github.jsign.manager.SignManager;
@@ -29,7 +28,7 @@ import com.github.jsign.model.SignedMessage;
 import com.github.jsign.util.CertificateUtils;
 import com.github.jsign.util.JFrameUtils;
 
-public class Sign implements SignLogProgress {
+public class JSign implements SignLogProgress {
 
 	private FrmCertificadoPkcs12Senha dlgPKCS12Password;
 	private DlgSelectCertificate dlgSelectCertificate;
@@ -41,7 +40,7 @@ public class Sign implements SignLogProgress {
 	private boolean allowsCoSigning;
 	private Manager manager = new Manager();
 	
-	public Sign() throws Exception {
+	public JSign() throws Exception {
 		try {						
 			Security.addProvider(new BouncyCastleProvider());
 			
@@ -109,39 +108,39 @@ public class Sign implements SignLogProgress {
 			}
 		}
 		
-		if (configuration.isTypePkcs12()) {
+		if (configuration.isTypePKCS12()) {
 
-			if (!configuration.isDefinedPkcs12File()) {
-				throw new Exception("Por favor, para realizar a assinatura utilizando PKCS12, deve-se definir o endereço do arquivo do certificado!");
-			}
+//			if (!configuration.isDefinedPkcs12File()) {
+//				throw new Exception("Por favor, para realizar a assinatura utilizando PKCS12, deve-se definir o endereço do arquivo do certificado!");
+//			}
+//			
+//			char[] pkcs12Senha;
+//			
+//			// Verifica se tem cache de senha do repositorio pkcs 12
+//			if (!configuration.isDefinedPkcs12Password()) { 
+//							
+//				dlgPKCS12Password.iniciar();
+//
+//				if (dlgPKCS12Password.getReturnStatus() == FrmCertificadoPkcs12Senha.RET_CANCEL) {
+//					throw new Exception("Por favor, para realizar a assinatura utilizando PKCS12, deve-se informar a senha do certificado!");
+//				}						
+//				
+//				pkcs12Senha = dlgPKCS12Password.getSenha();				
+//			}
+//			else {
+//				pkcs12Senha = configuration.getPkcs12Password();
+//			}
+//			
+//			PKCS12KeyStoreHelper storeHelperPkcs12 = new PKCS12KeyStoreHelper(new FileInputStream(
+//					configuration.getPkcs12File()), 
+//					pkcs12Senha
+//			);
+//			
+//			configuration.setPkcs12Password(pkcs12Senha);
 			
-			char[] pkcs12Senha;
-			
-			// Verifica se tem cache de senha do repositorio pkcs 12
-			if (!configuration.isDefinedPkcs12Password()) { 
-							
-				dlgPKCS12Password.iniciar();
-
-				if (dlgPKCS12Password.getReturnStatus() == FrmCertificadoPkcs12Senha.RET_CANCEL) {
-					throw new Exception("Por favor, para realizar a assinatura utilizando PKCS12, deve-se informar a senha do certificado!");
-				}						
-				
-				pkcs12Senha = dlgPKCS12Password.getSenha();				
-			}
-			else {
-				pkcs12Senha = configuration.getPkcs12Password();
-			}
-			
-			PKCS12KeyStoreHelper storeHelperPkcs12 = new PKCS12KeyStoreHelper(new FileInputStream(
-					configuration.getPkcs12File()), 
-					pkcs12Senha
-			);
-			
-			configuration.setPkcs12Password(pkcs12Senha);
-			
-			return storeHelperPkcs12;
+			return null;//storeHelperPkcs12;
 		}
-		else if (configuration.isTypeMscapi()) {
+		else if (configuration.isTypeMSCAPI()) {
 
 			List<X509Certificate> certificados = MSCAPIKeyStoreHelper.getCertificatesAvailable();
 						
@@ -183,11 +182,11 @@ public class Sign implements SignLogProgress {
 	
 	public void showDlgConfiguration() {
 		
-		dlgConfiguration.start(configuration);
+		dlgConfiguration.start();
 				
 		if (dlgConfiguration.getReturnStatus() == DlgConfiguration.RET_OK) {
 			try {
-				this.configuration = ConfigurationManager.writeConfiguration(dlgConfiguration.getConfiguration());
+				ConfigurationManager.writeConfiguration(configuration);
 			}
 			catch (Exception e) {
 				JFrameUtils.showErro("Erro ao gravar as configurações!", e.getMessage(), null);
@@ -225,5 +224,9 @@ public class Sign implements SignLogProgress {
 
 	public Manager getManager() {
 		return manager;
+	}
+	
+	public Configuration getConfiguration() {
+		return configuration;
 	}
 }

@@ -14,9 +14,10 @@ import java.util.List;
 
 import javax.security.auth.login.FailedLoginException;
 
-import com.github.jsign.gui.PKCS11CallbackHandler;
+import com.github.jsign.gui.DlgProtectionCallback;
 import com.github.jsign.keystore.KeyStoreHelper;
 import com.github.jsign.keystore.PKCS11KeyStoreHelper;
+import com.github.jsign.model.Configuration;
 import com.github.jsign.model.OperatingSystem;
 import com.github.jsign.model.PKCS11AvailableProvider;
 import com.github.jsign.model.PKCS11Tokens;
@@ -26,7 +27,7 @@ import com.github.jsign.util.PKCS11Wrapper;
 public class PKCS11Manager {
 
 	private PKCS11Tokens tokens = new PKCS11Tokens();
-	private PKCS11CallbackHandler callbackHandler = new PKCS11CallbackHandler("Insira o PIN:");
+	private DlgProtectionCallback callbackHandler = new DlgProtectionCallback("Insira o PIN:");
 	
 	public Provider getProvider(TokenConfig tokenConfig, Long slot) {
 		return getProvider(tokenConfig.getToken().getName(), tokenConfig.getLibrary(), slot);
@@ -38,7 +39,7 @@ public class PKCS11Manager {
 		properties.append("name=").append(name).append("\n");		
 		properties.append("library=");
 		
-		if (OperatingSystem.is64Bit()) {
+		if (OperatingSystem.isWindows()) {
 			properties.append(library);	
 		}
 		else {
@@ -106,7 +107,7 @@ public class PKCS11Manager {
 		return null;
 	}
 
-	public List<PKCS11AvailableProvider> getAvailableProviders() {
+	public List<PKCS11AvailableProvider> getAvailableProviders(Configuration configuration) {
 
 		List<PKCS11AvailableProvider> availableProviders = new ArrayList<PKCS11AvailableProvider>();
 		
@@ -145,7 +146,7 @@ public class PKCS11Manager {
 		}
 	}
 
-	public List<PKCS11KeyStoreHelper> getKeyStoreHelpders(PKCS11AvailableProvider availableProvider) throws Exception {
+	public List<PKCS11KeyStoreHelper> getKeyStoreHelpers(PKCS11AvailableProvider availableProvider) throws Exception {
 		
 		List<PKCS11KeyStoreHelper> helpers = new ArrayList<PKCS11KeyStoreHelper>();
 
@@ -176,13 +177,20 @@ public class PKCS11Manager {
 				}
 			}			
 		}
-		else {			
-			KeyStore keyStore = tryGetKeyStore(availableProvider.getProvider());
+		else {
+			KeyStore keyStore = null;
 			
-			if (keyStore != null) {
-				availableProvider.setKeyStore(keyStore);			
-				availableProviders.add(availableProvider);
+			try {
+				keyStore = getKeyStore(availableProvider.getProvider());
 			}
+			catch (Exception e) {
+				if (e.getCause() instanceof FailedLoginException) {
+					throw new Exception("O PIN digitado é inválido!");
+				}
+			}
+			
+			availableProvider.setKeyStore(keyStore);			
+			availableProviders.add(availableProvider);
 		}
 		
 		for (PKCS11AvailableProvider avProvider : availableProviders) {

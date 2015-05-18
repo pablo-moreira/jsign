@@ -5,7 +5,7 @@
  */
 package com.github.jsign.gui;
 
-import com.github.jsign.Sign;
+import com.github.jsign.JSign;
 import com.github.jsign.util.CertificateUtils;
 import com.github.jsign.util.JFrameUtils;
 
@@ -25,13 +25,13 @@ public class DlgSelectCertificate extends javax.swing.JDialog {
     /** A return status code - returned if OK button has been pressed */
     public static final int RET_OK = 1;
 	
-    private Sign sign;
+    private JSign sign;
 	
 	/**
 	 * Creates new form DlgSelectCertificate
 	 * @param sign 
 	 */
-	public DlgSelectCertificate(java.awt.Frame parent, boolean modal, Sign sign) {
+	public DlgSelectCertificate(java.awt.Frame parent, boolean modal, JSign sign) {
 		super(parent, modal);
 		this.sign = sign;
 		initComponents();

@@ -8,7 +8,7 @@ public class PKCS11Tokens {
 	private List<Token> tokens = new ArrayList<Token>();
 		
 	public PKCS11Tokens() {
-		newToken("eTokfen")
+		newToken("eToken")
 			.addLibLinux("/lib/libeToken.so.8")
 			.addLibLinux("/lib/libeToken.so.8.0")
 			.addLibLinux("/lib64/libeToken.so.8")

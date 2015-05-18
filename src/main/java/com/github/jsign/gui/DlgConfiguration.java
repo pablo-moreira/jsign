@@ -5,14 +5,6 @@
  */
 package com.github.jsign.gui;
 
-import com.github.jsign.Sign;
-import com.github.jsign.keystore.KeyStoreHelper;
-import com.github.jsign.model.AvailableProvider;
-import com.github.jsign.model.Configuration;
-import com.github.jsign.model.OperatingSystem;
-import com.github.jsign.util.CertificateUtils;
-import com.github.jsign.util.JFrameUtils;
-
 import java.io.File;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -21,7 +13,14 @@ import java.util.List;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableModel;
+
+import com.github.jsign.Sign;
+import com.github.jsign.keystore.KeyStoreHelper;
+import com.github.jsign.model.AvailableProvider;
+import com.github.jsign.model.Configuration;
+import com.github.jsign.model.OperatingSystem;
+import com.github.jsign.util.CertificateUtils;
+import com.github.jsign.util.JFrameUtils;
 
 /**
  *
@@ -555,13 +554,10 @@ public class DlgConfiguration extends javax.swing.JDialog {
     	rbMSCAPI.setEnabled(false);
         rbMSCAPI.setVisible(false);
 		
-		lblProviders.setVisible(false);
-		lblCertificates.setVisible(false);
-		lblCertificateInfo.setVisible(false);
-		spTblAvailableProviders.setVisible(false);
-		spTblCertificates.setVisible(false);
-		spTblCertificateInfo.setVisible(false);
-		    	
+        hideAvailableProviders();
+        hideCertificates();
+        hideCertificateInfo();
+        		    	
         if (OperatingSystem.isWindows()) {
         	rbMSCAPI.setEnabled(true);
             rbMSCAPI.setVisible(true);
@@ -664,6 +660,9 @@ public class DlgConfiguration extends javax.swing.JDialog {
 	
 	private void onSelectAvailableProvider() {
 		
+		hideCertificates();
+		hideCertificateInfo();
+		
 		if (!tblAvailableProviders.getSelectionModel().isSelectionEmpty()) {
         			
 			int row = tblAvailableProviders.getSelectedRow();
@@ -688,17 +687,16 @@ public class DlgConfiguration extends javax.swing.JDialog {
 							tm.addRow(new Object[]{ nome, emissor });
 						}
 
-						lblCertificates.setVisible(true);
-						spTblCertificates.setVisible(true);
-						tblCertificates.updateUI();
+						showCertificates();						
 
-						if (keyStoresHelpersAvailable.size() == 1) {
+						if (keyStoresHelpersAvailable.size() == 1) {							
 							tblCertificates.getSelectionModel().setSelectionInterval(0, 0);
 							onSelectCertificate();
 						}
 					}
 					else {
-						JFrameUtils.showAlerta("Nenhum certicado disponível", "Não foi possível encontrar nenhum certificado disponível para o provider selecionado!", this);
+						tblAvailableProviders.getSelectionModel().clearSelection();
+						JFrameUtils.showAlerta("Nenhum certicado disponível", "Não foi possível encontrar nenhum certificado disponível para o provider selecionado!", this);						
 					}
 				}
 				catch (Exception e) {
@@ -719,19 +717,60 @@ public class DlgConfiguration extends javax.swing.JDialog {
 				
 				X509Certificate certificate = keyStoreHelper.getCertificate();
             
-                txtCertificateInfo.setText("");
+                taCertificateInfo.setText("");
 
                 String[] items = certificate.getSubjectDN().getName().split(",");
 
                 for (int i=items.length - 1; i >= 0; i--) {
                     taCertificateInfo.append(items[i].trim() + "\n");
                 }
-				
-				lblCertificateInfo.setVisible(true);
-				taCertificateInfo.setVisible(true);
+				                
+				showCertificateInfo();
             }
 		}	
 	}
-
+	
+	private void showCertificateInfo() {
+		changeVisibleCertificateInfo(true);
+	}
+	
+	private void hideCertificateInfo() {
+		changeVisibleCertificateInfo(false);
+		taCertificateInfo.setText("");
+	}
+	
+	private void changeVisibleCertificateInfo(boolean visible) {
+		lblCertificateInfo.setVisible(visible);
+		spTblCertificateInfo.setVisible(visible);
+	}
+	
+	private void showCertificates() {
+		changeVisibleCertificates(true);
+		tblCertificates.updateUI();
+	}
+	
+	private void hideCertificates() {
+		changeVisibleCertificates(false);
+		tblCertificates.getSelectionModel().clearSelection();
+	}
+	
+	private void changeVisibleCertificates(boolean visible) {
+		lblCertificates.setVisible(visible);
+		spTblCertificates.setVisible(visible);
+	}
+	
+	private void showAvailableProviders() {
+		changeVisibleAvailableProviders(true);
+	}
+	
+	private void hideAvailableProviders() {
+		changeVisibleAvailableProviders(false);
+		tblAvailableProviders.getSelectionModel().clearSelection();
+	}
+	
+	private void changeVisibleAvailableProviders(boolean visible) {
+		lblProviders.setVisible(visible);
+		spTblAvailableProviders.setVisible(visible);
+	}
 	
 }

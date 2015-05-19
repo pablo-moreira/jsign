@@ -27,7 +27,7 @@ import com.github.jsign.util.PKCS11Wrapper;
 public class PKCS11Manager {
 
 	private PKCS11Tokens tokens = new PKCS11Tokens();
-	private DlgProtectionCallback callbackHandler = new DlgProtectionCallback("Insira o PIN:");
+	private DlgProtectionCallback callbackHandler = new DlgProtectionCallback();
 	
 	public Provider getProvider(TokenConfig tokenConfig, Long slot) {
 		return getProvider(tokenConfig.getToken().getName(), tokenConfig.getLibrary(), slot);
@@ -222,5 +222,10 @@ public class PKCS11Manager {
 		KeyStore.ProtectionParameter protectionParameter = new KeyStore.CallbackHandlerProtection(callbackHandler);
 		KeyStore.Builder kb = KeyStore.Builder.newInstance("PKCS11", provider, protectionParameter);
 		return kb.getKeyStore();
+	}
+
+	public KeyStoreHelper retrieveKeyStoreHelperByConfiguration(Configuration configuration) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

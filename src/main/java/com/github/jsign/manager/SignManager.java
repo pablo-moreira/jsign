@@ -23,7 +23,7 @@ import com.github.jsign.util.FileUtils;
 
 public class SignManager {
 
-	public static boolean isSignedData(byte[] data) {
+	public boolean isSignedData(byte[] data) {
 		try {
 			CMSSignedData pkcs7 = new CMSSignedData(data);
 			pkcs7.getSignedContent();
@@ -34,7 +34,7 @@ public class SignManager {
 		}
 	}
 
-	public static List<SignedMessage> signMessages(KeyStoreHelper storeHelper, List<MessageToSign> messages, boolean attached, boolean allowsCoSigning, SignLogProgress logProgress) throws Exception { 
+	public List<SignedMessage> signMessages(KeyStoreHelper storeHelper, List<MessageToSign> messages, boolean attached, boolean allowsCoSigning, SignLogProgress logProgress) throws Exception { 
 
 		if (messages == null || messages.isEmpty()) {
 			throw new Exception("Por favor, selecione alguma mensagem para realizar a assinatura digital!");
@@ -88,7 +88,7 @@ public class SignManager {
 		return signedMessages;
 	}
 	
-	private static SignedMessage signMessage(KeyStoreHelper keyStoreHelper, CertStore certs, boolean attached, SignLogProgress logProgress, MessageToSign messageToSign) throws Exception {
+	private SignedMessage signMessage(KeyStoreHelper keyStoreHelper, CertStore certs, boolean attached, SignLogProgress logProgress, MessageToSign messageToSign) throws Exception {
 
 		logProgress.printLogAndProgress("Assinando: " + messageToSign.getName());
 		

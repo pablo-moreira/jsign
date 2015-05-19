@@ -3,56 +3,43 @@ package com.github.jsign;
 import java.io.File;
 import java.io.FileInputStream;
 import java.security.Security;
-import java.security.cert.X509Certificate;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import com.github.jsign.gui.DlgConfiguration;
-import com.github.jsign.gui.DlgSelectCertificate;
-import com.github.jsign.gui.FrmCertificadoPkcs12Senha;
 import com.github.jsign.interfaces.SignLog;
 import com.github.jsign.interfaces.SignLogProgress;
 import com.github.jsign.interfaces.SignProgress;
 import com.github.jsign.keystore.KeyStoreHelper;
-import com.github.jsign.keystore.MSCAPIKeyStoreHelper;
-import com.github.jsign.manager.ConfigurationManager;
 import com.github.jsign.manager.Manager;
-import com.github.jsign.manager.SignManager;
 import com.github.jsign.model.Configuration;
 import com.github.jsign.model.MessageToSign;
 import com.github.jsign.model.SignedMessage;
-import com.github.jsign.util.CertificateUtils;
-import com.github.jsign.util.JFrameUtils;
 
 public class JSign implements SignLogProgress {
 
-	private FrmCertificadoPkcs12Senha dlgPKCS12Password;
-	private DlgSelectCertificate dlgSelectCertificate;
 	private DlgConfiguration dlgConfiguration;
 	private Configuration configuration;
 	private SignProgress progress;
 	private SignLog log;
-	private X509Certificate msCapiCertificate;
 	private boolean allowsCoSigning;
 	private Manager manager = new Manager();
+
 	
 	public JSign() throws Exception {
 		try {						
 			Security.addProvider(new BouncyCastleProvider());
-			
+						
 			try {
 				this.configuration = manager.getConfigurationManager().loadConfigurations();
 			}
 			catch (Exception e) {
 				System.out.println(e.getMessage());
+				this.configuration = new Configuration();
 			}
 			
-			dlgSelectCertificate = new DlgSelectCertificate(null, true, this);
-			dlgPKCS12Password = new FrmCertificadoPkcs12Senha(null, true);
 			dlgConfiguration = new DlgConfiguration(null, true, this);
 		}
 		catch (Exception e) {
@@ -94,22 +81,31 @@ public class JSign implements SignLogProgress {
 		
 		KeyStoreHelper storeHelper = initKeyStore();
 		
-		return SignManager.signMessages(storeHelper, messages, attached, isAllowsCoSigning(), this);
+		return getManager().getSignManager().signMessages(storeHelper, messages, attached, isAllowsCoSigning(), this);
 	}
 		
 	public KeyStoreHelper initKeyStore() throws Exception {
 		
-		if (configuration == null || !configuration.isDefinedType()) {
+		if (!configuration.isDefinedKeyStoreHelper()) {
 			
-			showDlgConfiguration();
-
-			if (configuration == null || !configuration.isDefinedType()) {
-				throw new Exception("Por favor, para realizar a assinatura deve-se configurar o tipo de repositório!");
+			if (configuration.getKeyStoreType() != null) {				
+				getManager().getConfigurationManager().retrieveKeyStoreHelperByConfiguration(configuration);					
+			}
+			
+			if (!configuration.isDefinedKeyStoreHelper()) {
+			
+				showDlgConfiguration(false);	
+			
+				if (!configuration.isDefinedKeyStoreHelper()) {
+					throw new Exception("Por favor, para realizar a assinatura deve-se configurar um certificado digital!");
+				}
 			}
 		}
 		
-		if (configuration.isTypePKCS12()) {
-
+		return configuration.getKeyStoreHelper();
+		
+//		if (configuration.isTypePKCS12()) {
+//
 //			if (!configuration.isDefinedPkcs12File()) {
 //				throw new Exception("Por favor, para realizar a assinatura utilizando PKCS12, deve-se definir o endereço do arquivo do certificado!");
 //			}
@@ -137,61 +133,55 @@ public class JSign implements SignLogProgress {
 //			);
 //			
 //			configuration.setPkcs12Password(pkcs12Senha);
-			
-			return null;//storeHelperPkcs12;
-		}
-		else if (configuration.isTypeMSCAPI()) {
-
-			List<X509Certificate> certificados = MSCAPIKeyStoreHelper.getCertificatesAvailable();
-						
-			Collections.sort(certificados, new Comparator<X509Certificate>() {
-				@Override
-				public int compare(X509Certificate item1, X509Certificate item2) {
-					
-					String alias1 = CertificateUtils.getCertificateCN(item1.getSubjectDN().getName());
-					String alias2 = CertificateUtils.getCertificateCN(item2.getSubjectDN().getName());
-
-					return alias1.compareToIgnoreCase(alias2);
-				}
-			});
-						
-			if (certificados.isEmpty()) {
-				throw new Exception("Por favor, para realizar a assinatura utilizando Windows MsCAPI, deve-se cadastrar os certificados!");
-			}
-			else if (certificados.size() == 1) {					
-				return new MSCAPIKeyStoreHelper(certificados.get(0));
-			}
-			else if (this.msCapiCertificate != null) {
-				return new MSCAPIKeyStoreHelper(msCapiCertificate);				
-			}
-			else {
-				dlgSelectCertificate.iniciar(certificados);
-
-				if (dlgSelectCertificate.getReturnStatus() == DlgSelectCertificate.RET_CANCEL) {
-					throw new Exception("Por favor, para realizar a assinatura utilizando Windows MsCAPI, deve-se escolher algum certificado!");
-				}
-
-				this.msCapiCertificate = dlgSelectCertificate.getCertificado();
-				return new MSCAPIKeyStoreHelper(msCapiCertificate);
-			}
-		}
-		else {
-			throw new Exception("Por favor, para realizar a assinatura deve-se configurar o tipo de repositório!");
-		}
+//			
+//			return null;//storeHelperPkcs12;
+//		}
+//		else if (configuration.isTypeMSCAPI()) {
+//
+//			List<X509Certificate> certificados = MSCAPIKeyStoreHelper.getCertificatesAvailable();
+//						
+//			Collections.sort(certificados, new Comparator<X509Certificate>() {
+//				@Override
+//				public int compare(X509Certificate item1, X509Certificate item2) {
+//					
+//					String alias1 = CertificateUtils.getCertificateCN(item1.getSubjectDN().getName());
+//					String alias2 = CertificateUtils.getCertificateCN(item2.getSubjectDN().getName());
+//
+//					return alias1.compareToIgnoreCase(alias2);
+//				}
+//			});
+//						
+//			if (certificados.isEmpty()) {
+//				throw new Exception("Por favor, para realizar a assinatura utilizando Windows MsCAPI, deve-se cadastrar os certificados!");
+//			}
+//			else if (certificados.size() == 1) {					
+//				return new MSCAPIKeyStoreHelper(certificados.get(0));
+//			}
+//			else if (this.msCapiCertificate != null) {
+//				return new MSCAPIKeyStoreHelper(msCapiCertificate);				
+//			}
+//			else {
+//				dlgSelectCertificate.iniciar(certificados);
+//
+//				if (dlgSelectCertificate.getReturnStatus() == DlgSelectCertificate.RET_CANCEL) {
+//					throw new Exception("Por favor, para realizar a assinatura utilizando Windows MsCAPI, deve-se escolher algum certificado!");
+//				}
+//
+//				this.msCapiCertificate = dlgSelectCertificate.getCertificado();
+//				return new MSCAPIKeyStoreHelper(msCapiCertificate);
+//			}
+//		}
+//		else {
+//			throw new Exception("Por favor, para realizar a assinatura deve-se configurar o tipo de repositório!");
+//		}
 	}
 	
 	public void showDlgConfiguration() {
+		showDlgConfiguration(true);
+	}
 		
-		dlgConfiguration.start();
-				
-		if (dlgConfiguration.getReturnStatus() == DlgConfiguration.RET_OK) {
-			try {
-				ConfigurationManager.writeConfiguration(configuration);
-			}
-			catch (Exception e) {
-				JFrameUtils.showErro("Erro ao gravar as configurações!", e.getMessage(), null);
-			}
-		}
+	public void showDlgConfiguration(boolean loadKeyStoreHelper) {		
+		dlgConfiguration.start(loadKeyStoreHelper);
 	}
 
 	public boolean isAllowsCoSigning() {

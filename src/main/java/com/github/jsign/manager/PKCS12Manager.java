@@ -1,20 +1,20 @@
 package com.github.jsign.manager;
 
-import com.github.jsign.gui.DlgProtectionCallback;
-import com.github.jsign.keystore.KeyStoreHelper;
-import com.github.jsign.keystore.PKCS12KeyStoreHelper;
-import com.github.jsign.model.Configuration;
 import java.io.File;
 import java.security.KeyStore;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.security.auth.login.FailedLoginException;
+
+import com.github.jsign.keystore.KeyStoreHelper;
+import com.github.jsign.keystore.PKCS12KeyStoreHelper;
+import com.github.jsign.model.Configuration;
+import com.github.jsign.model.PKCS12AvailableProvider;
 
 public class PKCS12Manager {
 	
-	private DlgProtectionCallback dlgProtectionCallback = new DlgProtectionCallback("Insira o PIN:");
-
 	public List<PKCS12AvailableProvider> getAvailableProviders(Configuration configuration) {
 
 		List<PKCS12AvailableProvider> availableProviders = new ArrayList<PKCS12AvailableProvider>();
@@ -45,15 +45,14 @@ public class PKCS12Manager {
 		}
 		
 		if (keyStore != null) {
-			
 			List<X509Certificate> certificatesAvailable = KeyStoreHelper.getCertificatesAvailable(keyStore);
 
 			for (X509Certificate certificate : certificatesAvailable) {
-				keyStoreHelpers.add(new PKCS12KeyStoreHelper(availableProvider.getPkcs12Certificate(), dlgProtectionCallback, keyStore, certificate));
+				keyStoreHelpers.add(new PKCS12KeyStoreHelper(availableProvider.getPkcs12Certificate(), availableProvider.getDlgProtectionCallback(), keyStore, certificate));
 			}
-
-			return keyStoreHelpers;
 		}
+		
+		return keyStoreHelpers;
 	}
 	
 	//		catch (KeyStoreException e) {			
@@ -74,9 +73,44 @@ public class PKCS12Manager {
 //			}
 //		}
 	
-	public KeyStore getKeyStore(PKCS12AvailableProvider availableProvider) throws Exception {
-		KeyStore.ProtectionParameter protectionParameter = new KeyStore.CallbackHandlerProtection(dlgProtectionCallback);
+	public KeyStore getKeyStore(PKCS12AvailableProvider availableProvider) throws Exception {	
+		KeyStore.ProtectionParameter protectionParameter = new KeyStore.CallbackHandlerProtection(availableProvider.getDlgProtectionCallback());
 		KeyStore.Builder kb = KeyStore.Builder.newInstance("PKCS12", null, availableProvider.getPkcs12Certificate(), protectionParameter);
 		return kb.getKeyStore();
+	}
+
+	public KeyStoreHelper retrieveKeyStoreHelperByConfiguration(Configuration configuration) throws Exception {
+		
+		PKCS12AvailableProvider availableProvider = new PKCS12AvailableProvider(configuration.getPkcs12Filename());
+		
+		KeyStore keyStore;
+		
+		try {
+			keyStore = getKeyStore(availableProvider);
+		}
+		catch (Exception e) {
+			if (e.getCause() instanceof FailedLoginException) {
+				throw new Exception("O PIN digitado é inválido!");
+			}
+			else {
+				throw new Exception("Erro ao instanciar o repositório PKCS12, mensagem interna: " + e.getMessage());
+			}
+		}
+		
+		if (keyStore != null) {
+			
+			X509Certificate certificate = (X509Certificate) keyStore.getCertificate(configuration.getCertificateAlias());
+			
+			if (certificate != null) {
+				try {
+					return new PKCS12KeyStoreHelper(availableProvider.getPkcs12Certificate(), availableProvider.getDlgProtectionCallback(), keyStore, certificate);
+				}
+				catch (Exception e) {
+					throw new RuntimeException("Erro ao instanciar o repositorio PKCS12!, mensagem interna: " + e.getMessage());
+				}
+			}
+		}
+
+		return null;
 	}
 }

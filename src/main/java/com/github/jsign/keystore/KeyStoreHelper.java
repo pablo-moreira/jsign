@@ -9,14 +9,17 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
+import com.github.jsign.model.KeyStoreType;
+
 public abstract class KeyStoreHelper {
 	
 	protected X509Certificate certificate;
+	protected String certificateAlias;
 	protected KeyStore keyStore;
 	protected PrivateKey privateKey;
 	protected Certificate[] certsChain;	
 	
-	public abstract String getType();
+	public abstract KeyStoreType getType();
 	
 	public Certificate[] getCertsChain() {
 		return certsChain;
@@ -54,5 +57,9 @@ public abstract class KeyStoreHelper {
 		catch (KeyStoreException e) {
 			throw new Exception("O KeyStore não foi inicializado corretamente!\n" + e);
 		}
+	}
+
+	public String getCertificateAlias() {
+		return certificateAlias;
 	}
 }

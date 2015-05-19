@@ -6,11 +6,13 @@ public class Manager {
 	private PKCS12Manager pkcs12Manager;
 	private ConfigurationManager configurationManager;
 	private MSCAPIManager mscapiManager;
+	private SignManager signManager;
 		
 	public Manager() {
 		mscapiManager = new MSCAPIManager();
 		pkcs11Manager = new PKCS11Manager();
 		pkcs12Manager = new PKCS12Manager();
+		signManager = new SignManager();
 		configurationManager = new ConfigurationManager();
 		configurationManager.setMSCAPIManager(mscapiManager);
 		configurationManager.setPKCS11Manager(pkcs11Manager);
@@ -31,5 +33,9 @@ public class Manager {
 
 	public MSCAPIManager getMscapiManager() {
 		return mscapiManager;
-	}	
+	}
+
+	public SignManager getSignManager() {
+		return signManager;
+	}
 }

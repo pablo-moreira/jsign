@@ -22,8 +22,8 @@ public class MSCAPIAvailableProvider extends AvailableProvider {
 	}
 
 	@Override
-	public String getType() {
-		return KeyStoreType.MSCAPI.name();
+	public KeyStoreType getType() {
+		return KeyStoreType.MSCAPI;
 	}
 
 	public Provider getProvider() {
@@ -33,5 +33,9 @@ public class MSCAPIAvailableProvider extends AvailableProvider {
 	@Override
 	public String getDescription() {
 		return "KeyStore: " + getKeyStore().getType() + ", Quant. Certificados: " + certificates.size(); 
-	}	
+	}
+
+	public List<X509Certificate> getCertificates() {
+		return certificates;
+	}
 }

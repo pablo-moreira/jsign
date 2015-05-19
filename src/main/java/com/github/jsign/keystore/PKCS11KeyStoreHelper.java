@@ -5,7 +5,6 @@ import java.security.cert.X509Certificate;
 
 import javax.security.auth.callback.CallbackHandler;
 
-
 import com.github.jsign.model.KeyStoreType;
 import com.github.jsign.model.TokenConfig;
 
@@ -25,7 +24,15 @@ public class PKCS11KeyStoreHelper extends KeyStoreHelper {
 	}
 
 	@Override
-	public String getType() {
-		return KeyStoreType.PKCS11.name();
+	public KeyStoreType getType() {
+		return KeyStoreType.PKCS11;
+	}
+
+	public TokenConfig getTokenConfig() {
+		return tokenConfig;
+	}
+
+	public long getSlot() {
+		return slot;
 	}
 }

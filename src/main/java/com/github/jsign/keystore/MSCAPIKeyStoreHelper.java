@@ -1,6 +1,5 @@
 package com.github.jsign.keystore;
 
-import com.github.jsign.model.KeyStoreType;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.security.KeyStore;
@@ -12,6 +11,9 @@ import java.security.cert.X509Certificate;
 import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.List;
+
+import com.github.jsign.model.KeyStoreType;
+import com.github.jsign.util.StringUtils;
 
 public class MSCAPIKeyStoreHelper extends KeyStoreHelper {
 
@@ -117,15 +119,15 @@ public class MSCAPIKeyStoreHelper extends KeyStoreHelper {
 	
 	private void init(KeyStore keyStore, X509Certificate certificate) throws Exception  {
 		try {
-			String alias = keyStore.getCertificateAlias(certificate);
+			this.certificateAlias = keyStore.getCertificateAlias(certificate);
 
-			if (alias == null || alias.isEmpty()) {
+			if (StringUtils.isNullOrEmpty(this.certificateAlias)) {
 				throw new Exception("Não existe o certificado " + certificate.getSubjectDN() + " no repositório Windows-MsCapi!");
 			}
 			
 			this.certificate = certificate;
-			this.privateKey = (PrivateKey) keyStore.getKey(alias, null);
-			this.certsChain = keyStore.getCertificateChain(alias);
+			this.privateKey = (PrivateKey) keyStore.getKey(this.certificateAlias, null);
+			this.certsChain = keyStore.getCertificateChain(this.certificateAlias);
 		}
 		catch (Exception e) {
 			throw new Exception("Erro ao obter certificado!\n" + e);
@@ -133,7 +135,7 @@ public class MSCAPIKeyStoreHelper extends KeyStoreHelper {
 	}
 
 	@Override
-	public String getType() {
-		return KeyStoreType.MSCAPI.name();
+	public KeyStoreType getType() {
+		return KeyStoreType.MSCAPI;
 	}
 }

@@ -9,7 +9,7 @@ import java.util.List;
 
 import com.github.jsign.keystore.KeyStoreHelper;
 import com.github.jsign.keystore.MSCAPIKeyStoreHelper;
-import com.github.jsign.model.AvailableProvider;
+import com.github.jsign.model.Configuration;
 import com.github.jsign.model.MSCAPIAvailableProvider;
 import com.github.jsign.model.OperatingSystem;
 
@@ -38,7 +38,7 @@ public class MSCAPIManager {
 		}
 	}
 	
-	public AvailableProvider getAvailableProvider() {
+	public MSCAPIAvailableProvider getAvailableProvider() {
 		
 		if (OperatingSystem.isWindows()) {
 			
@@ -49,16 +49,40 @@ public class MSCAPIManager {
 				try {
 					KeyStore keyStore = MSCAPIKeyStoreHelper.getNewKeyStore();
 					
-					List<X509Certificate> certificatesAvailable = KeyStoreHelper.getCertificatesAvailable(keyStore);
+					List<X509Certificate> certificates = KeyStoreHelper.getCertificatesAvailable(keyStore);
 					
-					if (certificatesAvailable.size() > 0) {
-						return new MSCAPIAvailableProvider(provider, keyStore, certificatesAvailable);
+					if (certificates.size() > 0) {
+						return new MSCAPIAvailableProvider(provider, keyStore, certificates);
 					}
 				}
 				catch (Exception e) {}
 			}
 		}
 		
+		return null;
+	}
+
+	public MSCAPIKeyStoreHelper retrieveKeyStoreHelperByConfiguration(Configuration configuration) {
+
+		MSCAPIAvailableProvider availableProvider = getAvailableProvider();
+		
+		if (availableProvider != null) {
+			
+			X509Certificate certificate = null;
+			
+			try {
+				 certificate = (X509Certificate) availableProvider.getKeyStore().getCertificate(configuration.getCertificateAlias());
+			}
+			catch (Exception e) {}
+			
+			if (certificate != null) {
+				try {
+					return new MSCAPIKeyStoreHelper(availableProvider.getKeyStore(), certificate);
+				}
+				catch (Exception e) {} 
+			}
+		}
+
 		return null;
 	}
 }

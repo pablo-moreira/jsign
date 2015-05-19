@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JFileChooser;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
 
@@ -22,8 +24,6 @@ import com.github.jsign.util.CertificateUtils;
 import com.github.jsign.util.EntityColumnWidthTableModel;
 import com.github.jsign.util.EntityTableModel;
 import com.github.jsign.util.JFrameUtils;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 
 /**
  *
@@ -374,15 +374,23 @@ public class DlgConfiguration extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnOKActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOKActionPerformed
-//        if (bgKeyStoreType.getSelection() == null) {
-//            JFrameUtils.showErro("Erro de validação", "Por favor, deve-se informar um tipo de repositório!");
-//            return;
-//        }
-//        else if (KeyStoreType.PKCS12.KEY_STORE_TYPE_PKCS12.equals(bgKeyStoreType.getSelection().getActionCommand())
-//            && pkcs12File == null) {
-//            JFrameUtils.showErro("Erro de validação", "Por favor, deve-se definir o endereço do arquivo do certificado PKCS12!");
-//            return;
-//        }
+
+    	if (keyStoreHelper == null) {
+    		JFrameUtils.showErro("Erro de validação", "Por favor, deve-se selecionar algum certificado!");
+    		return;
+    	}
+    	
+    	Configuration configuration = jSign.getConfiguration();
+    	
+    	configuration.setKeyStoreHelper(keyStoreHelper);
+    	
+    	try {
+    		jSign.getManager().getConfigurationManager().writeConfiguration(configuration);
+    	}
+    	catch (Exception e) {
+    		JFrameUtils.showErro("Erro", "Erro ao persistir as configurações!\nMensagem Interna: " + e.getMessage());
+    	}
+    	
         doClose(RET_OK);
     }//GEN-LAST:event_btnOKActionPerformed
 
@@ -411,7 +419,10 @@ public class DlgConfiguration extends javax.swing.JDialog {
     }//GEN-LAST:event_btnAddPkcs12CertificateActionPerformed
 
     private void btnLoadAvailableProvidersActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLoadAvailableProvidersActionPerformed
-		loadAvailableProviders();
+		
+    	availableProviders = jSign.getManager().getConfigurationManager().getAvailableProviders(jSign.getConfiguration());
+    	
+    	loadAvailableProviders();
     }//GEN-LAST:event_btnLoadAvailableProvidersActionPerformed
 
     private void btnAddPkcs11DriverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddPkcs11DriverActionPerformed
@@ -523,30 +534,30 @@ public class DlgConfiguration extends javax.swing.JDialog {
     private javax.swing.JTable tblPkcs12Certificates;
     // End of variables declaration//GEN-END:variables
 
-  	public void start() {
+  	public void start(boolean loadKeyStoreHelper) {
     
 		Configuration configuration = jSign.getConfiguration();
 		
         reset();
 		
 		this.btnOK.setEnabled(false);
-		this.keyStoreHelper = null;
+		
+		if (configuration.isDefinedKeyStoreHelper()) {
+			this.keyStoreHelper = configuration.getKeyStoreHelper();
+		}
+		else if (configuration.getKeyStoreType() != null && loadKeyStoreHelper) {			
+			try {
+				this.keyStoreHelper = jSign.getManager().getConfigurationManager().retrieveKeyStoreHelperByConfiguration(configuration);
+			} 
+			catch (Exception e) {}
+		}
+		
+		if (this.keyStoreHelper != null) {
+			onSelectCertificate(this.keyStoreHelper);
+		}
 		
         pack();
-		
-		if (configuration.getKeyStoreType() != null) {
-			
-			if (configuration.isTypeMSCAPI()) {
-				
-			}
-			else if (configuration.isTypePKCS11()) {
-				
-			}
-			else if (configuration.isTypePKCS12()) {
-				
-			}
-		}
-        		
+                      		
         JFrameUtils.setCenterLocation(this);
         setVisible(true);        
     }    
@@ -586,9 +597,7 @@ public class DlgConfiguration extends javax.swing.JDialog {
 	}
 	
 	private void loadAvailableProviders() {
-		
-		availableProviders = jSign.getManager().getConfigurationManager().getAvailableProviders(jSign.getConfiguration());
-		
+				
 		if (availableProviders.size() > 0) {
 			
 			showAvailableProviders();
@@ -622,7 +631,6 @@ public class DlgConfiguration extends javax.swing.JDialog {
 
 					if (keyStoresHelpersAvailable.size() == 1) {
 						tblCertificates.getSelectionModel().setSelectionInterval(0, 0);
-						//onSelectCertificate();
 					}
 				}
 				else {

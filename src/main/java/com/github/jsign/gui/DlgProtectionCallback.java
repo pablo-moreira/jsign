@@ -21,12 +21,9 @@ import javax.security.auth.callback.CallbackHandler;
 
 public class DlgProtectionCallback implements CallbackHandler {
 	
-	private String title;
-		
-	public DlgProtectionCallback(String title){
-		this.title = title;
-	}
-		
+	private String title = "Insira o PIN:";
+	private JPasswordField passField = new JPasswordField();
+				
 	@Override
 	public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
 		
@@ -35,8 +32,7 @@ public class DlgProtectionCallback implements CallbackHandler {
 			if(cb instanceof PasswordCallback) {
 				
 				final PasswordCallback pc = (PasswordCallback) cb;
-				JLabel label = new JLabel(title);
-				final JPasswordField passField = new JPasswordField();
+				JLabel label = new JLabel(title);				
 				JOptionPane jop = new JOptionPane(new Object[]{label, passField}, JOptionPane.QUESTION_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
 				JDialog dialog = jop.createDialog(title);
 				dialog.addComponentListener(new ComponentAdapter() {
@@ -63,4 +59,8 @@ public class DlgProtectionCallback implements CallbackHandler {
 			}
 		}
 	}	
+	
+	public char[] getPassword() {
+		return passField.getPassword();
+	}
 }

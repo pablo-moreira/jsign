@@ -12,30 +12,50 @@ import com.github.jsign.model.Configuration;
 import com.github.jsign.model.KeyStoreType;
 import com.github.jsign.model.MSCAPIAvailableProvider;
 import com.github.jsign.model.PKCS11AvailableProvider;
+import com.github.jsign.model.PKCS12AvailableProvider;
 import com.github.jsign.util.StringUtils;
 
 public class ConfigurationManager {
 
 	public static final String PREFERENCES_PATH = "com/github/jsign";
+	
 	public static final String KEY_KEYSTORE_TYPE = "keyStoreType";
+	public static final String KEY_CERTIFICATE_ALIAS = "certificateAlias";
+	
 	public static final String KEY_PKCS12_CERTIFICATES = "pkcs12Certificates";
 	public static final String KEY_PKCS12_CERTIFICATE = "pkcs12Certificate_";
+	private static final String KEY_PKCS12_FILENAME = "pkcs12Filename";
+	
 	public static final String KEY_PKCS11_DRIVERS = "pkcs11Drivers";
 	public static final String KEY_PKCS11_DRIVER = "pkcs11Driver_";
-
+	private static final String KEY_PKCS11_NAME = "pkcs11Name";
+	private static final String KEY_PKCS11_LIBRARY = "pkcs11Library";
+	private static final String KEY_PKCS11_SLOT = "pkcs11Slot";
+	
 	private PKCS11Manager pkcs11Manager;
 	private MSCAPIManager mscapiManager;
 	private PKCS12Manager pkcs12Manager;
 	
-	public static void writeConfiguration(Configuration configuration) throws Exception {
+	public void writeConfiguration(Configuration configuration) throws Exception {
 	
 		try {
 			Preferences preferences = getPreferences(PREFERENCES_PATH);
 
 			preferences.clear();
 
-			if (configuration.isDefinedType()) {
+			if (configuration.isDefinedKeyStoreHelper()) {
+							
 				preferences.put(KEY_KEYSTORE_TYPE, configuration.getKeyStoreType().name());
+				preferences.put(KEY_CERTIFICATE_ALIAS, configuration.getCertificateAlias());
+				
+				if (KeyStoreType.PKCS12 == configuration.getKeyStoreType()) {
+					preferences.put(KEY_PKCS12_FILENAME, configuration.getPkcs12Filename().getAbsolutePath());
+				}
+				else if (KeyStoreType.PKCS11 == configuration.getKeyStoreType()) {
+					preferences.put(KEY_PKCS11_NAME, configuration.getPkcs11Name());
+					preferences.put(KEY_PKCS11_LIBRARY, configuration.getPkcs11Library());
+					preferences.putLong(KEY_PKCS11_SLOT, configuration.getPkcs11Slot());
+				}
 			}
 
 			if (configuration.isDefinedPkcs12Certificates()) {
@@ -44,10 +64,10 @@ public class ConfigurationManager {
 
 				preferences.putInt(KEY_PKCS12_CERTIFICATES, pkcs12Certificates.size());
 
-				int i=0;
-
-				for (File pkcs12Certificate : pkcs12Certificates) {
+				for (int i=0; i < pkcs12Certificates.size(); i++) {
+					File pkcs12Certificate = pkcs12Certificates.get(i);
 					preferences.put(KEY_PKCS12_CERTIFICATE + i, pkcs12Certificate.getAbsolutePath());
+					
 				}							
 			}
 
@@ -57,9 +77,8 @@ public class ConfigurationManager {
 
 				preferences.putInt(KEY_PKCS11_DRIVERS, pkcs11Drivers.size());
 
-				int i=0;
-
-				for (File pkcs11Driver : pkcs11Drivers) {
+				for (int i=0; i < pkcs11Drivers.size(); i++) {
+					File pkcs11Driver = pkcs11Drivers.get(i);	
 					preferences.put(KEY_PKCS11_DRIVER + i, pkcs11Driver.getAbsolutePath());
 				}
 			}
@@ -85,24 +104,63 @@ public class ConfigurationManager {
 	
 	public Configuration loadConfigurations() throws Exception {
 
-		try {			
+		try {
 			Configuration configuration = new Configuration();
 			
 			// Verifica se encontra as configuracoes salvas nas preferencias
 			Preferences preferences = getPreferences(PREFERENCES_PATH);
 
 			if (preferences != null && preferences.keys().length != 0) {
-					
+				
+				String certificateAlias = preferences.get(KEY_CERTIFICATE_ALIAS, "");
+				
+				if (!StringUtils.isNullOrEmpty(certificateAlias)) {
+					configuration.setCertificateAlias(certificateAlias);
+				}
+				
 				String type = preferences.get(KEY_KEYSTORE_TYPE, "");
-					
-				if (KeyStoreType.MSCAPI.name().equals(type)) {
-					configuration.setType(KeyStoreType.MSCAPI);
+									
+				if (KeyStoreType.MSCAPI.name().equals(type)) {					
+					configuration.setKeyStoreType(KeyStoreType.MSCAPI);
 				}
 				else if (KeyStoreType.PKCS11.name().equals(type)) {
-					configuration.setType(KeyStoreType.PKCS11);
+				
+					configuration.setKeyStoreType(KeyStoreType.PKCS11);
+				
+					String pkcs11Name = preferences.get(KEY_PKCS11_NAME, "");
+					
+					if (!StringUtils.isNullOrEmpty(pkcs11Name)) {
+						configuration.setPkcs11Name(pkcs11Name);
+					}
+					
+					String pkcs11Library = preferences.get(KEY_PKCS11_LIBRARY, "");
+					
+					if (!StringUtils.isNullOrEmpty(pkcs11Library)) {
+						configuration.setPkcs11Library(pkcs11Library);
+					}
+
+					long pkcs11Slot = preferences.getLong(KEY_PKCS11_SLOT, -100);
+
+					if (pkcs11Slot != -100) {
+						configuration.setPkcs11Slot(pkcs11Slot);
+					}
 				}
 				else if (KeyStoreType.PKCS12.name().equals(type)) {
-					configuration.setType(KeyStoreType.PKCS12);
+										
+					configuration.setKeyStoreType(KeyStoreType.PKCS12);
+					
+					String pkcs12Filename = preferences.get(KEY_PKCS12_FILENAME, "");
+									
+					if (!StringUtils.isNullOrEmpty(pkcs12Filename)) {
+						
+						File pkcs12File = new File(pkcs12Filename);
+						
+						if (pkcs12File.isFile() && pkcs12File.exists()) {
+							configuration.setPkcs12Filename(pkcs12File);
+						}
+					}
+					
+					configuration.setKeyStoreType(KeyStoreType.PKCS12);
 				}
 				
 				int pkcs12Certificates = preferences.getInt(KEY_PKCS12_CERTIFICATES, 0);
@@ -215,5 +273,52 @@ public class ConfigurationManager {
 		configuration.getPkcs11Drivers().remove(pkcs11Driver);
 		
 		writeConfiguration(configuration);
+	}
+	
+//	public AvailableProvider getAvailableProvider(List<AvailableProvider> availableProviders, Configuration configuration) {
+//		
+//		for (AvailableProvider ap : availableProviders) {
+//			if (ap.getType() == configuration.getKeyStoreType()) {
+//   				if (KeyStoreType.MSCAPI == configuration.getKeyStoreType()) {
+//   					return ap;
+//   	        	}
+//   	        	else if (KeyStoreType.PKCS11 == configuration.getKeyStoreType()) {
+//
+//   	        		PKCS11AvailableProvider ap11 = (PKCS11AvailableProvider) ap;
+//
+//   	    			if (ap11.getTokenConfig().getToken().getName().equals(configuration.getPkcs11Name())
+//   	    					&& ap11.getTokenConfig().getLibrary().equals(configuration.getPkcs11Library())   	    					
+//   	    					&& (ap11.getSlot() != null && ap11.getSlot().equals(configuration.getPkcs11Slot())
+//   	    						|| ap11.getSlot() == null && configuration.getPkcs11Slot() == null)) {
+//   	    				
+//   	    			}
+//   	    		}
+//   	    		else if (KeyStoreType.PKCS12 == configuration.getKeyStoreType()) {
+//   	    			
+//   	    			PKCS12AvailableProvider ap12 = (PKCS12AvailableProvider) ap;
+//   	    			
+//   	    			if (ap12.getPkcs12Certificate().getAbsoluteFile().equals(configuration.getPkcs12Filename())) {
+//   	    				return ap12;
+//   	    			}
+//  	    		}
+//   			}
+//		}
+//	}
+
+	public KeyStoreHelper retrieveKeyStoreHelperByConfiguration(Configuration configuration) throws Exception {
+		
+		if (configuration.getKeyStoreType() != null) {	
+			if (KeyStoreType.MSCAPI == configuration.getKeyStoreType()) {
+				return mscapiManager.retrieveKeyStoreHelperByConfiguration(configuration);
+			}
+			else if (KeyStoreType.PKCS12 == configuration.getKeyStoreType()) {
+				return pkcs12Manager.retrieveKeyStoreHelperByConfiguration(configuration);
+			}
+			else if (KeyStoreType.PKCS11 == configuration.getKeyStoreType()) {
+				return pkcs11Manager.retrieveKeyStoreHelperByConfiguration(configuration);
+			}
+		}
+		
+		return null;
 	}
 }

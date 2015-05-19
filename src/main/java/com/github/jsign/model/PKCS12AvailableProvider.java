@@ -3,10 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.github.jsign.manager;
+package com.github.jsign.model;
 
-import com.github.jsign.model.AvailableProvider;
-import com.github.jsign.model.KeyStoreType;
+import com.github.jsign.gui.DlgProtectionCallback;
+
 import java.io.File;
 
 /**
@@ -16,14 +16,15 @@ import java.io.File;
 public class PKCS12AvailableProvider extends AvailableProvider {
 
 	private final File pkcs12Certificate;
+	private final DlgProtectionCallback dlgProtectionCallback = new DlgProtectionCallback();
 
 	public PKCS12AvailableProvider(File pkcs12Certificate) {
 		this.pkcs12Certificate = pkcs12Certificate;
 	}
 	
 	@Override
-	public String getType() {
-		return KeyStoreType.PKCS12.name();
+	public KeyStoreType getType() {
+		return KeyStoreType.PKCS12;
 	}
 
 	@Override
@@ -38,5 +39,9 @@ public class PKCS12AvailableProvider extends AvailableProvider {
 
 	public File getPkcs12Certificate() {
 		return pkcs12Certificate;
+	}
+
+	public DlgProtectionCallback getDlgProtectionCallback() {
+		return dlgProtectionCallback;
 	}	
 }

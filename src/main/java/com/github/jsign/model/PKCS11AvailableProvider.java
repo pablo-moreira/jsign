@@ -30,8 +30,8 @@ public class PKCS11AvailableProvider extends AvailableProvider {
 	}
 
 	@Override
-	public String getType() {
-		return KeyStoreType.PKCS11.name();
+	public KeyStoreType getType() {
+		return KeyStoreType.PKCS11;
 	}
 
 	@Override

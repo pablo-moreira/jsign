@@ -125,6 +125,7 @@ public class MSCAPIKeyStoreHelper extends KeyStoreHelper {
 				throw new Exception("Não existe o certificado " + certificate.getSubjectDN() + " no repositório Windows-MsCapi!");
 			}
 			
+			this.keyStore = keyStore;
 			this.certificate = certificate;
 			this.privateKey = (PrivateKey) keyStore.getKey(this.certificateAlias, null);
 			this.certsChain = keyStore.getCertificateChain(this.certificateAlias);

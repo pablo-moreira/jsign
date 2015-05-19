@@ -7,8 +7,6 @@ import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.JOptionPane;
-
 import com.github.jsign.gui.FrmTest;
 import com.github.jsign.keystore.KeyStoreHelper;
 import com.github.jsign.model.AvailableProvider;
@@ -54,7 +52,7 @@ public class JSignTest {
     	
     public static void main(String[] args) {    	
     	try {
-			testSignAndSignAgainPasswordAsk();
+    		testSignAndSignAgainPasswordAsk();
 		}
     	catch (Exception e) {
 			JFrameUtils.showErro("Erro", e.getMessage());

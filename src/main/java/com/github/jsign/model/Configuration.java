@@ -9,9 +9,7 @@ import com.github.jsign.keystore.PKCS11KeyStoreHelper;
 import com.github.jsign.keystore.PKCS12KeyStoreHelper;
 
 public class Configuration {
-	
-	private KeyStoreHelper keyStoreHelper;
-	
+
 	// PKCS 12
 	private List<File> pkcs12Certificates = new ArrayList<File>(); 
 	private File pkcs12Filename;	
@@ -99,13 +97,7 @@ public class Configuration {
 		this.certificateAlias = certificateAlias;
 	}
 	
-	public KeyStoreHelper getKeyStoreHelper() {
-		return keyStoreHelper;
-	}
-
-	public void setKeyStoreHelper(KeyStoreHelper keyStoreHelper) {
-		
-		this.keyStoreHelper = keyStoreHelper;
+	public void updateKeyStoreHelper(KeyStoreHelper keyStoreHelper) {
 		
 		if (keyStoreHelper != null) {
 			
@@ -124,16 +116,16 @@ public class Configuration {
 			}
 		}		
 	}
-
-	public boolean isDefinedKeyStoreHelper() {
-		return getKeyStoreHelper() != null;
-	}
-
+	
 	public KeyStoreType getKeyStoreType() {
 		return keyStoreType;
 	}
 
 	public void setKeyStoreType(KeyStoreType keyStoreType) {
 		this.keyStoreType = keyStoreType;
+	}
+
+	public boolean isDefinedKeyStoreType() {
+		return getKeyStoreType() != null;
 	}
 }

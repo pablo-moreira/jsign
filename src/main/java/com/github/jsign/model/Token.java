@@ -28,7 +28,7 @@ public class Token {
 		this.configs = configs;
 	}
 
-	private Token addLib(OperatingSystem operatingSystem, String library) {
+	public Token addLib(OperatingSystem operatingSystem, String library) {
 		
 		getConfigs().add(new TokenConfig(this, operatingSystem, library));
 		
@@ -58,5 +58,5 @@ public class Token {
 		}
 		
 		return configs;
-	}	
+	}
 }

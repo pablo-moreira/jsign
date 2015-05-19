@@ -46,6 +46,9 @@ public class DlgProtectionCallback implements CallbackHandler {
 					    });
 					  }
 					});
+				
+				passField.setText("");
+				
 				dialog.setVisible(true);
 				int result = (Integer)jop.getValue();
 				dialog.dispose();

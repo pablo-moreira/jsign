@@ -68,13 +68,12 @@ public class FileUtils {
 		return "file://" + file.getAbsolutePath().replace('\\', '/'); 
 	}
 	
-	public static String getArquivoNomeSemExtensao(String arg) throws Exception {
-		try {
-			String r = arg.substring(0, arg.lastIndexOf("."));
-			return r;
+	public static String getFilenameWithoutExtension(String arg) {		
+		if (arg.contains(".")) {
+			return arg.substring(0, arg.lastIndexOf("."));
 		}
-		catch (Exception e) {
-			throw new Exception("Erro ao obter o nome do arquivo (" + arg + ") sem a extensão!");
+		else {
+			return arg;
 		}
 	}
 	

@@ -382,7 +382,7 @@ public class DlgConfiguration extends javax.swing.JDialog {
     	
     	Configuration configuration = jSign.getConfiguration();
     	
-    	configuration.setKeyStoreHelper(keyStoreHelper);
+    	configuration.updateKeyStoreHelper(keyStoreHelper);
     	
     	try {
     		jSign.getManager().getConfigurationManager().writeConfiguration(configuration);
@@ -542,12 +542,9 @@ public class DlgConfiguration extends javax.swing.JDialog {
 		
 		this.btnOK.setEnabled(false);
 		
-		if (configuration.isDefinedKeyStoreHelper()) {
-			this.keyStoreHelper = configuration.getKeyStoreHelper();
-		}
-		else if (configuration.getKeyStoreType() != null && loadKeyStoreHelper) {			
+		if (configuration.getKeyStoreType() != null && loadKeyStoreHelper) {			
 			try {
-				this.keyStoreHelper = jSign.getManager().getConfigurationManager().retrieveKeyStoreHelperByConfiguration(configuration);
+				this.keyStoreHelper = jSign.getManager().getConfigurationManager().loadKeyStoreHelperByConfiguration(configuration);
 			} 
 			catch (Exception e) {}
 		}
@@ -695,7 +692,7 @@ public class DlgConfiguration extends javax.swing.JDialog {
 			
 	private void addPkcs11Driver(File pkcs11Driver) {
 		try {
-			jSign.getManager().getConfigurationManager().addPkcs11Driver(jSign.getConfiguration(), pkcs11Driver);
+			jSign.getManager().getPkcs11Manager().addPkcs11Driver(jSign.getConfiguration(), pkcs11Driver);
 			tblPkcs11DriversModel.fireTableDataChanged();
 		}
 		catch (Exception e) {
@@ -705,7 +702,7 @@ public class DlgConfiguration extends javax.swing.JDialog {
 	
 	private void addPkcs12Certificate(File pkcs12Certificate) {
 		try {			
-			jSign.getManager().getConfigurationManager().addPkcs12Certificate(jSign.getConfiguration(), pkcs12Certificate);
+			jSign.getManager().getPkcs12Manager().addPkcs12Certificate(jSign.getConfiguration(), pkcs12Certificate);
 			tblPkcs12CertificatesModel.fireTableDataChanged();
 		}
 		catch (Exception e) {
@@ -715,7 +712,7 @@ public class DlgConfiguration extends javax.swing.JDialog {
 	
 	private void deletePkcs11Driver(File pkcs11Driver) {
 		try {			
-			jSign.getManager().getConfigurationManager().deletePkcs11Driver(jSign.getConfiguration(), pkcs11Driver);
+			jSign.getManager().getPkcs11Manager().deletePkcs11Driver(jSign.getConfiguration(), pkcs11Driver);
 			tblPkcs11DriversModel.fireTableDataChanged();			
 			resetPkcs11Drivers();
 		}
@@ -726,7 +723,7 @@ public class DlgConfiguration extends javax.swing.JDialog {
 	
 	private void deletePkcs12Certificate(File pkcs12Certificate) {
 		try {
-			jSign.getManager().getConfigurationManager().deletePkcs12Certificate(jSign.getConfiguration(), pkcs12Certificate);			
+			jSign.getManager().getPkcs12Manager().deletePkcs12Certificate(jSign.getConfiguration(), pkcs12Certificate);			
 			tblPkcs12CertificatesModel.fireTableDataChanged();
 			resetPkcs12Certificates();
 		}
@@ -898,5 +895,9 @@ public class DlgConfiguration extends javax.swing.JDialog {
 	private void resetPkcs12Certificates() {
 		tblPkcs12Certificates.clearSelection();
 		btnDeletePkcs12Certificate.setEnabled(false);
+	}
+
+	public KeyStoreHelper getKeyStoreHelper() {
+		return keyStoreHelper;
 	}
 }

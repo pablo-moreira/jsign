@@ -43,11 +43,11 @@ public class ConfigurationManager {
 
 			preferences.clear();
 
-			if (configuration.isDefinedKeyStoreHelper()) {
+			if (configuration.isDefinedKeyStoreType()) {
 							
 				preferences.put(KEY_KEYSTORE_TYPE, configuration.getKeyStoreType().name());
 				preferences.put(KEY_CERTIFICATE_ALIAS, configuration.getCertificateAlias());
-				
+
 				if (KeyStoreType.PKCS12 == configuration.getKeyStoreType()) {
 					preferences.put(KEY_PKCS12_FILENAME, configuration.getPkcs12Filename().getAbsolutePath());
 				}
@@ -66,8 +66,7 @@ public class ConfigurationManager {
 
 				for (int i=0; i < pkcs12Certificates.size(); i++) {
 					File pkcs12Certificate = pkcs12Certificates.get(i);
-					preferences.put(KEY_PKCS12_CERTIFICATE + i, pkcs12Certificate.getAbsolutePath());
-					
+					preferences.put(KEY_PKCS12_CERTIFICATE + i, pkcs12Certificate.getAbsolutePath());					
 				}							
 			}
 
@@ -247,65 +246,7 @@ public class ConfigurationManager {
 		return keyStoreHelpers;
 	}	
 
-	public void addPkcs12Certificate(Configuration configuration, File pkcs12Certificate) throws Exception {
-		
-		configuration.addPkcs12Certificate(pkcs12Certificate);
-		
-		writeConfiguration(configuration);
-	}
-
-	public void deletePkcs12Certificate(Configuration configuration, File pkcs12Certificate) throws Exception {		
-		
-		configuration.getPkcs12Certificates().remove(pkcs12Certificate);
-		
-		writeConfiguration(configuration);		
-	}
-
-	public void addPkcs11Driver(Configuration configuration, File pkcs11Driver) throws Exception {
-		
-		configuration.addPkcs11Driver(pkcs11Driver);
-		
-		writeConfiguration(configuration);
-	}
-
-	public void deletePkcs11Driver(Configuration configuration, File pkcs11Driver) throws Exception {
-		
-		configuration.getPkcs11Drivers().remove(pkcs11Driver);
-		
-		writeConfiguration(configuration);
-	}
-	
-//	public AvailableProvider getAvailableProvider(List<AvailableProvider> availableProviders, Configuration configuration) {
-//		
-//		for (AvailableProvider ap : availableProviders) {
-//			if (ap.getType() == configuration.getKeyStoreType()) {
-//   				if (KeyStoreType.MSCAPI == configuration.getKeyStoreType()) {
-//   					return ap;
-//   	        	}
-//   	        	else if (KeyStoreType.PKCS11 == configuration.getKeyStoreType()) {
-//
-//   	        		PKCS11AvailableProvider ap11 = (PKCS11AvailableProvider) ap;
-//
-//   	    			if (ap11.getTokenConfig().getToken().getName().equals(configuration.getPkcs11Name())
-//   	    					&& ap11.getTokenConfig().getLibrary().equals(configuration.getPkcs11Library())   	    					
-//   	    					&& (ap11.getSlot() != null && ap11.getSlot().equals(configuration.getPkcs11Slot())
-//   	    						|| ap11.getSlot() == null && configuration.getPkcs11Slot() == null)) {
-//   	    				
-//   	    			}
-//   	    		}
-//   	    		else if (KeyStoreType.PKCS12 == configuration.getKeyStoreType()) {
-//   	    			
-//   	    			PKCS12AvailableProvider ap12 = (PKCS12AvailableProvider) ap;
-//   	    			
-//   	    			if (ap12.getPkcs12Certificate().getAbsoluteFile().equals(configuration.getPkcs12Filename())) {
-//   	    				return ap12;
-//   	    			}
-//  	    		}
-//   			}
-//		}
-//	}
-
-	public KeyStoreHelper retrieveKeyStoreHelperByConfiguration(Configuration configuration) throws Exception {
+	public KeyStoreHelper loadKeyStoreHelperByConfiguration(Configuration configuration) throws Exception {
 		
 		if (configuration.getKeyStoreType() != null) {	
 			if (KeyStoreType.MSCAPI == configuration.getKeyStoreType()) {

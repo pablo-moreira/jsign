@@ -21,13 +21,16 @@ import com.github.jsign.model.Configuration;
 import com.github.jsign.model.OperatingSystem;
 import com.github.jsign.model.PKCS11AvailableProvider;
 import com.github.jsign.model.PKCS11Tokens;
+import com.github.jsign.model.Token;
 import com.github.jsign.model.TokenConfig;
+import com.github.jsign.util.FileUtils;
 import com.github.jsign.util.PKCS11Wrapper;
 
 public class PKCS11Manager {
 
 	private PKCS11Tokens tokens = new PKCS11Tokens();
 	private DlgProtectionCallback callbackHandler = new DlgProtectionCallback();
+	private ConfigurationManager configurationManager;
 	
 	public Provider getProvider(TokenConfig tokenConfig, Long slot) {
 		return getProvider(tokenConfig.getToken().getName(), tokenConfig.getLibrary(), slot);
@@ -111,7 +114,17 @@ public class PKCS11Manager {
 
 		List<PKCS11AvailableProvider> availableProviders = new ArrayList<PKCS11AvailableProvider>();
 		
-		for (TokenConfig tokenConfig : getAvailableTokenConfigs()) {
+		List<TokenConfig> availableTokenConfigs = getAvailableTokenConfigs();
+		
+		List<File> pkcs11Drivers = configuration.getPkcs11Drivers();
+				
+		for (File file : pkcs11Drivers) {
+			Token token = new Token(FileUtils.getFilenameWithoutExtension(file.getName()));
+			token.addLib(OperatingSystem.getOperatingSystem(), file.getAbsolutePath());
+			availableTokenConfigs.add(token.getConfigs().get(0));
+		}
+
+		for (TokenConfig tokenConfig : availableTokenConfigs) {
 
 			long[] slotList = tryGetSlotListWithToken(tokenConfig);
 			
@@ -198,7 +211,7 @@ public class PKCS11Manager {
 				List<X509Certificate> certificatesAvailable = KeyStoreHelper.getCertificatesAvailable(avProvider.getKeyStore());
 						
 				for (X509Certificate certificate : certificatesAvailable) {
-					helpers.add(new PKCS11KeyStoreHelper(avProvider.getTokenConfig(), avProvider.getSlot(), callbackHandler, avProvider.getKeyStore(), certificate));
+					helpers.add(new PKCS11KeyStoreHelper(avProvider.getTokenConfig(), avProvider.getSlot(), avProvider.getKeyStore(), certificate));
 				}
 			}
 			catch (Exception e) {
@@ -209,23 +222,45 @@ public class PKCS11Manager {
 		return helpers;
 	}
 	
-	private KeyStore tryGetKeyStore(Provider provider) {		
-		try {
-			return getKeyStore(provider);			
-		}		
-		catch (Exception e) {
-			return null;
-		}
-	}
-
 	private KeyStore getKeyStore(Provider provider) throws KeyStoreException {		
 		KeyStore.ProtectionParameter protectionParameter = new KeyStore.CallbackHandlerProtection(callbackHandler);
 		KeyStore.Builder kb = KeyStore.Builder.newInstance("PKCS11", provider, protectionParameter);
 		return kb.getKeyStore();
 	}
 
+	public void addPkcs11Driver(Configuration configuration, File pkcs11Driver) throws Exception {
+		
+		configuration.addPkcs11Driver(pkcs11Driver);
+		
+		getConfigurationManager().writeConfiguration(configuration);
+	}
+
+	public void deletePkcs11Driver(Configuration configuration, File pkcs11Driver) throws Exception {
+		
+		configuration.getPkcs11Drivers().remove(pkcs11Driver);
+		
+		getConfigurationManager().writeConfiguration(configuration);
+	}
+	
 	public KeyStoreHelper retrieveKeyStoreHelperByConfiguration(Configuration configuration) {
-		// TODO Auto-generated method stub
+
+//		PKCS11AvailableProvider ap11 = (PKCS11AvailableProvider) ap;
+//
+//		if (ap11.getTokenConfig().getToken().getName().equals(configuration.getPkcs11Name())
+//				&& ap11.getTokenConfig().getLibrary().equals(configuration.getPkcs11Library())   	    					
+//				&& (ap11.getSlot() != null && ap11.getSlot().equals(configuration.getPkcs11Slot())
+//					|| ap11.getSlot() == null && configuration.getPkcs11Slot() == null)) {
+//			
+//		}
+		
 		return null;
+	}
+	
+	public ConfigurationManager getConfigurationManager() {
+		return configurationManager;
+	}
+
+	public void setConfigurationManager(ConfigurationManager configurationManager) {
+		this.configurationManager = configurationManager;		
 	}
 }

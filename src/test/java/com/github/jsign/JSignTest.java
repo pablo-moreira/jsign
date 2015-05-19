@@ -1,22 +1,26 @@
 package com.github.jsign;
 
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JOptionPane;
+
 import com.github.jsign.gui.FrmTest;
 import com.github.jsign.keystore.KeyStoreHelper;
 import com.github.jsign.model.AvailableProvider;
 import com.github.jsign.model.Configuration;
+import com.github.jsign.model.MessageToSign;
 import com.github.jsign.model.SignedMessage;
 import com.github.jsign.util.FileUtils;
 import com.github.jsign.util.JFrameUtils;
 
 
 public class JSignTest {
-    
+
     public static void testSignHugeFile() throws Exception {
     
         final JSign sign = new JSign();
@@ -48,18 +52,50 @@ public class JSignTest {
         System.out.println("teste");
     }
     	
-    public static void main(String[] args) {
-
+    public static void main(String[] args) {    	
+    	try {
+			testSignAndSignAgainPasswordAsk();
+		}
+    	catch (Exception e) {
+			JFrameUtils.showErro("Erro", e.getMessage());
+		}
+	}
+    
+    public static void testGui() {
 		try {						
 			FrmTest frm = new FrmTest();
 			frm.setVisible(true);
 		}
 		catch (Exception e) {
 			e.printStackTrace();
-		}
-	}
+		}    	
+    }
+    
+    public static void testSignAndSignAgainPasswordAsk() throws Exception {
+    	
+    	JSign jSign = new JSign();
+    	
+    	List<MessageToSign> messages = new ArrayList<MessageToSign>();
+    	
+    	messages.add(new MessageToSign("file1.txt", new ByteArrayInputStream("Test File 1".getBytes())));
+    	messages.add(new MessageToSign("file2.txt", new ByteArrayInputStream("Test File 2".getBytes())));
+    	
+    	List<SignedMessage> signedMessages = jSign.signMessages(messages, true);
+    	
+    	System.out.println("Sign 1");
+    	
+    	List<MessageToSign> messages2 = new ArrayList<MessageToSign>();
+    	
+    	messages2.add(new MessageToSign("file3.txt", new ByteArrayInputStream("Test File 3".getBytes())));
+    	messages2.add(new MessageToSign("file4.txt", new ByteArrayInputStream("Test File 4".getBytes())));
 
-	private static void testAvailableProviders() throws Exception {
+    	// Deve pedir a senha novamente
+    	jSign.signMessages(messages2, true); 
+    	
+    	System.out.println("Sign 2");
+    }
+
+	public static void testAvailableProviders() throws Exception {
 		
 		final JSign jSign = new JSign();
 

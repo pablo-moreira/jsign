@@ -18,9 +18,9 @@ public abstract class KeyStoreHelper {
 	protected KeyStore keyStore;
 	protected PrivateKey privateKey;
 	protected Certificate[] certsChain;	
-	
+
 	public abstract KeyStoreType getType();
-	
+
 	public Certificate[] getCertsChain() {
 		return certsChain;
 	}
@@ -35,6 +35,10 @@ public abstract class KeyStoreHelper {
 	
 	public PrivateKey getPrivateKey() {
 		return privateKey;
+	}
+	
+	public String getCertificateAlias() {
+		return certificateAlias;
 	}
 		
 	public static List<X509Certificate> getCertificatesAvailable(KeyStore keyStore) throws Exception {
@@ -57,9 +61,5 @@ public abstract class KeyStoreHelper {
 		catch (KeyStoreException e) {
 			throw new Exception("O KeyStore não foi inicializado corretamente!\n" + e);
 		}
-	}
-
-	public String getCertificateAlias() {
-		return certificateAlias;
 	}
 }

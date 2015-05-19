@@ -1,19 +1,25 @@
 package com.github.jsign.manager;
 
 import java.io.File;
+import java.io.IOException;
 import java.security.KeyStore;
+import java.security.KeyStoreException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.security.auth.login.FailedLoginException;
+import javax.crypto.BadPaddingException;
 
+import com.github.jsign.exceptions.LoginCancelledException;
 import com.github.jsign.keystore.KeyStoreHelper;
 import com.github.jsign.keystore.PKCS12KeyStoreHelper;
 import com.github.jsign.model.Configuration;
 import com.github.jsign.model.PKCS12AvailableProvider;
+import com.github.jsign.util.ExceptionUtils;
 
 public class PKCS12Manager {
+	
+	private ConfigurationManager configurationManager;
 	
 	public List<PKCS12AvailableProvider> getAvailableProviders(Configuration configuration) {
 
@@ -30,20 +36,8 @@ public class PKCS12Manager {
 		
 		List<PKCS12KeyStoreHelper> keyStoreHelpers = new ArrayList<PKCS12KeyStoreHelper>();
 		
-		KeyStore keyStore = null;
-		
-		try {
-			keyStore = getKeyStore(availableProvider);
-		}
-		catch (Exception e) {
-			if (e.getCause() instanceof FailedLoginException) {
-				throw new Exception("O PIN digitado é inválido!");
-			}
-			else {
-				throw new Exception("Erro ao instanciar o repositório PKCS12, mensagem interna: " + e.getMessage());
-			}
-		}
-		
+		KeyStore keyStore = getKeyStore(availableProvider);
+				
 		if (keyStore != null) {
 			List<X509Certificate> certificatesAvailable = KeyStoreHelper.getCertificatesAvailable(keyStore);
 
@@ -54,48 +48,37 @@ public class PKCS12Manager {
 		
 		return keyStoreHelpers;
 	}
-	
-	//		catch (KeyStoreException e) {			
-//			throw new Exception("O tipo de KeyStore especificado nao esta disponivel para este provedor criptografico!\n" + e);
-//		} 
-//		catch (NoSuchAlgorithmException e) {
-//			throw new Exception("Nao foi possivel utilizar o algoritmo de verificacao de integridade do KeyStore!\n" + e);
-//		} 
-//		catch (CertificateException e) {
-//			throw new Exception("Nao foi possivel carregar algum dos certificados existentes no KeyStore!\n" + e);
-//		}
-//		catch (IOException e) {
-//			if (e.getCause() instanceof BadPaddingException) {
-//				throw new Exception("A senha do certificado está incorreta!\n" + e);
-//			}
-//			else {
-//				throw new Exception("Ocorreu um problema ao ler o arquivo de KeyStore especificado!\n" + e);
-//			}
-//		}
-	
-	public KeyStore getKeyStore(PKCS12AvailableProvider availableProvider) throws Exception {	
-		KeyStore.ProtectionParameter protectionParameter = new KeyStore.CallbackHandlerProtection(availableProvider.getDlgProtectionCallback());
-		KeyStore.Builder kb = KeyStore.Builder.newInstance("PKCS12", null, availableProvider.getPkcs12Certificate(), protectionParameter);
-		return kb.getKeyStore();
+		
+	public KeyStore getKeyStore(PKCS12AvailableProvider availableProvider) throws Exception {
+		
+		try {
+			KeyStore.ProtectionParameter protectionParameter = new KeyStore.CallbackHandlerProtection(availableProvider.getDlgProtectionCallback());
+			KeyStore.Builder kb = KeyStore.Builder.newInstance("PKCS12", null, availableProvider.getPkcs12Certificate(), protectionParameter);
+			return kb.getKeyStore();	
+		}		
+		catch (KeyStoreException e) {
+			if (e.getCause() instanceof IOException) {
+				if (e.getCause().getCause() instanceof BadPaddingException) {
+					throw new Exception("O PIN digitado é inválido!");
+				}
+				else if (ExceptionUtils.checkCauseInstanceOfRecursive(e, LoginCancelledException.class)) {
+					throw new Exception("Por favor, é necessário fornecer o PIN para liberar o certifiado digital!");
+				}
+				else {
+					throw new Exception("Ocorreu um problema ao ler o arquivo de PKCS12 especificado!\nMensagem Interna: " + e.getMessage());
+				}			
+			}
+			else {
+				throw new Exception("Erro ao instanciar o repositório PKCS12,\nMensagem interna: " + e.getMessage());
+			}
+		}
 	}
 
 	public KeyStoreHelper retrieveKeyStoreHelperByConfiguration(Configuration configuration) throws Exception {
 		
 		PKCS12AvailableProvider availableProvider = new PKCS12AvailableProvider(configuration.getPkcs12Filename());
 		
-		KeyStore keyStore;
-		
-		try {
-			keyStore = getKeyStore(availableProvider);
-		}
-		catch (Exception e) {
-			if (e.getCause() instanceof FailedLoginException) {
-				throw new Exception("O PIN digitado é inválido!");
-			}
-			else {
-				throw new Exception("Erro ao instanciar o repositório PKCS12, mensagem interna: " + e.getMessage());
-			}
-		}
+		KeyStore keyStore = getKeyStore(availableProvider);		
 		
 		if (keyStore != null) {
 			
@@ -112,5 +95,27 @@ public class PKCS12Manager {
 		}
 
 		return null;
+	}
+	
+	public void addPkcs12Certificate(Configuration configuration, File pkcs12Certificate) throws Exception {
+		
+		configuration.addPkcs12Certificate(pkcs12Certificate);
+		
+		getConfigurationManager().writeConfiguration(configuration);
+	}
+
+	public void deletePkcs12Certificate(Configuration configuration, File pkcs12Certificate) throws Exception {		
+		
+		configuration.getPkcs12Certificates().remove(pkcs12Certificate);
+		
+		getConfigurationManager().writeConfiguration(configuration);		
+	}
+
+	public ConfigurationManager getConfigurationManager() {
+		return configurationManager;
+	}
+
+	public void setConfigurationManager(ConfigurationManager configurationManager) {
+		this.configurationManager = configurationManager;
 	}
 }

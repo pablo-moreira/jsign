@@ -49,38 +49,11 @@ public class PKCS12KeyStoreHelper extends KeyStoreHelper {
 		this.keyStore = keyStore;
 		this.certificate = certificate;
 	}
- 
-	
-//	public PKCS12KeyStoreHelper(InputStream inputStream, char[] password) throws Exception {
-//		
-//		try{
-//			keyStore = KeyStore.getInstance("PKCS12");
-//			keyStore.load(inputStream, password);
-//		} 
-//		catch (KeyStoreException e) {			
-//			throw new Exception("O tipo de KeyStore especificado nao esta disponivel para este provedor criptografico!\n" + e);
-//		} 
-//		catch (NoSuchAlgorithmException e) {
-//			throw new Exception("Nao foi possivel utilizar o algoritmo de verificacao de integridade do KeyStore!\n" + e);
-//		} 
-//		catch (CertificateException e) {
-//			throw new Exception("Nao foi possivel carregar algum dos certificados existentes no KeyStore!\n" + e);
-//		}
-//		catch (IOException e) {
-//			if (e.getCause() instanceof BadPaddingException) {
-//				throw new Exception("A senha do certificado está incorreta!\n" + e);
-//			}
-//			else {
-//				throw new Exception("Ocorreu um problema ao ler o arquivo de KeyStore especificado!\n" + e);
-//			}
-//		}
-//	}
-	
+ 	
 	@Override
 	public KeyStoreType getType() {
 		return KeyStoreType.PKCS12;
 	}
-
 
 	public File getPkcs12Filename() {
 		return pkcs12Filename;

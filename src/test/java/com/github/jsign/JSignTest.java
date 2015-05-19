@@ -73,6 +73,8 @@ public class JSignTest {
     	
     	JSign jSign = new JSign();
     	
+    	jSign.showDlgConfiguration();
+    	
     	List<MessageToSign> messages = new ArrayList<MessageToSign>();
     	
     	messages.add(new MessageToSign("file1.txt", new ByteArrayInputStream("Test File 1".getBytes())));

@@ -23,6 +23,8 @@ public class JSignTest {
     public static void testSignHugeFile() throws Exception {
     
         final JSign sign = new JSign();
+
+        sign.showDlgConfiguration();
         
         Runtime runtime = Runtime.getRuntime();
 
@@ -51,7 +53,7 @@ public class JSignTest {
     	
     public static void main(String[] args) {    	
     	try {
-			testSignAndSignAgainPasswordAsk();
+    		testSignAndSignAgainPasswordAsk();
 		}
     	catch (Exception e) {
 			JFrameUtils.showErro("Erro", e.getMessage());

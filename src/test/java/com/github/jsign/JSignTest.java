@@ -7,7 +7,6 @@ import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.JOptionPane;
 
 import com.github.jsign.gui.FrmTest;
 import com.github.jsign.keystore.KeyStoreHelper;
@@ -24,8 +23,6 @@ public class JSignTest {
     public static void testSignHugeFile() throws Exception {
     
         final JSign sign = new JSign();
-
-        sign.showDlgConfiguration();
         
         Runtime runtime = Runtime.getRuntime();
 
@@ -74,6 +71,8 @@ public class JSignTest {
     public static void testSignAndSignAgainPasswordAsk() throws Exception {
     	
     	JSign jSign = new JSign();
+		
+		jSign.showDlgConfiguration();
     	
     	List<MessageToSign> messages = new ArrayList<MessageToSign>();
     	

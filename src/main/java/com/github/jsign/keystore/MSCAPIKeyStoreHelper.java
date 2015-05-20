@@ -138,4 +138,9 @@ public class MSCAPIKeyStoreHelper extends KeyStoreHelper {
 	public KeyStoreType getType() {
 		return KeyStoreType.MSCAPI;
 	}
+
+	@Override
+	public String getDescription() {
+		return getCertificateAlias();
+	}
 }

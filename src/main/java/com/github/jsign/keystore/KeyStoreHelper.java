@@ -20,6 +20,7 @@ public abstract class KeyStoreHelper {
 	protected Certificate[] certsChain;	
 
 	public abstract KeyStoreType getType();
+	public abstract String getDescription();
 
 	public Certificate[] getCertsChain() {
 		return certsChain;

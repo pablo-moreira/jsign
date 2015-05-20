@@ -18,6 +18,9 @@ import javax.swing.table.DefaultTableModel;
 
 import com.github.jsign.JSign;
 import com.github.jsign.keystore.KeyStoreHelper;
+import com.github.jsign.keystore.MSCAPIKeyStoreHelper;
+import com.github.jsign.keystore.PKCS11KeyStoreHelper;
+import com.github.jsign.keystore.PKCS12KeyStoreHelper;
 import com.github.jsign.model.AvailableProvider;
 import com.github.jsign.model.Configuration;
 import com.github.jsign.util.CertificateUtils;
@@ -67,8 +70,6 @@ public class DlgConfiguration extends javax.swing.JDialog {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        bgKeyStoreType = new javax.swing.ButtonGroup();
-        bgConfigurationType = new javax.swing.ButtonGroup();
         btnOK = new javax.swing.JButton();
         btnCancel = new javax.swing.JButton();
         jTabbedPane1 = new javax.swing.JTabbedPane();
@@ -90,9 +91,13 @@ public class DlgConfiguration extends javax.swing.JDialog {
         tblPkcs12Certificates = new javax.swing.JTable();
         btnAddPkcs12Certificate = new javax.swing.JButton();
         btnDeletePkcs12Certificate = new javax.swing.JButton();
+        jPanel1 = new javax.swing.JPanel();
         spTblCertificateInfo = new javax.swing.JScrollPane();
         taCertificateInfo = new javax.swing.JTextArea();
-        lblCertificateInfo = new javax.swing.JLabel();
+        jLabel1 = new javax.swing.JLabel();
+        txtCertificateType = new javax.swing.JTextField();
+        jLabel2 = new javax.swing.JLabel();
+        txtCertificateDescription = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Formulário de Configuração");
@@ -202,7 +207,7 @@ public class DlgConfiguration extends javax.swing.JDialog {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(lblCertificates)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(spTblCertificates, javax.swing.GroupLayout.DEFAULT_SIZE, 111, Short.MAX_VALUE)
+                .addComponent(spTblCertificates, javax.swing.GroupLayout.DEFAULT_SIZE, 113, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -239,7 +244,7 @@ public class DlgConfiguration extends javax.swing.JDialog {
             pnTabPkcs11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pnTabPkcs11Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(spTblPkcs11Drivers, javax.swing.GroupLayout.DEFAULT_SIZE, 338, Short.MAX_VALUE)
+                .addComponent(spTblPkcs11Drivers, javax.swing.GroupLayout.DEFAULT_SIZE, 373, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(pnTabPkcs11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(btnAddPkcs11Driver, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -256,7 +261,7 @@ public class DlgConfiguration extends javax.swing.JDialog {
                         .addComponent(btnAddPkcs11Driver)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnDeletePkcs11Driver)
-                        .addGap(0, 257, Short.MAX_VALUE)))
+                        .addGap(0, 261, Short.MAX_VALUE)))
                 .addContainerGap())
         );
 
@@ -303,7 +308,7 @@ public class DlgConfiguration extends javax.swing.JDialog {
             pnTabPkcs12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pnTabPkcs12Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(spTblPkcs12Certificates, javax.swing.GroupLayout.DEFAULT_SIZE, 336, Short.MAX_VALUE)
+                .addComponent(spTblPkcs12Certificates, javax.swing.GroupLayout.DEFAULT_SIZE, 371, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(pnTabPkcs12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(btnAddPkcs12Certificate, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -326,12 +331,52 @@ public class DlgConfiguration extends javax.swing.JDialog {
 
         jTabbedPane1.addTab("PKCS12", pnTabPkcs12);
 
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Certificado Configurado"));
+
         taCertificateInfo.setEditable(false);
         taCertificateInfo.setColumns(20);
         taCertificateInfo.setRows(5);
         spTblCertificateInfo.setViewportView(taCertificateInfo);
 
-        lblCertificateInfo.setText("Certificado configurado:");
+        jLabel1.setText("Tipo:");
+
+        txtCertificateType.setEditable(false);
+
+        jLabel2.setText("Descrição:");
+
+        txtCertificateDescription.setEditable(false);
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(spTblCertificateInfo)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addGap(3, 3, 3)
+                        .addComponent(txtCertificateType, javax.swing.GroupLayout.PREFERRED_SIZE, 86, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel2)
+                        .addGap(6, 6, 6)
+                        .addComponent(txtCertificateDescription)))
+                .addContainerGap())
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel1)
+                    .addComponent(txtCertificateType, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel2)
+                    .addComponent(txtCertificateDescription, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(spTblCertificateInfo, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(22, 22, 22))
+        );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -341,11 +386,8 @@ public class DlgConfiguration extends javax.swing.JDialog {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jTabbedPane1)
-                    .addComponent(spTblCertificateInfo, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(lblCertificateInfo)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
+                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
                         .addComponent(btnOK, javax.swing.GroupLayout.PREFERRED_SIZE, 67, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -356,11 +398,9 @@ public class DlgConfiguration extends javax.swing.JDialog {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 359, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 149, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(lblCertificateInfo)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(spTblCertificateInfo, javax.swing.GroupLayout.DEFAULT_SIZE, 101, Short.MAX_VALUE)
+                .addComponent(jTabbedPane1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnCancel)
@@ -506,8 +546,6 @@ public class DlgConfiguration extends javax.swing.JDialog {
 	}
 	
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.ButtonGroup bgConfigurationType;
-    private javax.swing.ButtonGroup bgKeyStoreType;
     private javax.swing.JButton btnAddPkcs11Driver;
     private javax.swing.JButton btnAddPkcs12Certificate;
     private javax.swing.JButton btnCancel;
@@ -515,8 +553,10 @@ public class DlgConfiguration extends javax.swing.JDialog {
     private javax.swing.JButton btnDeletePkcs12Certificate;
     private javax.swing.JButton btnLoadAvailableProviders;
     private javax.swing.JButton btnOK;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JTabbedPane jTabbedPane1;
-    private javax.swing.JLabel lblCertificateInfo;
     private javax.swing.JLabel lblCertificates;
     private javax.swing.JLabel lblProviders;
     private javax.swing.JPanel pnTabConfiguration;
@@ -532,6 +572,8 @@ public class DlgConfiguration extends javax.swing.JDialog {
     private javax.swing.JTable tblCertificates;
     private javax.swing.JTable tblPkcs11Drivers;
     private javax.swing.JTable tblPkcs12Certificates;
+    private javax.swing.JTextField txtCertificateDescription;
+    private javax.swing.JTextField txtCertificateType;
     // End of variables declaration//GEN-END:variables
 
   	public void start(boolean loadKeyStoreHelper) {
@@ -559,22 +601,6 @@ public class DlgConfiguration extends javax.swing.JDialog {
         setVisible(true);        
     }    
     
-    public Configuration getConfiguration() {
-
-        if (bgKeyStoreType.getSelection() != null) {
-           
-            Configuration configuration = new Configuration();
-//            configuration.setType(bgKeyStoreType.getSelection().getActionCommand());
-//            if (Configuration.KEY_STORE_TYPE_PKCS12.equals(bgKeyStoreType.getSelection().getActionCommand())) {
-//                configuration.setPkcs12File(pkcs12File);
-//            }
-            return configuration;
-        }
-        else {
-            return null;
-        }
-    }
-	
     public int getReturnStatus() {
         return returnStatus;
     }
@@ -650,9 +676,11 @@ public class DlgConfiguration extends javax.swing.JDialog {
 
 			X509Certificate certificate = keyStoreHelperSelected.getCertificate();
 
+			txtCertificateType.setText(keyStoreHelperSelected.getType().name());
+			txtCertificateDescription.setText(keyStoreHelperSelected.getDescription());
+						
             taCertificateInfo.setText("");
-			taCertificateInfo.append("Tipo de Provider: " + keyStoreHelperSelected.getType() + "\n");
-
+			
 			String[] items = certificate.getSubjectDN().getName().split(",");
 
 			for (int i=items.length - 1; i >= 0; i--) {

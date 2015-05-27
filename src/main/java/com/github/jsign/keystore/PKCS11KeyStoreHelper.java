@@ -31,4 +31,9 @@ public class PKCS11KeyStoreHelper extends KeyStoreHelper {
 	public long getSlot() {
 		return slot;
 	}
+
+	@Override
+	public String getDescription() {
+		return getTokenConfig().getLibrary() + ", " + getSlot();
+	}
 }

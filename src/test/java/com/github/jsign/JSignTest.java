@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+
 import com.github.jsign.gui.FrmTest;
 import com.github.jsign.keystore.KeyStoreHelper;
 import com.github.jsign.model.AvailableProvider;
@@ -72,8 +73,8 @@ public class JSignTest {
     public static void testSignAndSignAgainPasswordAsk() throws Exception {
     	
     	JSign jSign = new JSign();
-    	
-    	jSign.showDlgConfiguration();
+		
+		jSign.showDlgConfiguration();
     	
     	List<MessageToSign> messages = new ArrayList<MessageToSign>();
     	

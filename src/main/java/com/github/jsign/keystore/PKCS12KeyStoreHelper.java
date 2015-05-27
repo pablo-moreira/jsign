@@ -58,4 +58,9 @@ public class PKCS12KeyStoreHelper extends KeyStoreHelper {
 	public File getPkcs12Filename() {
 		return pkcs12Filename;
 	}
+
+	@Override
+	public String getDescription() {
+		return getPkcs12Filename().getAbsolutePath();
+	}
 }

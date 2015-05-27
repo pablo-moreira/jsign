@@ -5,7 +5,6 @@ import java.io.InputStream;
 public class MessageToSign {
 
 	private String name;
-	
 	private InputStream message;
 	
 	public MessageToSign(InputStream message) {

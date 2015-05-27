@@ -26,6 +26,7 @@ public class JSign implements SignLogProgress {
 	private SignLog log;
 	private boolean allowsCoSigning;
 	private Manager manager = new Manager();
+	private KeyStoreHelper keyStore;
 	
 	public JSign() throws Exception {
 		try {						
@@ -71,18 +72,25 @@ public class JSign implements SignLogProgress {
 	
 		MessageToSign messageToSign = new MessageToSign(file.getName(), new FileInputStream(file));
 					
-		List<SignedMessage> signedData = signMessages(Arrays.asList(messageToSign), attached);
-		
-		return signedData.get(0);
+		return signMessage(messageToSign, attached);
 	}
+	
+	public SignedMessage signMessage(MessageToSign messageToSign, boolean attached) throws Exception {
 		
+		List<SignedMessage> signMessages = signMessages(Arrays.asList(messageToSign), attached);
+		
+		return signMessages.get(0);
+	}
+	
 	public List<SignedMessage> signMessages(List<MessageToSign> messages, boolean attached) throws Exception {
 		
-		KeyStoreHelper storeHelper = initKeyStore();
+		if (this.keyStore == null) {
+			this.keyStore = initKeyStore();
+		}
 		
-		return getManager().getSignManager().signMessages(storeHelper, messages, attached, isAllowsCoSigning(), this);
+		return getManager().getSignManager().signMessages(this.keyStore, messages, attached, isAllowsCoSigning(), this);
 	}
-		
+	
 	public KeyStoreHelper initKeyStore() throws Exception {
 		
 		KeyStoreHelper keyStoreHelper = null;
@@ -101,6 +109,10 @@ public class JSign implements SignLogProgress {
 		}
 		
 		return keyStoreHelper;
+	}
+	
+	public void resetKeyStore() {
+		this.keyStore = null;
 	}
 	
 	public KeyStoreHelper showDlgConfiguration() {

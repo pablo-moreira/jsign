@@ -1,5 +1,6 @@
 package com.github.jsign;
 
+import java.awt.Frame;
 import java.io.File;
 import java.io.FileInputStream;
 import java.security.Security;
@@ -29,6 +30,10 @@ public class JSign implements SignLogProgress {
 	private KeyStoreHelper keyStore;
 	
 	public JSign() throws Exception {
+		this(null);
+	}
+	
+	public JSign(Frame parent) throws Exception {
 		try {						
 			Security.addProvider(new BouncyCastleProvider());
 						
@@ -40,14 +45,14 @@ public class JSign implements SignLogProgress {
 				this.configuration = new Configuration();
 			}
 			
-			dlgConfiguration = new DlgConfiguration(null, true, this);
+			dlgConfiguration = new DlgConfiguration(parent, true, this);
 		}
 		catch (Exception e) {
 			e.printStackTrace();
 			throw new Exception("Erro na inicialização do assinador, mensagem interna: " + e.getMessage());
 		}
 	}
-	
+
 	public SignProgress getProgress() {
 		return progress;
 	}

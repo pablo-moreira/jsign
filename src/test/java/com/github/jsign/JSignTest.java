@@ -53,7 +53,7 @@ public class JSignTest {
     	
     public static void main(String[] args) {    	
     	try {
-    		testSignAndSignAgainPasswordAsk();
+    		testGui();
 		}
     	catch (Exception e) {
 			JFrameUtils.showErro("Erro", e.getMessage());

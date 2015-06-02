@@ -23,6 +23,16 @@ import com.github.jsign.util.FileUtils;
 
 public class SignManager {
 
+	private Manager manager;
+
+	public SignManager(Manager manager) {
+		this.manager = manager;
+	}
+		
+	public Manager getManager() {
+		return manager;
+	}
+	
 	public boolean isSignedData(byte[] data) {
 		try {
 			CMSSignedData pkcs7 = new CMSSignedData(data);

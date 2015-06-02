@@ -19,8 +19,16 @@ import com.github.jsign.util.ExceptionUtils;
 
 public class PKCS12Manager {
 	
-	private ConfigurationManager configurationManager;
+	private Manager manager;
 	
+	public PKCS12Manager(Manager manager) {
+		this.manager = manager;
+	}
+	
+	public Manager getManager() {
+		return manager;
+	}
+
 	public List<PKCS12AvailableProvider> getAvailableProviders(Configuration configuration) {
 
 		List<PKCS12AvailableProvider> availableProviders = new ArrayList<PKCS12AvailableProvider>();
@@ -101,21 +109,13 @@ public class PKCS12Manager {
 		
 		configuration.addPkcs12Certificate(pkcs12Certificate);
 		
-		getConfigurationManager().writeConfiguration(configuration);
+		getManager().getConfigurationManager().writeConfiguration(configuration);
 	}
 
 	public void deletePkcs12Certificate(Configuration configuration, File pkcs12Certificate) throws Exception {		
 		
 		configuration.getPkcs12Certificates().remove(pkcs12Certificate);
 		
-		getConfigurationManager().writeConfiguration(configuration);		
-	}
-
-	public ConfigurationManager getConfigurationManager() {
-		return configurationManager;
-	}
-
-	public void setConfigurationManager(ConfigurationManager configurationManager) {
-		this.configurationManager = configurationManager;
+		getManager().getConfigurationManager().writeConfiguration(configuration);		
 	}
 }

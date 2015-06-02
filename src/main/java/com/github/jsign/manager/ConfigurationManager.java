@@ -32,10 +32,16 @@ public class ConfigurationManager {
 	private static final String KEY_PKCS11_LIBRARY = "pkcs11Library";
 	private static final String KEY_PKCS11_SLOT = "pkcs11Slot";
 	
-	private PKCS11Manager pkcs11Manager;
-	private MSCAPIManager mscapiManager;
-	private PKCS12Manager pkcs12Manager;
+	private Manager manager;
 	
+	public ConfigurationManager(Manager manager) {
+		this.manager = manager;
+	}	
+
+	public Manager getManager() {
+		return manager;
+	}
+
 	public void writeConfiguration(Configuration configuration) throws Exception {
 	
 		try {
@@ -205,42 +211,30 @@ public class ConfigurationManager {
 		
 		List<AvailableProvider> availableProviders = new ArrayList<AvailableProvider>();
 		
-		AvailableProvider mscapiAvailableProvider = mscapiManager.getAvailableProvider();
+		AvailableProvider mscapiAvailableProvider = getManager().getMscapiManager().getAvailableProvider();
 		
 		if (mscapiAvailableProvider != null) {
 			availableProviders.add(mscapiAvailableProvider);
 		}
 		
-		availableProviders.addAll(pkcs12Manager.getAvailableProviders(configuration));
-		availableProviders.addAll(pkcs11Manager.getAvailableProviders(configuration));
+		availableProviders.addAll(getManager().getPkcs12Manager().getAvailableProviders(configuration));
+		availableProviders.addAll(getManager().getPkcs11Manager().getAvailableProviders(configuration));
 		
 		return availableProviders;
 	}
-
-	public void setPKCS11Manager(PKCS11Manager pkcs11Manager) {
-		this.pkcs11Manager = pkcs11Manager;
-	}
-
-	public void setMSCAPIManager(MSCAPIManager mscapiManager) {
-		this.mscapiManager = mscapiManager;		
-	}
-
-	public void setPKCS12Manager(PKCS12Manager pkcs12Manager) {
-		this.pkcs12Manager = pkcs12Manager;		
-	}
-
+	
 	public List<KeyStoreHelper> getKeyStoresHelpersAvailable(AvailableProvider availableProvider) throws Exception {
 		
 		ArrayList<KeyStoreHelper> keyStoreHelpers = new ArrayList<KeyStoreHelper>();
 		
 		if (availableProvider instanceof MSCAPIAvailableProvider) {
-			keyStoreHelpers.addAll(mscapiManager.getKeyStoreHelpers((MSCAPIAvailableProvider) availableProvider));
+			keyStoreHelpers.addAll(getManager().getMscapiManager().getKeyStoreHelpers((MSCAPIAvailableProvider) availableProvider));
 		}
 		else if (availableProvider instanceof PKCS11AvailableProvider) {
-			keyStoreHelpers.addAll(pkcs11Manager.getKeyStoreHelpers((PKCS11AvailableProvider) availableProvider));
+			keyStoreHelpers.addAll(getManager().getPkcs11Manager().getKeyStoreHelpers((PKCS11AvailableProvider) availableProvider));
 		}
 		else if (availableProvider instanceof PKCS12AvailableProvider) {
-			keyStoreHelpers.addAll(pkcs12Manager.getKeyStoreHelpers((PKCS12AvailableProvider) availableProvider));
+			keyStoreHelpers.addAll(getManager().getPkcs12Manager().getKeyStoreHelpers((PKCS12AvailableProvider) availableProvider));
 		}
 		
 		return keyStoreHelpers;
@@ -250,16 +244,16 @@ public class ConfigurationManager {
 		
 		if (configuration.getKeyStoreType() != null) {	
 			if (KeyStoreType.MSCAPI == configuration.getKeyStoreType()) {
-				return mscapiManager.retrieveKeyStoreHelperByConfiguration(configuration);
+				return getManager().getMscapiManager().retrieveKeyStoreHelperByConfiguration(configuration);
 			}
 			else if (KeyStoreType.PKCS12 == configuration.getKeyStoreType()) {
-				return pkcs12Manager.retrieveKeyStoreHelperByConfiguration(configuration);
+				return getManager().getPkcs12Manager().retrieveKeyStoreHelperByConfiguration(configuration);
 			}
 			else if (KeyStoreType.PKCS11 == configuration.getKeyStoreType()) {
-				return pkcs11Manager.retrieveKeyStoreHelperByConfiguration(configuration);
+				return getManager().getPkcs11Manager().retrieveKeyStoreHelperByConfiguration(configuration);
 			}
 		}
 		
 		return null;
-	}
+	}	
 }

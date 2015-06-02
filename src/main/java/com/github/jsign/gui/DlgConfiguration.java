@@ -72,7 +72,7 @@ public class DlgConfiguration extends javax.swing.JDialog {
 
         btnOK = new javax.swing.JButton();
         btnCancel = new javax.swing.JButton();
-        jTabbedPane1 = new javax.swing.JTabbedPane();
+        tbPanel = new javax.swing.JTabbedPane();
         pnTabConfiguration = new javax.swing.JPanel();
         btnLoadAvailableProviders = new javax.swing.JButton();
         lblProviders = new javax.swing.JLabel();
@@ -211,7 +211,7 @@ public class DlgConfiguration extends javax.swing.JDialog {
                 .addContainerGap())
         );
 
-        jTabbedPane1.addTab("Configuração", pnTabConfiguration);
+        tbPanel.addTab("Configuração", pnTabConfiguration);
 
         tblPkcs11Drivers.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -265,9 +265,10 @@ public class DlgConfiguration extends javax.swing.JDialog {
                 .addContainerGap())
         );
 
-        jTabbedPane1.addTab("PKCS11", pnTabPkcs11);
+        tbPanel.addTab("PKCS11", pnTabPkcs11);
 
         pnTabPkcs12.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
+        pnTabPkcs12.setEnabled(false);
 
         tblPkcs12Certificates.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -285,6 +286,7 @@ public class DlgConfiguration extends javax.swing.JDialog {
                 return types [columnIndex];
             }
         });
+        tblPkcs12Certificates.setEnabled(false);
         tblPkcs12Certificates.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         spTblPkcs12Certificates.setViewportView(tblPkcs12Certificates);
 
@@ -329,7 +331,7 @@ public class DlgConfiguration extends javax.swing.JDialog {
                 .addContainerGap())
         );
 
-        jTabbedPane1.addTab("PKCS12", pnTabPkcs12);
+        tbPanel.addTab("PKCS12", pnTabPkcs12);
 
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Certificado Configurado"));
 
@@ -385,7 +387,7 @@ public class DlgConfiguration extends javax.swing.JDialog {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jTabbedPane1)
+                    .addComponent(tbPanel)
                     .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
@@ -400,7 +402,7 @@ public class DlgConfiguration extends javax.swing.JDialog {
                 .addContainerGap()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 149, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jTabbedPane1)
+                .addComponent(tbPanel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnCancel)
@@ -556,7 +558,6 @@ public class DlgConfiguration extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JLabel lblCertificates;
     private javax.swing.JLabel lblProviders;
     private javax.swing.JPanel pnTabConfiguration;
@@ -568,6 +569,7 @@ public class DlgConfiguration extends javax.swing.JDialog {
     private javax.swing.JScrollPane spTblPkcs11Drivers;
     private javax.swing.JScrollPane spTblPkcs12Certificates;
     private javax.swing.JTextArea taCertificateInfo;
+    private javax.swing.JTabbedPane tbPanel;
     private javax.swing.JTable tblAvailableProviders;
     private javax.swing.JTable tblCertificates;
     private javax.swing.JTable tblPkcs11Drivers;
@@ -580,9 +582,16 @@ public class DlgConfiguration extends javax.swing.JDialog {
     
 		Configuration configuration = jSign.getConfiguration();
 		
-        reset();
+         reset();
 		
 		this.btnOK.setEnabled(false);
+                 
+                  if (jSign.isAllowsPkcs12Certificate()) {
+                      tbPanel.setEnabledAt(2, true);
+                  }
+                  else {
+                      tbPanel.setEnabledAt(2, false);
+                  }
 		
 		if (configuration.getKeyStoreType() != null && loadKeyStoreHelper) {			
 			try {

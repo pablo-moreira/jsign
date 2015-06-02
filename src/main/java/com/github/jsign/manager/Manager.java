@@ -9,19 +9,11 @@ public class Manager {
 	private SignManager signManager;
 		
 	public Manager() {
-		mscapiManager = new MSCAPIManager();
-		pkcs11Manager = new PKCS11Manager();
-		pkcs12Manager = new PKCS12Manager();
-		signManager = new SignManager();		
-		configurationManager = new ConfigurationManager();
-		
-		configurationManager.setMSCAPIManager(mscapiManager);
-		configurationManager.setPKCS11Manager(pkcs11Manager);
-		configurationManager.setPKCS12Manager(pkcs12Manager);
-		
-		pkcs12Manager.setConfigurationManager(configurationManager);		
-		pkcs11Manager.setConfigurationManager(configurationManager);
-		
+		mscapiManager = new MSCAPIManager(this);
+		pkcs11Manager = new PKCS11Manager(this);
+		pkcs12Manager = new PKCS12Manager(this);
+		signManager = new SignManager(this);		
+		configurationManager = new ConfigurationManager(this);		
 	}
 
 	public PKCS11Manager getPkcs11Manager() {

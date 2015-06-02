@@ -26,6 +26,7 @@ public class JSign implements SignLogProgress {
 	private SignProgress progress;
 	private SignLog log;
 	private boolean allowsCoSigning;
+	private boolean allowsPkcs12Certificate = true;
 	private Manager manager = new Manager();
 	private KeyStoreHelper keyStore;
 	
@@ -171,4 +172,12 @@ public class JSign implements SignLogProgress {
 	public Configuration getConfiguration() {
 		return configuration;
 	}
+
+	public boolean isAllowsPkcs12Certificate() {
+		return allowsPkcs12Certificate;
+	}
+
+	public void setAllowsPkcs12Certificate(boolean allowsPkcs12Certificate) {
+		this.allowsPkcs12Certificate = allowsPkcs12Certificate;
+	}	
 }

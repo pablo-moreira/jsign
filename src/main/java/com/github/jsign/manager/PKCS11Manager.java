@@ -30,8 +30,16 @@ public class PKCS11Manager {
 
 	private PKCS11Tokens tokens = new PKCS11Tokens();
 	private DlgProtectionCallback callbackHandler = new DlgProtectionCallback();
-	private ConfigurationManager configurationManager;
+	private Manager manager;
 	
+	public PKCS11Manager(Manager manager) {
+		this.manager = manager;
+	}
+	
+	public Manager getManager() {
+		return manager;
+	}
+
 	public Provider getProvider(TokenConfig tokenConfig, Long slot) {
 		return getProvider(tokenConfig.getToken().getName(), tokenConfig.getLibrary(), slot);
 	}
@@ -232,14 +240,14 @@ public class PKCS11Manager {
 		
 		configuration.addPkcs11Driver(pkcs11Driver);
 		
-		getConfigurationManager().writeConfiguration(configuration);
+		getManager().getConfigurationManager().writeConfiguration(configuration);
 	}
 
 	public void deletePkcs11Driver(Configuration configuration, File pkcs11Driver) throws Exception {
 		
 		configuration.getPkcs11Drivers().remove(pkcs11Driver);
 		
-		getConfigurationManager().writeConfiguration(configuration);
+		getManager().getConfigurationManager().writeConfiguration(configuration);
 	}
 	
 	public KeyStoreHelper retrieveKeyStoreHelperByConfiguration(Configuration configuration) {
@@ -254,13 +262,5 @@ public class PKCS11Manager {
 //		}
 		
 		return null;
-	}
-	
-	public ConfigurationManager getConfigurationManager() {
-		return configurationManager;
-	}
-
-	public void setConfigurationManager(ConfigurationManager configurationManager) {
-		this.configurationManager = configurationManager;		
 	}
 }

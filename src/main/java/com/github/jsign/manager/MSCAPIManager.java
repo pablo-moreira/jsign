@@ -15,6 +15,12 @@ import com.github.jsign.model.OperatingSystem;
 
 public class MSCAPIManager {
 
+	private Manager manager;
+
+	public MSCAPIManager(Manager manager) {
+		this.manager = manager;
+	}
+
 	public List<MSCAPIKeyStoreHelper> getKeyStoreHelpers(MSCAPIAvailableProvider availableProvider) {
 		
 		List<MSCAPIKeyStoreHelper> helpers = new ArrayList<MSCAPIKeyStoreHelper>();
@@ -84,5 +90,9 @@ public class MSCAPIManager {
 		}
 
 		return null;
+	}
+
+	public Manager getManager() {
+		return manager;
 	}
 }

@@ -462,7 +462,7 @@ public class DlgConfiguration extends javax.swing.JDialog {
 
     private void btnLoadAvailableProvidersActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLoadAvailableProvidersActionPerformed
 		
-    	availableProviders = jSign.getManager().getConfigurationManager().getAvailableProviders(jSign.getConfiguration());
+    	availableProviders = jSign.getManager().getConfigurationManager().getAvailableProviders(jSign.getConfiguration(), jSign.isAllowsPkcs12Certificate());
     	
     	loadAvailableProviders();
     }//GEN-LAST:event_btnLoadAvailableProvidersActionPerformed

@@ -207,7 +207,7 @@ public class ConfigurationManager {
 		}
 	}
 
-	public List<AvailableProvider> getAvailableProviders(Configuration configuration) {
+	public List<AvailableProvider> getAvailableProviders(Configuration configuration, boolean allowsPkcs12Certificate) {
 		
 		List<AvailableProvider> availableProviders = new ArrayList<AvailableProvider>();
 		
@@ -217,7 +217,10 @@ public class ConfigurationManager {
 			availableProviders.add(mscapiAvailableProvider);
 		}
 		
-		availableProviders.addAll(getManager().getPkcs12Manager().getAvailableProviders(configuration));
+		if (allowsPkcs12Certificate) {
+			availableProviders.addAll(getManager().getPkcs12Manager().getAvailableProviders(configuration));			
+		}
+		
 		availableProviders.addAll(getManager().getPkcs11Manager().getAvailableProviders(configuration));
 		
 		return availableProviders;
@@ -255,5 +258,9 @@ public class ConfigurationManager {
 		}
 		
 		return null;
+	}
+
+	public List<AvailableProvider> getAvailableProviders(Configuration configuration) {
+		return getAvailableProviders(configuration, true);
 	}	
 }

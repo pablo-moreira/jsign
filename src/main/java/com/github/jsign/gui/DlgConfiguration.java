@@ -580,18 +580,18 @@ public class DlgConfiguration extends javax.swing.JDialog {
 
   	public void start(boolean loadKeyStoreHelper) {
     
-		Configuration configuration = jSign.getConfiguration();
+  		Configuration configuration = jSign.getConfiguration();
 		
-         reset();
+  		reset();
 		
-		this.btnOK.setEnabled(false);
+  		this.btnOK.setEnabled(false);
                  
-                  if (jSign.isAllowsPkcs12Certificate()) {
-                      tbPanel.setEnabledAt(2, true);
-                  }
-                  else {
-                      tbPanel.setEnabledAt(2, false);
-                  }
+  		if (jSign.isAllowsPkcs12Certificate()) {
+  			tbPanel.setEnabledAt(2, true);
+  		}
+        else {
+        	tbPanel.setEnabledAt(2, false);
+        }
 		
 		if (configuration.getKeyStoreType() != null && loadKeyStoreHelper) {			
 			try {

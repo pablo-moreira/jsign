@@ -2,7 +2,6 @@ package com.github.jsign;
 
 import java.awt.Frame;
 import java.io.File;
-import java.io.FileInputStream;
 import java.security.Security;
 import java.util.Arrays;
 import java.util.List;
@@ -18,6 +17,7 @@ import com.github.jsign.manager.Manager;
 import com.github.jsign.model.Configuration;
 import com.github.jsign.model.MessageToSign;
 import com.github.jsign.model.SignedMessage;
+import com.github.jsign.util.FileUtils;
 
 public class JSign implements SignLogProgress {
 
@@ -76,7 +76,7 @@ public class JSign implements SignLogProgress {
 			throw new Exception("Por favor, selecione algum arquivo para realizar a assinatura digital!");
 		}
 	
-		MessageToSign messageToSign = new MessageToSign(file.getName(), new FileInputStream(file));
+		MessageToSign messageToSign = new MessageToSign(file.getName(), FileUtils.getFileBytes(file));
 					
 		return signMessage(messageToSign, attached);
 	}

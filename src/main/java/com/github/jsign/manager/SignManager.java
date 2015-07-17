@@ -19,7 +19,6 @@ import com.github.jsign.interfaces.SignLogProgress;
 import com.github.jsign.keystore.KeyStoreHelper;
 import com.github.jsign.model.MessageToSign;
 import com.github.jsign.model.SignedMessage;
-import com.github.jsign.util.FileUtils;
 
 public class SignManager {
 
@@ -44,9 +43,9 @@ public class SignManager {
 		}
 	}
 
-	public List<SignedMessage> signMessages(KeyStoreHelper storeHelper, List<MessageToSign> messages, boolean attached, boolean allowsCoSigning, SignLogProgress logProgress) throws Exception { 
+	public List<SignedMessage> signMessages(KeyStoreHelper storeHelper, List<MessageToSign> messagesToSign, boolean attached, boolean allowsCoSigning, SignLogProgress logProgress) throws Exception { 
 
-		if (messages == null || messages.isEmpty()) {
+		if (messagesToSign == null || messagesToSign.isEmpty()) {
 			throw new Exception("Por favor, selecione alguma mensagem para realizar a assinatura digital!");
 		}
 		
@@ -77,12 +76,10 @@ public class SignManager {
 		if (!allowsCoSigning) {
 
 			// Verifica se tem algum arquivo ja assinado
-			for (MessageToSign message : messages) {
-	
-				byte[] mensagem = FileUtils.getInputStreamBytes(message.getMessage());
-	
-				if (isSignedData(mensagem)) {
-					throw new Exception (MessageFormat.format("O assinador não suporta co-assinatura! o arquivo ({0}) já foi assinado!", message.isDefinedName() ? message.getName() : i));
+			for (MessageToSign messageToSign : messagesToSign) {
+		
+				if (isSignedData(messageToSign.getMessage())) {
+					throw new Exception (MessageFormat.format("O assinador não suporta co-assinatura! o arquivo ({0}) já foi assinado!", messageToSign.isDefinedName() ? messageToSign.getName() : i));
 				}
 				
 				i++;
@@ -91,7 +88,7 @@ public class SignManager {
 		
 		List<SignedMessage> signedMessages = new ArrayList<SignedMessage>();
 
-		for (MessageToSign message : messages) {
+		for (MessageToSign message : messagesToSign) {
 			signedMessages.add(signMessage(storeHelper, certs, attached, logProgress, message));
 		}
 		
@@ -101,9 +98,9 @@ public class SignManager {
 	private SignedMessage signMessage(KeyStoreHelper keyStoreHelper, CertStore certs, boolean attached, SignLogProgress logProgress, MessageToSign messageToSign) throws Exception {
 
 		logProgress.printLogAndProgress("Assinando: " + messageToSign.getName());
-		
+
 		try {
-			CMSProcessable msg = new CMSProcessableByteArray(FileUtils.getInputStreamBytes(messageToSign.getMessage()));
+			CMSProcessable msg = new CMSProcessableByteArray(messageToSign.getMessage());
 
 			CMSSignedDataGenerator gen = new CMSSignedDataGenerator();                
 			gen.addSigner(keyStoreHelper.getPrivateKey(), keyStoreHelper.getCertificate(), CMSSignedDataGenerator.DIGEST_SHA1);

@@ -1,19 +1,16 @@
 package com.github.jsign.model;
 
-import java.io.InputStream;
 
 public class MessageToSign {
 
 	private String name;
-	private InputStream message;
+	private byte[] message;
 	
-	public MessageToSign(InputStream message) {
-		super();
+	public MessageToSign(byte[] message) {
 		this.message = message;
 	}
 
-	public MessageToSign(String name, InputStream message) {
-		super();
+	public MessageToSign(String name, byte[] message) {
 		this.name = name;
 		this.message = message;
 	}
@@ -26,11 +23,11 @@ public class MessageToSign {
 		this.name = name;
 	}
 
-	public InputStream getMessage() {
+	public byte[] getMessage() {
 		return message;
 	}
 
-	public void setMessage(InputStream message) {
+	public void setMessage(byte[] message) {
 		this.message = message;
 	}
 

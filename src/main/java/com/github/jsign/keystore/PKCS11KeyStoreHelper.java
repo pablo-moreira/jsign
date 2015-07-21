@@ -24,10 +24,10 @@ public class PKCS11KeyStoreHelper extends KeyStoreHelper {
 		catch (KeyStoreException e) {
 			throw new Exception("Não foi possível recuperar o alias do certificado PKCS11, mensagem interna: " + e.getMessage());
 		}
-		
+
 		try {
 			this.certsChain = keyStore.getCertificateChain(this.certificateAlias);
-		} 
+		}
 		catch (KeyStoreException e) {
 			throw new Exception("Não foi possível recuperar a cadeia de certificado do certificado PKCS11, mensagem interna: " + e.getMessage());
 		}
@@ -49,7 +49,6 @@ public class PKCS11KeyStoreHelper extends KeyStoreHelper {
 		this.slot = slot;
 		this.certificate = certificate;
 		this.keyStore = keyStore;
-		
 	}
 
 	@Override

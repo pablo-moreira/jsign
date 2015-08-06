@@ -16,7 +16,7 @@ import java.io.File;
 public class PKCS12AvailableProvider extends AvailableProvider {
 
 	private final File pkcs12Certificate;
-	private final DlgProtectionCallback dlgProtectionCallback = new DlgProtectionCallback();
+	private final DlgProtectionCallback dlgProtectionCallback = new DlgProtectionCallback(this);
 
 	public PKCS12AvailableProvider(File pkcs12Certificate) {
 		this.pkcs12Certificate = pkcs12Certificate;

@@ -28,8 +28,7 @@ import com.github.jsign.util.PKCS11Wrapper;
 
 public class PKCS11Manager {
 
-	private PKCS11Tokens tokens = new PKCS11Tokens();
-	private DlgProtectionCallback callbackHandler = new DlgProtectionCallback();
+	private PKCS11Tokens tokens = new PKCS11Tokens();	
 	private Manager manager;
 	
 	public PKCS11Manager(Manager manager) {
@@ -184,7 +183,7 @@ public class PKCS11Manager {
 					KeyStore keyStore = null;
 					
 					try {
-						keyStore = getKeyStore(provider);
+						keyStore = getKeyStore(provider, availableProvider.getDlgProtectionCallback());
 					}
 					catch (Exception e) {
 						if (e.getCause() instanceof FailedLoginException) {
@@ -202,7 +201,7 @@ public class PKCS11Manager {
 			KeyStore keyStore = null;
 			
 			try {
-				keyStore = getKeyStore(availableProvider.getProvider());
+				keyStore = getKeyStore(availableProvider.getProvider(), availableProvider.getDlgProtectionCallback());
 			}
 			catch (Exception e) {
 				if (e.getCause() instanceof FailedLoginException) {
@@ -230,8 +229,8 @@ public class PKCS11Manager {
 		return helpers;
 	}
 	
-	private KeyStore getKeyStore(Provider provider) throws KeyStoreException {		
-		KeyStore.ProtectionParameter protectionParameter = new KeyStore.CallbackHandlerProtection(callbackHandler);
+	private KeyStore getKeyStore(Provider provider, DlgProtectionCallback dlgProtectionCallback) throws KeyStoreException {		
+		KeyStore.ProtectionParameter protectionParameter = new KeyStore.CallbackHandlerProtection(dlgProtectionCallback);
 		KeyStore.Builder kb = KeyStore.Builder.newInstance("PKCS11", provider, protectionParameter);
 		return kb.getKeyStore();
 	}

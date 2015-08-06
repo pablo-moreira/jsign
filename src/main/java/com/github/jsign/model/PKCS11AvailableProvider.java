@@ -3,12 +3,15 @@ package com.github.jsign.model;
 import java.security.KeyStore;
 import java.security.Provider;
 
+import com.github.jsign.gui.DlgProtectionCallback;
+
 public class PKCS11AvailableProvider extends AvailableProvider {
 
 	private Long slot;
 	private TokenConfig tokenConfig;
 	private KeyStore keyStore;
 	private Provider provider;
+	private DlgProtectionCallback dlgProtectionCallback = new DlgProtectionCallback(this);
 
 	public PKCS11AvailableProvider(Provider provider, TokenConfig tokenConfig, Long slot) {
 		this.provider = provider;
@@ -64,5 +67,9 @@ public class PKCS11AvailableProvider extends AvailableProvider {
 
 	public Provider getProvider() {
 		return provider;
+	}
+	
+	public DlgProtectionCallback getDlgProtectionCallback() {
+		return dlgProtectionCallback;
 	}
 }

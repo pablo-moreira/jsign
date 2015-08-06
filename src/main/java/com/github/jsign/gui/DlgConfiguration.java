@@ -18,9 +18,6 @@ import javax.swing.table.DefaultTableModel;
 
 import com.github.jsign.JSign;
 import com.github.jsign.keystore.KeyStoreHelper;
-import com.github.jsign.keystore.MSCAPIKeyStoreHelper;
-import com.github.jsign.keystore.PKCS11KeyStoreHelper;
-import com.github.jsign.keystore.PKCS12KeyStoreHelper;
 import com.github.jsign.model.AvailableProvider;
 import com.github.jsign.model.Configuration;
 import com.github.jsign.util.CertificateUtils;

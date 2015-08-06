@@ -179,5 +179,9 @@ public class JSign implements SignLogProgress {
 
 	public void setAllowsPkcs12Certificate(boolean allowsPkcs12Certificate) {
 		this.allowsPkcs12Certificate = allowsPkcs12Certificate;
-	}	
+	}
+
+	public DlgConfiguration getDlgConfiguration() {
+		return dlgConfiguration;
+	}
 }

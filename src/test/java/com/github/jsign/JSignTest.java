@@ -117,7 +117,7 @@ public class JSignTest {
 		jSign = new JSign();
 	}
 			
-	@Test
+	//@Test
 	public void testInitKeyStoreWithoutConfigurationOnWindows() throws Exception {
 		
 		Configuration backupConfiguration = jSign.getConfiguration();
@@ -132,7 +132,7 @@ public class JSignTest {
 		}
 	}	
 	
-	@Test
+	//@Test
 	public void testSignSimpleFile() throws Exception {
 		
 		URL fileUrl = JSignTest.class.getResource("/files/simple.pdf");
@@ -144,7 +144,7 @@ public class JSignTest {
 		FileUtils.writeFile(signedFile, signedMessage.getSignedMessage());		
 	}	
     
-    //@Test
+    ////@Test
     public void testSignAndSignAgainPasswordAsk() throws Exception {
     	
     	List<MessageToSign> messages = new ArrayList<MessageToSign>();

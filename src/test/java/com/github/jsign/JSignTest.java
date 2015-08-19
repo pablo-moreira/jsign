@@ -55,7 +55,7 @@ public class JSignTest {
     	
     public static void main(String[] args) {    	
     	try {
-    		testGui();
+    		testAvailableProviders();
 		}
     	catch (Exception e) {
 			JFrameUtils.showErro("Erro", e.getMessage());
@@ -116,6 +116,21 @@ public class JSignTest {
 	public void init() throws Exception {	    
 		jSign = new JSign();
 	}
+			
+	@Test
+	public void testInitKeyStoreWithoutConfigurationOnWindows() throws Exception {
+		
+		Configuration backupConfiguration = jSign.getConfiguration();
+		
+		jSign.clearConfiguration();
+		
+		try {	
+			jSign.initKeyStore();
+		}
+		finally {
+			jSign.writeConfiguration(backupConfiguration);
+		}
+	}	
 	
 	@Test
 	public void testSignSimpleFile() throws Exception {

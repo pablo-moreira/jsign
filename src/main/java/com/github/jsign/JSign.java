@@ -9,26 +9,30 @@ import java.util.List;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import com.github.jsign.gui.DlgConfiguration;
+import com.github.jsign.gui.DlgConfigurationWindows;
 import com.github.jsign.interfaces.SignLog;
 import com.github.jsign.interfaces.SignLogProgress;
 import com.github.jsign.interfaces.SignProgress;
 import com.github.jsign.keystore.KeyStoreHelper;
+import com.github.jsign.keystore.MSCAPIKeyStoreHelper;
 import com.github.jsign.manager.Manager;
 import com.github.jsign.model.Configuration;
 import com.github.jsign.model.MessageToSign;
 import com.github.jsign.model.SignedMessage;
 import com.github.jsign.util.FileUtils;
+import com.github.jsign.util.JFrameUtils;
 
 public class JSign implements SignLogProgress {
 
 	private DlgConfiguration dlgConfiguration;
+	private DlgConfigurationWindows dlgConfigurationWindows;
 	private Configuration configuration;
 	private SignProgress progress;
 	private SignLog log;
 	private boolean allowsCoSigning;
 	private boolean allowsPkcs12Certificate = true;
 	private Manager manager = new Manager();
-	private KeyStoreHelper keyStore;
+	private KeyStoreHelper keyStore;	
 	
 	public JSign() throws Exception {
 		this(null);
@@ -47,6 +51,9 @@ public class JSign implements SignLogProgress {
 			}
 			
 			dlgConfiguration = new DlgConfiguration(parent, true, this);
+			dlgConfiguration.setAlwaysOnTop(true);
+			dlgConfigurationWindows = new DlgConfigurationWindows(parent, true);
+			dlgConfigurationWindows.setAlwaysOnTop(true);
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -101,13 +108,22 @@ public class JSign implements SignLogProgress {
 		
 		KeyStoreHelper keyStoreHelper = null;
 		
+		// Verifica se existe algum certificado configurado, se houver utiliza o certificado
 		if (configuration.isDefinedKeyStoreType()) {
 			keyStoreHelper = getManager().getConfigurationManager().loadKeyStoreHelperByConfiguration(configuration);		
 		}
-
+		
 		if (keyStoreHelper == null) {
 			
-			keyStoreHelper = showDlgConfiguration(false);
+			// Se o sistema operacional for windows verifica se existe certificados na MSCAPI, se houver retorna lista dos certificados  
+			List<MSCAPIKeyStoreHelper> keyStoresHelpersAvailableMsCapi = getManager().getConfigurationManager().getKeyStoresHelpersAvailableOnMsCapi();
+			
+			if (!keyStoresHelpersAvailableMsCapi.isEmpty()) {
+				keyStoreHelper = showDlgConfigurationWindows(keyStoresHelpersAvailableMsCapi);
+			}
+			else {
+				keyStoreHelper = showDlgConfiguration(false);
+			}
 			
 			if (keyStoreHelper == null) {
 				throw new Exception("Por favor, para realizar a assinatura deve-se configurar um certificado digital!");
@@ -116,7 +132,7 @@ public class JSign implements SignLogProgress {
 		
 		return keyStoreHelper;
 	}
-	
+
 	public void resetKeyStore() {
 		this.keyStore = null;
 	}
@@ -124,17 +140,54 @@ public class JSign implements SignLogProgress {
 	public KeyStoreHelper showDlgConfiguration() {
 		return showDlgConfiguration(true);
 	}
-		
+				
 	public KeyStoreHelper showDlgConfiguration(boolean loadKeyStoreHelper) {		
 		
 		dlgConfiguration.start(loadKeyStoreHelper);
 		
 		if (dlgConfiguration.getReturnStatus() == DlgConfiguration.RET_OK) {
-			return dlgConfiguration.getKeyStoreHelper();
+			
+			KeyStoreHelper keyStoreHelper = dlgConfiguration.getKeyStoreHelper();
+			
+			updateKeyStoreHelper(keyStoreHelper);	    	
+			
+			return keyStoreHelper;
 		}
 		else {
 			return null;
 		}
+	}
+
+	private void updateKeyStoreHelper(KeyStoreHelper keyStoreHelper) {
+
+		getConfiguration().updateKeyStoreHelper(keyStoreHelper);
+    	
+    	try {
+    		getManager().getConfigurationManager().writeConfiguration(configuration);
+    	}
+    	catch (Exception e) {
+    		JFrameUtils.showErro("Erro", "Erro ao persistir as configurações!\nMensagem Interna: " + e.getMessage());
+    	}
+	}
+
+	private KeyStoreHelper showDlgConfigurationWindows(List<MSCAPIKeyStoreHelper> keyStoresHelpersAvailableMsCapi) {
+		
+		dlgConfigurationWindows.start(keyStoresHelpersAvailableMsCapi);
+		
+		if (dlgConfigurationWindows.getReturnStatus() == DlgConfigurationWindows.RET_FINISH) {
+						
+			KeyStoreHelper keyStoreHelper = dlgConfigurationWindows.getKeyStoreHelper();
+			
+			updateKeyStoreHelper(keyStoreHelper);	    	
+			
+			return keyStoreHelper;
+		}
+		else if (dlgConfigurationWindows.getReturnStatus() == DlgConfigurationWindows.RET_OPEN_DLG_CONFIGURATION) {
+			return showDlgConfiguration();
+		}
+		else {
+			return null;
+		}	
 	}
 
 	public boolean isAllowsCoSigning() {
@@ -168,7 +221,7 @@ public class JSign implements SignLogProgress {
 	public Manager getManager() {
 		return manager;
 	}
-	
+		
 	public Configuration getConfiguration() {
 		return configuration;
 	}
@@ -181,7 +234,16 @@ public class JSign implements SignLogProgress {
 		this.allowsPkcs12Certificate = allowsPkcs12Certificate;
 	}
 
-	public DlgConfiguration getDlgConfiguration() {
-		return dlgConfiguration;
+	public void  setDlgConfigurationAlwaysOnTop(boolean value) {
+		this.dlgConfiguration.setAlwaysOnTop(true);
+	}
+
+	public void writeConfiguration(Configuration configuration) throws Exception {
+		this.configuration = configuration;
+		this.getManager().getConfigurationManager().writeConfiguration(configuration);
+	}
+	
+	public void clearConfiguration() {
+		this.configuration = this.getManager().getConfigurationManager().clearConfiguration();
 	}
 }

@@ -7,6 +7,7 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
 import com.github.jsign.keystore.KeyStoreHelper;
+import com.github.jsign.keystore.MSCAPIKeyStoreHelper;
 import com.github.jsign.model.AvailableProvider;
 import com.github.jsign.model.Configuration;
 import com.github.jsign.model.KeyStoreType;
@@ -42,6 +43,19 @@ public class ConfigurationManager {
 		return manager;
 	}
 
+	public Configuration clearConfiguration() {
+
+		try {
+			Preferences preferences = getPreferences(PREFERENCES_PATH);
+			preferences.clear();
+		} 
+		catch (BackingStoreException e) {
+			throw new RuntimeException("Erro ao limpar as configurações, mensagem interna: " + e.getMessage());
+		}
+		
+		return new Configuration();
+	}
+	
 	public void writeConfiguration(Configuration configuration) throws Exception {
 	
 		try {
@@ -262,5 +276,9 @@ public class ConfigurationManager {
 
 	public List<AvailableProvider> getAvailableProviders(Configuration configuration) {
 		return getAvailableProviders(configuration, true);
+	}
+
+	public List<MSCAPIKeyStoreHelper> getKeyStoresHelpersAvailableOnMsCapi() {		
+		return getManager().getMscapiManager().getKeyStoreHelpersAvailable();
 	}	
 }

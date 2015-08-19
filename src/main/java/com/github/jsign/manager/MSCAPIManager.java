@@ -95,4 +95,16 @@ public class MSCAPIManager {
 	public Manager getManager() {
 		return manager;
 	}
+
+	public List<MSCAPIKeyStoreHelper> getKeyStoreHelpersAvailable() {
+
+		MSCAPIAvailableProvider mscapiProvider = getAvailableProvider();
+		
+		if (mscapiProvider != null) {
+			return getKeyStoreHelpers(mscapiProvider);
+		}
+		else {
+			return new ArrayList<MSCAPIKeyStoreHelper>();
+		}
+	}
 }

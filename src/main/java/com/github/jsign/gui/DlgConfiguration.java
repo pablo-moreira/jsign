@@ -26,11 +26,12 @@ import com.github.jsign.util.EntityTableModel;
 import com.github.jsign.util.JFrameUtils;
 
 /**
- *
- * @author pablo-moreira
+ * @author pablo.filetti@gmail.com
  */
 public class DlgConfiguration extends javax.swing.JDialog {
 		
+	private static final long serialVersionUID = 1L;
+	
 	/** A return status code - returned if Cancel button has been pressed */
     public static final int RET_CANCEL = 0;
     /** A return status code - returned if OK button has been pressed */
@@ -418,18 +419,7 @@ public class DlgConfiguration extends javax.swing.JDialog {
     		JFrameUtils.showErro("Erro de validação", "Por favor, deve-se selecionar algum certificado!");
     		return;
     	}
-    	
-    	Configuration configuration = jSign.getConfiguration();
-    	
-    	configuration.updateKeyStoreHelper(keyStoreHelper);
-    	
-    	try {
-    		jSign.getManager().getConfigurationManager().writeConfiguration(configuration);
-    	}
-    	catch (Exception e) {
-    		JFrameUtils.showErro("Erro", "Erro ao persistir as configurações!\nMensagem Interna: " + e.getMessage());
-    	}
-    	
+    	    	
         doClose(RET_OK);
     }//GEN-LAST:event_btnOKActionPerformed
 

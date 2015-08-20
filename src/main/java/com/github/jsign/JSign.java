@@ -109,7 +109,7 @@ public class JSign implements SignLogProgress {
 		KeyStoreHelper keyStoreHelper = null;
 		
 		// Verifica se existe algum certificado configurado, se houver utiliza o certificado
-		if (configuration.isDefinedKeyStoreType()) {
+		if (this.configuration.isDefinedKeyStoreType()) {
 			keyStoreHelper = getManager().getConfigurationManager().loadKeyStoreHelperByConfiguration(configuration);		
 		}
 		
@@ -160,10 +160,10 @@ public class JSign implements SignLogProgress {
 
 	private void updateKeyStoreHelper(KeyStoreHelper keyStoreHelper) {
 
-		getConfiguration().updateKeyStoreHelper(keyStoreHelper);
+		this.configuration.updateKeyStoreHelper(keyStoreHelper);
     	
     	try {
-    		getManager().getConfigurationManager().writeConfiguration(configuration);
+    		getManager().getConfigurationManager().writeConfiguration(this.configuration);
     	}
     	catch (Exception e) {
     		JFrameUtils.showErro("Erro", "Erro ao persistir as configurações!\nMensagem Interna: " + e.getMessage());

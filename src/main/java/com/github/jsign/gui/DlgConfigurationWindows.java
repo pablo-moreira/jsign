@@ -311,7 +311,9 @@ public class DlgConfigurationWindows extends javax.swing.JDialog {
 	public void start(List<MSCAPIKeyStoreHelper> keyStoresHelpers) {
     
 		this.keyStoresHelpers = keyStoresHelpers;
-
+		
+		tblCertificates.clearSelection();
+		
 		pack();
 
         JFrameUtils.setCenterLocation(this);

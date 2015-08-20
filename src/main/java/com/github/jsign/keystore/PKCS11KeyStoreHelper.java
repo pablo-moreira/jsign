@@ -16,21 +16,9 @@ public class PKCS11KeyStoreHelper extends KeyStoreHelper {
 	private TokenConfig tokenConfig;
 	private long slot;
 	
-	public PKCS11KeyStoreHelper(TokenConfig tokenConfig, long slot, KeyStore keyStore, X509Certificate certificate) throws Exception {
-		
-		try {
-			this.certificateAlias = keyStore.getCertificateAlias(certificate);
-		}
-		catch (KeyStoreException e) {
-			throw new Exception("Não foi possível recuperar o alias do certificado PKCS11, mensagem interna: " + e.getMessage());
-		}
+	public PKCS11KeyStoreHelper(KeyStore keyStore, X509Certificate certificate, TokenConfig tokenConfig, long slot) throws Exception {
 
-		try {
-			this.certsChain = keyStore.getCertificateChain(this.certificateAlias);
-		}
-		catch (KeyStoreException e) {
-			throw new Exception("Não foi possível recuperar a cadeia de certificado do certificado PKCS11, mensagem interna: " + e.getMessage());
-		}
+		super(keyStore, certificate);
 		
 		try {
 			this.privateKey = (PrivateKey) keyStore.getKey(this.certificateAlias, null);
@@ -47,8 +35,6 @@ public class PKCS11KeyStoreHelper extends KeyStoreHelper {
 		
 		this.tokenConfig = tokenConfig;
 		this.slot = slot;
-		this.certificate = certificate;
-		this.keyStore = keyStore;
 	}
 
 	@Override

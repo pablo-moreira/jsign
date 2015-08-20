@@ -50,7 +50,7 @@ public class PKCS12Manager {
 			List<X509Certificate> certificatesAvailable = KeyStoreHelper.getCertificatesAvailable(keyStore);
 
 			for (X509Certificate certificate : certificatesAvailable) {
-				keyStoreHelpers.add(new PKCS12KeyStoreHelper(availableProvider.getPkcs12Certificate(), availableProvider.getDlgProtectionCallback(), keyStore, certificate));
+				keyStoreHelpers.add(new PKCS12KeyStoreHelper(keyStore, certificate, availableProvider.getPkcs12Certificate(), availableProvider.getDlgProtectionCallback()));
 			}
 		}
 		
@@ -94,7 +94,7 @@ public class PKCS12Manager {
 			
 			if (certificate != null) {
 				try {
-					return new PKCS12KeyStoreHelper(availableProvider.getPkcs12Certificate(), availableProvider.getDlgProtectionCallback(), keyStore, certificate);
+					return new PKCS12KeyStoreHelper(keyStore, certificate, availableProvider.getPkcs12Certificate(), availableProvider.getDlgProtectionCallback());
 				}
 				catch (Exception e) {
 					throw new RuntimeException("Erro ao instanciar o repositorio PKCS12!, mensagem interna: " + e.getMessage());

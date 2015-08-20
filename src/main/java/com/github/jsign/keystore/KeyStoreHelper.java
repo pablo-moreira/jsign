@@ -10,6 +10,7 @@ import java.util.Enumeration;
 import java.util.List;
 
 import com.github.jsign.model.KeyStoreType;
+import com.github.jsign.util.StringUtils;
 
 public abstract class KeyStoreHelper {
 	
@@ -19,6 +20,30 @@ public abstract class KeyStoreHelper {
 	protected PrivateKey privateKey;
 	protected Certificate[] certsChain;	
 
+	public KeyStoreHelper(KeyStore keyStore, X509Certificate certificate) throws Exception {
+		
+		this.keyStore = keyStore;
+		this.certificate = certificate;
+					
+		try {			
+			this.certificateAlias = keyStore.getCertificateAlias(certificate);
+		} 
+		catch (KeyStoreException e) {
+			throw new Exception("Não foi possível recuperar o alias do certificado, mensagem interna: " + e.getMessage());
+		}
+		
+		if (StringUtils.isNullOrEmpty(this.certificateAlias)) {
+			throw new Exception("Não existe o certificado " + certificate.getSubjectDN() + " no repositório!");
+		}
+
+		try {
+			this.certsChain = keyStore.getCertificateChain(this.certificateAlias);
+		} 
+		catch (KeyStoreException e) {
+			throw new Exception("Não foi possível recuperar a cadeia de certificado do certificado, mensagem interna: " + e.getMessage());
+		}
+	}
+	
 	public abstract KeyStoreType getType();
 	public abstract String getDescription();
 

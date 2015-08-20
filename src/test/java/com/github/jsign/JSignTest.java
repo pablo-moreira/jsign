@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Before;
-import org.junit.Test;
 
 import com.github.jsign.gui.FrmTest;
 import com.github.jsign.keystore.KeyStoreHelper;

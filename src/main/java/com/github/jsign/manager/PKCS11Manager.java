@@ -218,7 +218,7 @@ public class PKCS11Manager {
 				List<X509Certificate> certificatesAvailable = KeyStoreHelper.getCertificatesAvailable(avProvider.getKeyStore());
 						
 				for (X509Certificate certificate : certificatesAvailable) {
-					helpers.add(new PKCS11KeyStoreHelper(avProvider.getTokenConfig(), avProvider.getSlot(), avProvider.getKeyStore(), certificate));
+					helpers.add(new PKCS11KeyStoreHelper(avProvider.getKeyStore(), certificate, avProvider.getTokenConfig(), avProvider.getSlot()));
 				}
 			}
 			catch (Exception e) {

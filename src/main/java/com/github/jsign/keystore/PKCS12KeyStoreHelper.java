@@ -16,22 +16,10 @@ public class PKCS12KeyStoreHelper extends KeyStoreHelper {
 
 	private File pkcs12Filename;
 	
-	public PKCS12KeyStoreHelper(File pkcs12Certificate, DlgProtectionCallback dlgProctetionCallback, KeyStore keyStore, X509Certificate certificate) throws Exception {
+	public PKCS12KeyStoreHelper(KeyStore keyStore, X509Certificate certificate, File pkcs12Certificate, DlgProtectionCallback dlgProctetionCallback) throws Exception {
 
-		try {
-			this.certificateAlias = keyStore.getCertificateAlias(certificate);
-		} 
-		catch (KeyStoreException e) {
-			throw new Exception("Não foi possível recuperar o alias do certificado PKCS12, mensagem interna: " + e.getMessage());
-		}
-		
-		try {
-			this.certsChain = keyStore.getCertificateChain(this.certificateAlias);
-		} 
-		catch (KeyStoreException e) {
-			throw new Exception("Não foi possível recuperar a cadeia de certificado do certificado PKCS12, mensagem interna: " + e.getMessage());
-		}
-		
+		super(keyStore, certificate);
+			
 		try {
 			this.privateKey = (PrivateKey) keyStore.getKey(this.certificateAlias, dlgProctetionCallback.getPassword());
 		} 
@@ -46,8 +34,6 @@ public class PKCS12KeyStoreHelper extends KeyStoreHelper {
 		}
 		
 		this.pkcs12Filename = pkcs12Certificate;
-		this.keyStore = keyStore;
-		this.certificate = certificate;
 	}
  	
 	@Override

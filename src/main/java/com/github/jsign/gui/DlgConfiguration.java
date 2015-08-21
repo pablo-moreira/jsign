@@ -14,7 +14,6 @@ import javax.swing.JFileChooser;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.swing.table.DefaultTableModel;
 
 import com.github.jsign.JSign;
 import com.github.jsign.keystore.KeyStoreHelper;
@@ -38,7 +37,6 @@ public class DlgConfiguration extends javax.swing.JDialog {
     public static final int RET_OK = 1;	
 	
 	private JSign jSign;
-	private File pkcs12File;
 	private List<AvailableProvider> availableProviders = new ArrayList<AvailableProvider>();
 	private KeyStoreHelper keyStoreHelper;
 	private int returnStatus = RET_CANCEL;	
@@ -440,7 +438,7 @@ public class DlgConfiguration extends javax.swing.JDialog {
         fc.setFileFilter(filter);
         fc.addChoosableFileFilter(filter);
 
-        int retorno = fc.showOpenDialog(null);
+        int retorno = fc.showOpenDialog(this);
 
         if(retorno == JFileChooser.APPROVE_OPTION) {                        
 			addPkcs12Certificate(fc.getSelectedFile());            
@@ -457,7 +455,7 @@ public class DlgConfiguration extends javax.swing.JDialog {
     private void btnAddPkcs11DriverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddPkcs11DriverActionPerformed
 
         JFileChooser fc = new JFileChooser();
-
+        
         fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
         fc.setMultiSelectionEnabled(false);
         fc.setAcceptAllFileFilterUsed(false);
@@ -467,7 +465,7 @@ public class DlgConfiguration extends javax.swing.JDialog {
         fc.setFileFilter(filter);
         fc.addChoosableFileFilter(filter);
 
-        int result = fc.showOpenDialog(null);
+        int result = fc.showOpenDialog(this);
 
         if(result == JFileChooser.APPROVE_OPTION) {
             addPkcs11Driver(fc.getSelectedFile());
@@ -606,15 +604,7 @@ public class DlgConfiguration extends javax.swing.JDialog {
         setVisible(false);
         dispose();
     }
-	
-	private DefaultTableModel getTblAvailableProvidersModel() {
-		return (DefaultTableModel) tblAvailableProviders.getModel();
-	}
 		
-	private DefaultTableModel getTblCertificatesModel() {
-		return (DefaultTableModel) tblCertificates.getModel();
-	}
-	
 	private void loadAvailableProviders() {
 				
 		if (availableProviders.size() > 0) {
@@ -760,6 +750,8 @@ public class DlgConfiguration extends javax.swing.JDialog {
 			
 		tblAvailableProvidersModel = new EntityColumnWidthTableModel<AvailableProvider>(tblAvailableProviders) {
 
+			private static final long serialVersionUID = 1L;
+
 			@Override
 			public String[] getColumns() {
 				return new String[] { "Tipo", "Descrição" };
@@ -796,6 +788,8 @@ public class DlgConfiguration extends javax.swing.JDialog {
         });
 		
 		tblCertificatesModel = new EntityColumnWidthTableModel<KeyStoreHelper>(tblCertificates) {
+
+			private static final long serialVersionUID = 1L;
 
 			@Override
 			public Integer[] getColumnsWidth() {
@@ -836,7 +830,9 @@ public class DlgConfiguration extends javax.swing.JDialog {
 		
 		tblPkcs12CertificatesModel = new EntityTableModel<File>(tblPkcs12Certificates) {
 
-            @Override
+			private static final long serialVersionUID = 1L;
+
+			@Override
             public String[] getColumns() {
                 return new String[] { "Certificado" };
             }
@@ -868,6 +864,8 @@ public class DlgConfiguration extends javax.swing.JDialog {
 		
 		tblPkcs11DriversModel = new EntityTableModel<File>(tblPkcs11Drivers) {
 			
+			private static final long serialVersionUID = 1L;
+
 			@Override
 			public String[] getColumns() {
 				return new String[] { "Driver" };

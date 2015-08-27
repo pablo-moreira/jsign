@@ -11,6 +11,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -92,12 +93,22 @@ public class JFrameUtils {
 		showMsg(titulo, msg, parent, JOptionPane.INFORMATION_MESSAGE);
 	}
 	
-	private static void showMsg(String titulo, String msg, Component parent, int tipo) {
-		JOptionPane.showMessageDialog(
-				parent,
-				msg,
-				titulo,
-				tipo);
+	private static void showMsg(String title, String msg, Component parent, int tipo) {
+		if (parent == null) {
+			JOptionPane op = new JOptionPane(msg, tipo);
+			JDialog dialog = op.createDialog(title);
+			dialog.setAlwaysOnTop(true);
+			dialog.setModal(true);
+			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+			dialog.setVisible(true);
+		}
+		else {
+			JOptionPane.showMessageDialog(
+					parent,
+					msg,
+					title,
+					tipo);
+		}
 	}
 
 	@SuppressWarnings("deprecation")

@@ -8,7 +8,7 @@ public class PKCS11Tokens {
 	private List<Token> tokens = new ArrayList<Token>();
 		
 	public PKCS11Tokens() {
-		newToken("eToken")
+		newToken("eToken", "Safenet iKey 4000, Aladdin e outros")
 			.addLibLinux("/lib/libeToken.so.8")
 			.addLibLinux("/lib/libeToken.so.8.0")
 			.addLibLinux("/lib64/libeToken.so.8")
@@ -75,6 +75,12 @@ public class PKCS11Tokens {
 	
 	private Token newToken(String name) {
 		Token token = new Token(name);
+		tokens.add(token);
+		return token;		
+	}
+	
+	private Token newToken(String name, String description) {
+		Token token = new Token(name, description);
 		tokens.add(token);
 		return token;
 	}

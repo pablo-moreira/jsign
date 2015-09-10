@@ -2,12 +2,14 @@ package com.github.jsign;
 
 import java.awt.Frame;
 import java.io.File;
+import java.net.URL;
 import java.security.Security;
 import java.util.Arrays;
 import java.util.List;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
+import com.github.jsign.gui.DlgCertificateNotFound;
 import com.github.jsign.gui.DlgConfiguration;
 import com.github.jsign.gui.DlgConfigurationWindows;
 import com.github.jsign.interfaces.SignLog;
@@ -32,7 +34,8 @@ public class JSign implements SignLogProgress {
 	private boolean allowsCoSigning;
 	private boolean allowsPkcs12Certificate = true;
 	private Manager manager = new Manager();
-	private KeyStoreHelper keyStore;	
+	private KeyStoreHelper keyStore;
+	private DlgCertificateNotFound dlgCertificateNotFound;
 	
 	public JSign() throws Exception {
 		this(null);
@@ -54,6 +57,8 @@ public class JSign implements SignLogProgress {
 			dlgConfiguration.setAlwaysOnTop(true);
 			dlgConfigurationWindows = new DlgConfigurationWindows(parent, true);
 			dlgConfigurationWindows.setAlwaysOnTop(true);
+			dlgCertificateNotFound = new DlgCertificateNotFound(parent, true);
+			dlgCertificateNotFound.setAlwaysOnTop(true);
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -114,16 +119,8 @@ public class JSign implements SignLogProgress {
 		}
 		
 		if (keyStoreHelper == null) {
-			
-			// Se o sistema operacional for windows verifica se existe certificados na MSCAPI, se houver retorna lista dos certificados  
-			List<MSCAPIKeyStoreHelper> keyStoresHelpersAvailableMsCapi = getManager().getConfigurationManager().getKeyStoresHelpersAvailableOnMsCapi();
-			
-			if (!keyStoresHelpersAvailableMsCapi.isEmpty()) {
-				keyStoreHelper = showDlgConfigurationWindows(keyStoresHelpersAvailableMsCapi);
-			}
-			else {
-				keyStoreHelper = showDlgConfiguration(false);
-			}
+
+			keyStoreHelper = configKeyStore();
 			
 			if (keyStoreHelper == null) {
 				throw new Exception("Por favor, para realizar a assinatura deve-se configurar um certificado digital!");
@@ -131,6 +128,38 @@ public class JSign implements SignLogProgress {
 		}
 		
 		return keyStoreHelper;
+	}
+	
+	private KeyStoreHelper configKeyStore() {
+		
+		// Se o sistema operacional for windows verifica se existe certificados na MSCAPI, se houver retorna lista dos certificados  
+		List<MSCAPIKeyStoreHelper> keyStoresHelpersAvailableMsCapi = getManager().getConfigurationManager().getKeyStoresHelpersAvailableOnMsCapi();
+		
+		KeyStoreHelper keyStoreHelper = null;
+		
+		if (!keyStoresHelpersAvailableMsCapi.isEmpty()) {
+			keyStoreHelper = showDlgConfigurationWindows(keyStoresHelpersAvailableMsCapi);
+		}
+		else {
+			keyStoreHelper = showDlgCertificateNotFound();
+		}
+		
+		return keyStoreHelper;		
+	}
+
+	private KeyStoreHelper showDlgCertificateNotFound() {
+
+		dlgCertificateNotFound.start(getManager().getConfigurationManager().getTokensDriversInstalledOnSystem(configuration));
+		
+		if (dlgCertificateNotFound.getReturnStatus() == DlgCertificateNotFound.RET_TRY_AGAIN) {
+			return configKeyStore();
+		}
+		else if (dlgCertificateNotFound.getReturnStatus() == DlgCertificateNotFound.RET_OPEN_DLG_CONFIGURATION) {
+			return showDlgConfiguration();
+		}
+		else {
+			return null;
+		}
 	}
 
 	public void resetKeyStore() {
@@ -178,7 +207,7 @@ public class JSign implements SignLogProgress {
 						
 			KeyStoreHelper keyStoreHelper = dlgConfigurationWindows.getKeyStoreHelper();
 			
-			updateKeyStoreHelper(keyStoreHelper);	    	
+			updateKeyStoreHelper(keyStoreHelper);
 			
 			return keyStoreHelper;
 		}
@@ -245,5 +274,9 @@ public class JSign implements SignLogProgress {
 	
 	public void clearConfiguration() {
 		this.configuration = this.getManager().getConfigurationManager().clearConfiguration();
+	}
+
+	public void setUrlDriversInstallationHelpPage(URL url) {
+		dlgCertificateNotFound.setUrlDriversInstallationHelpPage(url);
 	}
 }

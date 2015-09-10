@@ -2,6 +2,7 @@ package com.github.jsign.manager;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
@@ -14,6 +15,7 @@ import com.github.jsign.model.KeyStoreType;
 import com.github.jsign.model.MSCAPIAvailableProvider;
 import com.github.jsign.model.PKCS11AvailableProvider;
 import com.github.jsign.model.PKCS12AvailableProvider;
+import com.github.jsign.model.Token;
 import com.github.jsign.util.StringUtils;
 
 public class ConfigurationManager {
@@ -280,5 +282,9 @@ public class ConfigurationManager {
 
 	public List<MSCAPIKeyStoreHelper> getKeyStoresHelpersAvailableOnMsCapi() {		
 		return getManager().getMscapiManager().getKeyStoreHelpersAvailable();
+	}
+
+	public List<Token> getTokensDriversInstalledOnSystem(Configuration configuration) {
+		return getManager().getPkcs11Manager().getTokensDriversInstalledOnSystem(configuration);
 	}	
 }

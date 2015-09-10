@@ -6,10 +6,16 @@ import java.util.List;
 public class Token {
 	
 	private String name;
+	private String description;
 	private List<TokenConfig> configs = new ArrayList<TokenConfig>();
-
+	
 	public Token(String name) {
 		this.name = name;
+	}
+
+	public Token(String name, String description) {
+		this.name = name;
+		this.description = description;
 	}
 
 	public String getName() {
@@ -58,5 +64,9 @@ public class Token {
 		}
 		
 		return configs;
+	}
+
+	public String getDescription() {
+		return description;
 	}
 }

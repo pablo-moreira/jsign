@@ -10,7 +10,9 @@ import java.security.Security;
 import java.security.cert.X509Certificate;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.security.auth.login.FailedLoginException;
 
@@ -43,6 +45,7 @@ public class PKCS11Manager {
 		return getProvider(tokenConfig.getToken().getName(), tokenConfig.getLibrary(), slot);
 	}
 	
+	@SuppressWarnings("restriction")
 	public Provider getProvider(String name, String library, Long slot) {
 				
 		StringBuilder properties = new StringBuilder();
@@ -117,20 +120,25 @@ public class PKCS11Manager {
 		return null;
 	}
 
+	private void appendPkcs11DriverFromConfiguration(List<TokenConfig> tokensConfigs, Configuration configuration) {
+
+		List<File> pkcs11Drivers = configuration.getPkcs11Drivers();
+		
+		for (File file : pkcs11Drivers) {
+			Token token = new Token(FileUtils.getFilenameWithoutExtension(file.getName()));
+			token.addLib(OperatingSystem.getOperatingSystem(), file.getAbsolutePath());
+			tokensConfigs.add(token.getConfigs().get(0));
+		}
+	}
+	
 	public List<PKCS11AvailableProvider> getAvailableProviders(Configuration configuration) {
 
 		List<PKCS11AvailableProvider> availableProviders = new ArrayList<PKCS11AvailableProvider>();
 		
 		List<TokenConfig> availableTokenConfigs = getAvailableTokenConfigs();
 		
-		List<File> pkcs11Drivers = configuration.getPkcs11Drivers();
+		appendPkcs11DriverFromConfiguration(availableTokenConfigs, configuration);
 				
-		for (File file : pkcs11Drivers) {
-			Token token = new Token(FileUtils.getFilenameWithoutExtension(file.getName()));
-			token.addLib(OperatingSystem.getOperatingSystem(), file.getAbsolutePath());
-			availableTokenConfigs.add(token.getConfigs().get(0));
-		}
-
 		for (TokenConfig tokenConfig : availableTokenConfigs) {
 
 			long[] slotList = tryGetSlotListWithToken(tokenConfig);
@@ -249,6 +257,7 @@ public class PKCS11Manager {
 		getManager().getConfigurationManager().writeConfiguration(configuration);
 	}
 	
+	/* TODO */
 	public KeyStoreHelper retrieveKeyStoreHelperByConfiguration(Configuration configuration) {
 
 //		PKCS11AvailableProvider ap11 = (PKCS11AvailableProvider) ap;
@@ -261,5 +270,23 @@ public class PKCS11Manager {
 //		}
 		
 		return null;
+	}
+
+	public List<Token> getTokensDriversInstalledOnSystem(Configuration configuration) {
+
+		List<TokenConfig> availableTokenConfigs = getAvailableTokenConfigs();
+		
+		appendPkcs11DriverFromConfiguration(availableTokenConfigs, configuration);
+		
+		Set<Token> tokensSet = new HashSet<Token>();
+		
+		for (TokenConfig tokenConfig : availableTokenConfigs) {
+			tokensSet.add(tokenConfig.getToken());
+		}
+		
+		ArrayList<Token> tokens = new ArrayList<Token>();
+		tokens.addAll(tokensSet);
+		
+		return tokens;
 	}
 }

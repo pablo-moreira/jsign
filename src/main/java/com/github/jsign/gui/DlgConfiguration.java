@@ -590,9 +590,8 @@ public class DlgConfiguration extends javax.swing.JDialog {
 		}
 		
         pack();
-                      		
-        JFrameUtils.setCenterLocation(this);
-        setVisible(true);        
+		JFrameUtils.setCenterLocation(this);
+		setVisible(true);
     }    
     
     public int getReturnStatus() {

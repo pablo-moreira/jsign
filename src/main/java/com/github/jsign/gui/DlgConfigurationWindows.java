@@ -123,7 +123,7 @@ public class DlgConfigurationWindows extends javax.swing.JDialog {
             }
         });
 
-        btnAdvance.setText("Avançado");
+        btnAdvance.setText("Configuração Avançada");
         btnAdvance.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnAdvanceActionPerformed(evt);
@@ -141,12 +141,11 @@ public class DlgConfigurationWindows extends javax.swing.JDialog {
                     .addComponent(spTblCertificateInfo, javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(spTblCertificates, javax.swing.GroupLayout.DEFAULT_SIZE, 580, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
                         .addComponent(btnAdvance)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(btnFinish)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnCancel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnFinish))
+                        .addComponent(btnCancel))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(lblCertificates)

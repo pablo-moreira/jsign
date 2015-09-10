@@ -31,12 +31,11 @@
                   <Component id="spTblCertificateInfo" alignment="1" max="32767" attributes="0"/>
                   <Component id="spTblCertificates" alignment="0" pref="580" max="32767" attributes="0"/>
                   <Group type="102" alignment="1" attributes="0">
-                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                       <Component id="btnAdvance" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="32767" attributes="0"/>
+                      <Component id="btnFinish" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="btnCancel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="btnFinish" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
@@ -151,7 +150,7 @@
     </Component>
     <Component class="javax.swing.JButton" name="btnAdvance">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Avan&#xe7;ado"/>
+        <Property name="text" type="java.lang.String" value="Configura&#xe7;&#xe3;o Avan&#xe7;ada"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnAdvanceActionPerformed"/>

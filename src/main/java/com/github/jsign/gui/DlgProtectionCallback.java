@@ -7,6 +7,7 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.io.IOException;
 
+import javax.imageio.ImageIO;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.PasswordCallback;
@@ -58,6 +59,12 @@ public class DlgProtectionCallback implements CallbackHandler {
 				
 				passField.setText("");
 				
+				try {
+					dialog.setIconImage(ImageIO.read(getClass().getResourceAsStream("/icons/key.png")));
+				}
+				catch (Exception e) {
+					
+				}
 				dialog.setAlwaysOnTop(true);
 				dialog.setVisible(true);
 				

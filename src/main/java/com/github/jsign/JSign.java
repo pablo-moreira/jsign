@@ -1,6 +1,7 @@
 package com.github.jsign;
 
 import java.awt.Frame;
+import java.awt.Image;
 import java.io.File;
 import java.net.URL;
 import java.security.Security;
@@ -278,5 +279,11 @@ public class JSign implements SignLogProgress {
 
 	public void setUrlDriversInstallationHelpPage(URL url) {
 		dlgCertificateNotFound.setUrlDriversInstallationHelpPage(url);
+	}
+	
+	public void setIconImage(Image image) {
+		dlgConfiguration.setIconImage(image);
+		dlgConfigurationWindows.setIconImage(image);
+		dlgCertificateNotFound.setIconImage(image);
 	}
 }

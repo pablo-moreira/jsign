@@ -58,7 +58,9 @@ public class DlgProtectionCallback implements CallbackHandler {
 				
 				passField.setText("");
 				
+				dialog.setAlwaysOnTop(true);
 				dialog.setVisible(true);
+				
 				int result = (Integer)jop.getValue();
 				dialog.dispose();
 				if(result == JOptionPane.OK_OPTION) {

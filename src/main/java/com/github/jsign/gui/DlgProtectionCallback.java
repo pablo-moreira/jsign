@@ -19,16 +19,18 @@ import javax.swing.JPasswordField;
 import javax.swing.SwingUtilities;
 
 import com.github.jsign.exceptions.LoginCancelledException;
-import com.github.jsign.model.AvailableProvider;
 
 public class DlgProtectionCallback implements CallbackHandler {
 	
-	private String title = "Insira o PIN:";
-	private AvailableProvider availableProvider;
+	private String title = "Insira o PIN:";	
 	private JPasswordField passField = new JPasswordField();
+	private PasswordCallback passwordCallback;
+	private String keyStoreType;
+	private String description;
 				
-	public DlgProtectionCallback(AvailableProvider availableProvider) {
-		this.availableProvider = availableProvider;
+	public DlgProtectionCallback(String keyStoreType, String description) {
+		this.keyStoreType = keyStoreType;
+		this.description = description;
 	}
 
 	@Override
@@ -38,9 +40,9 @@ public class DlgProtectionCallback implements CallbackHandler {
 			
 			if(cb instanceof PasswordCallback) {
 				
-				final PasswordCallback pc = (PasswordCallback) cb;
-				JLabel label1 = new JLabel("Tipo: " + getAvailableProvider().getType().name());
-				JLabel label2 = new JLabel("Descrição: " + getAvailableProvider().getDescription());
+				this.passwordCallback = (PasswordCallback) cb;
+				JLabel label1 = new JLabel("Tipo: " + this.keyStoreType);
+				JLabel label2 = new JLabel("Descrição: " + this.description);
 				JLabel label3 = new JLabel("");
 				JLabel label4 = new JLabel(title);				
 				JOptionPane jop = new JOptionPane(new Object[]{ label1, label2, label3, label4, passField }, JOptionPane.QUESTION_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
@@ -71,21 +73,21 @@ public class DlgProtectionCallback implements CallbackHandler {
 				int result = (Integer)jop.getValue();
 				dialog.dispose();
 				if(result == JOptionPane.OK_OPTION) {
-					pc.setPassword(passField.getPassword());
+					this.passwordCallback.setPassword(passField.getPassword());
 				}
 				else {
-					pc.clearPassword();					
+					this.passwordCallback.clearPassword();					
 					throw new IOException(new LoginCancelledException());
 				}
 			}
 		}
 	}	
-		
-	public AvailableProvider getAvailableProvider() {
-		return availableProvider;
-	}
 
 	public char[] getPassword() {
 		return passField.getPassword();
+	}
+
+	public PasswordCallback getPasswordCallback() {
+		return passwordCallback;
 	}
 }

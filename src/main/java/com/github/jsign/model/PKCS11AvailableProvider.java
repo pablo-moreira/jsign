@@ -11,12 +11,13 @@ public class PKCS11AvailableProvider extends AvailableProvider {
 	private TokenConfig tokenConfig;
 	private KeyStore keyStore;
 	private Provider provider;
-	private DlgProtectionCallback dlgProtectionCallback = new DlgProtectionCallback(this);
+	private DlgProtectionCallback dlgProtectionCallback;
 
 	public PKCS11AvailableProvider(Provider provider, TokenConfig tokenConfig, Long slot) {
 		this.provider = provider;
 		this.tokenConfig = tokenConfig;
 		this.slot = slot;
+		this.dlgProtectionCallback = new DlgProtectionCallback(getType().name(), getDescription());
 	}
 
 	public PKCS11AvailableProvider(Provider provider, TokenConfig tokenConfig, Long slot, KeyStore keyStore) {
@@ -44,10 +45,6 @@ public class PKCS11AvailableProvider extends AvailableProvider {
 
 		if (tokenConfig != null) {
 			description += "Name: " + tokenConfig.getToken().getName() + ", Library: " + tokenConfig.getLibrary();
-		}
-		
-		if (provider != null) {
-			description += ", Provider: " + provider;
 		}
 		
 		if (slot != null) {

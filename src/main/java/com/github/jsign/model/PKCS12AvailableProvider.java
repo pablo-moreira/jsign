@@ -16,10 +16,11 @@ import java.io.File;
 public class PKCS12AvailableProvider extends AvailableProvider {
 
 	private final File pkcs12Certificate;
-	private final DlgProtectionCallback dlgProtectionCallback = new DlgProtectionCallback(this);
+	private final DlgProtectionCallback dlgProtectionCallback; 
 
 	public PKCS12AvailableProvider(File pkcs12Certificate) {
 		this.pkcs12Certificate = pkcs12Certificate;
+		this.dlgProtectionCallback = new DlgProtectionCallback(getType().name(), getDescription());
 	}
 	
 	@Override

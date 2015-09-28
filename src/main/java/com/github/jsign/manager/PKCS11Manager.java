@@ -26,10 +26,11 @@ import com.github.jsign.model.PKCS11Tokens;
 import com.github.jsign.model.Token;
 import com.github.jsign.model.TokenConfig;
 import com.github.jsign.util.FileUtils;
+import com.github.jsign.util.JFrameUtils;
 import com.github.jsign.util.PKCS11Wrapper;
 
 public class PKCS11Manager {
-
+	
 	private PKCS11Tokens tokens = new PKCS11Tokens();	
 	private Manager manager;
 	
@@ -48,44 +49,58 @@ public class PKCS11Manager {
 	@SuppressWarnings("restriction")
 	public Provider getProvider(String name, String library, Long slot) {
 				
-		StringBuilder properties = new StringBuilder();
-		properties.append("name=").append(name).append("\n");		
-		properties.append("library=");
+		String providerName = name + "-slot-" + slot;
+		String providerFinalname = "SunPKCS11-" + providerName;
 		
-		if (OperatingSystem.isWindows()) {
-			properties.append(library);	
+		// Verifica se o provider ja foi adicionado
+		Provider provider = Security.getProvider(providerFinalname);
+		
+		if (provider == null) {
+		
+			StringBuilder properties = new StringBuilder();
+			properties.append("name=").append(providerName).append("\n");		
+			properties.append("library=");
+			
+			if (OperatingSystem.isWindows()) {
+				properties.append(library);	
+			}
+			else {
+				if(library.contains(":/")){
+					properties.append(library.substring(library.lastIndexOf("/") + 1));
+				}
+				else if(library.contains(":\\")){
+					properties.append(library.substring(library.lastIndexOf(":\\")));
+				} 
+				else{
+					properties.append(library);
+				}
+			}
+			properties.append("\n");
+					
+			if (slot != null) {
+				properties.append("slot=").append(slot.toString()).append("\n");
+			}
+			
+			//map.setProperty("showInfo", "true");
+			
+			try {
+				InputStream bin = new ByteArrayInputStream(properties.toString().getBytes());
+									
+				provider = new sun.security.pkcs11.SunPKCS11(bin);
+				
+				bin.close();
+				
+				Security.addProvider(provider);
+				
+				return provider;
+			}
+			catch (Exception e) {
+				e.printStackTrace();
+				throw new RuntimeException(MessageFormat.format("Erro ao instanciar o provider do token {0}, mensagem interna: {1}", name, e.getMessage()));
+			}			
 		}
 		else {
-			if(library.contains(":/")){
-				properties.append(library.substring(library.lastIndexOf("/") + 1));
-			}
-			else if(library.contains(":\\")){
-				properties.append(library.substring(library.lastIndexOf(":\\")));
-			} 
-			else{
-				properties.append(library);
-			}
-		}
-		properties.append("\n");
-				
-		if (slot != null) {
-			properties.append("slot=").append(slot.toString()).append("\n");
-		}
-		
-		//map.setProperty("showInfo", "true");
-		
-		try {			
-			InputStream bin = new ByteArrayInputStream(properties.toString().getBytes());
-
-			Provider provider = new sun.security.pkcs11.SunPKCS11(bin);
-			
-			bin.close();
-			
 			return provider;
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-			throw new RuntimeException(MessageFormat.format("Erro ao instanciar o provider do token {0}, mensagem interna: {1}", name, e.getMessage()));
 		}
 	}
 		
@@ -164,8 +179,6 @@ public class PKCS11Manager {
 	private Provider tryGetProvider(TokenConfig tokenConfig, long slot) {
 		try {
 			Provider provider = getProvider(tokenConfig, slot);
-
-			Security.addProvider(provider);
 			
 			return provider;
 		}
@@ -206,6 +219,7 @@ public class PKCS11Manager {
 			}			
 		}
 		else {
+			
 			KeyStore keyStore = null;
 			
 			try {
@@ -217,7 +231,7 @@ public class PKCS11Manager {
 				}
 			}
 			
-			availableProvider.setKeyStore(keyStore);			
+			availableProvider.setKeyStore(keyStore);
 			availableProviders.add(availableProvider);
 		}
 		
@@ -237,9 +251,33 @@ public class PKCS11Manager {
 		return helpers;
 	}
 	
-	private KeyStore getKeyStore(Provider provider, DlgProtectionCallback dlgProtectionCallback) throws KeyStoreException {		
-		KeyStore.ProtectionParameter protectionParameter = new KeyStore.CallbackHandlerProtection(dlgProtectionCallback);
+	private KeyStore getKeyStore(Provider provider, DlgProtectionCallback dlgProtectionCallback) throws Exception {		
+		
+		KeyStore.ProtectionParameter protectionParameter = new KeyStore.CallbackHandlerProtection(dlgProtectionCallback);	
 		KeyStore.Builder kb = KeyStore.Builder.newInstance("PKCS11", provider, protectionParameter);
+		
+		
+//		AuthProvider authProvider = (AuthProvider) provider;
+//		authProvider.setCallbackHandler(dlgProtectionCallback);
+////		try {
+////			authProvider.login(null, dlgProtectionCallback);
+//////		}
+//////		catch (LoginException e) {
+//////			// TODO Auto-generated catch block
+//////			e.printStackTrace();
+//////		}		
+////				
+//		KeyStore keyStore = KeyStore.getInstance("PKCS11", provider);
+//		
+//		try {
+//			keyStore.load(null, null);
+//			return keyStore;
+//		} 
+//		catch (Exception e) {
+//			throw e;
+//		}
+
+		
 		return kb.getKeyStore();
 	}
 
@@ -257,17 +295,69 @@ public class PKCS11Manager {
 		getManager().getConfigurationManager().writeConfiguration(configuration);
 	}
 	
-	/* TODO */
-	public KeyStoreHelper retrieveKeyStoreHelperByConfiguration(Configuration configuration) {
+	public KeyStoreHelper retrieveKeyStoreHelperByConfiguration(Configuration configuration) throws Exception {
+		
+		Token token = new Token(configuration.getPkcs11Name());		
+		TokenConfig tokenConfig = new TokenConfig(token, OperatingSystem.getOperatingSystem(), configuration.getPkcs11Library());
+		token.getConfigs().add(tokenConfig);		
+		
+		Provider provider = tryGetProvider(tokenConfig, configuration.getPkcs11Slot());
+		
+		if (provider != null) {
+			
+			PKCS11AvailableProvider availableProvider = new PKCS11AvailableProvider(provider, tokenConfig, configuration.getPkcs11Slot());			
 
-//		PKCS11AvailableProvider ap11 = (PKCS11AvailableProvider) ap;
-//
-//		if (ap11.getTokenConfig().getToken().getName().equals(configuration.getPkcs11Name())
-//				&& ap11.getTokenConfig().getLibrary().equals(configuration.getPkcs11Library())   	    					
-//				&& (ap11.getSlot() != null && ap11.getSlot().equals(configuration.getPkcs11Slot())
-//					|| ap11.getSlot() == null && configuration.getPkcs11Slot() == null)) {
-//			
-//		}
+			KeyStore keyStore = null;
+			
+			// Tenta recuperar o keyStore em 3 tentativas			
+			for (int i=0; i < 3; i++) {
+				try {
+					keyStore = getKeyStore(availableProvider.getProvider(), availableProvider.getDlgProtectionCallback());
+					
+					// Se conseguir recuperar o keyStore sai do loop
+					break;
+				}
+				catch (Exception e) {
+					if (e.getCause() != null 
+							&& e.getCause().getCause() != null 
+							&& e.getCause().getCause() instanceof FailedLoginException) {
+						// Se for a terceira tentativa lanca o exception para cima
+						String msg = "O PIN digitado é inválido!";
+						if (i == 2) {
+							throw new Exception(msg);
+						}
+						else {
+							JFrameUtils.showInfo("PIN", msg, null);
+						}
+					}
+					else {
+						// Se for outro tipo de exception sai do loop   
+						break;
+					}			
+				}				
+			}
+	
+			if (keyStore != null) {
+				
+				availableProvider.setKeyStore(keyStore);
+				
+				X509Certificate certificate = null;
+			
+				try {
+					certificate = (X509Certificate) availableProvider.getKeyStore().getCertificate(configuration.getCertificateAlias());
+				} 
+				catch (KeyStoreException e1) {
+		
+				}
+				
+				if (certificate != null) {
+					try {
+						return new PKCS11KeyStoreHelper(availableProvider.getKeyStore(), certificate, availableProvider.getTokenConfig(), availableProvider.getSlot());
+					}
+					catch (Exception e) {}
+				}
+			}
+		}
 		
 		return null;
 	}

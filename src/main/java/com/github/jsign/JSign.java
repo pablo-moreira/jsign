@@ -94,29 +94,51 @@ public class JSign implements SignLogProgress {
 		return signMessage(messageToSign, attached);
 	}
 	
+	/**
+	 * Metodo responsavel por assinar um documento, ele nao se responsabiliza por iniciar e fechar o keystore.
+	 * 
+	 * @param messageToSign Messagem que sera assinada
+	 * @param attached Se o envelope gerado tera a mensagem original atachada ou nao
+	 * @return O arquivo assinado
+	 * @throws Exception
+	 */
 	public SignedMessage signMessage(MessageToSign messageToSign, boolean attached) throws Exception {
 		
-		List<SignedMessage> signMessages = signMessages(Arrays.asList(messageToSign), attached);
+		if (this.keyStore == null) {
+			throw new RuntimeException("Por favor inicie o keyStore, execute jSign.initKeyStore()");
+		}
+		
+		List<SignedMessage> signMessages = getManager().getSignManager().signMessages(this.keyStore, Arrays.asList(messageToSign), attached, isAllowsCoSigning(), this);
 		
 		return signMessages.get(0);
 	}
 	
+	/**
+	 * Metodo responsavel por iniciar o keyStore, assinar os documentos e fechar o keystore.
+	 *  
+	 * @param messages As mensagens que serao assinadas
+	 * @param attached Se o envelope gerado tera a mensagem original atachada ou nao
+	 * @return Os arquivos assinados
+	 * @throws Exception
+	 */
 	public List<SignedMessage> signMessages(List<MessageToSign> messages, boolean attached) throws Exception {
 		
-		if (this.keyStore == null) {
-			this.keyStore = initKeyStore();
-		}
+		initKeyStore();
 		
-		return getManager().getSignManager().signMessages(this.keyStore, messages, attached, isAllowsCoSigning(), this);
+		List<SignedMessage> signMessages = getManager().getSignManager().signMessages(this.keyStore, messages, attached, isAllowsCoSigning(), this);
+
+		closeKeyStore();
+		
+		return signMessages;
 	}
 	
 	public KeyStoreHelper initKeyStore() throws Exception {
-		
+
 		KeyStoreHelper keyStoreHelper = null;
 		
 		// Verifica se existe algum certificado configurado, se houver utiliza o certificado
 		if (this.configuration.isDefinedKeyStoreType()) {
-			keyStoreHelper = getManager().getConfigurationManager().loadKeyStoreHelperByConfiguration(configuration);		
+			keyStoreHelper = getManager().getConfigurationManager().loadKeyStoreHelperByConfiguration(this.configuration);		
 		}
 		
 		if (keyStoreHelper == null) {
@@ -128,6 +150,8 @@ public class JSign implements SignLogProgress {
 			}			
 		}
 		
+		this.keyStore = keyStoreHelper;
+				
 		return keyStoreHelper;
 	}
 	
@@ -285,5 +309,15 @@ public class JSign implements SignLogProgress {
 		dlgConfiguration.setIconImage(image);
 		dlgConfigurationWindows.setIconImage(image);
 		dlgCertificateNotFound.setIconImage(image);
+	}
+
+	/**
+	 * Metodo responsavel por deslogar o keyStore
+	 */
+	public void closeKeyStore() {
+		if (this.keyStore != null) {					
+			this.keyStore.close();
+			this.keyStore = null;
+		}
 	}
 }

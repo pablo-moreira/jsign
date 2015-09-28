@@ -1,18 +1,24 @@
 package com.github.jsign.keystore;
 
+import java.security.AuthProvider;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.PrivateKey;
+import java.security.Provider;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 import com.github.jsign.model.KeyStoreType;
 import com.github.jsign.util.StringUtils;
 
 public abstract class KeyStoreHelper {
+	
+	private static Logger logger = Logger.getLogger(MSCAPIKeyStoreHelper.class);
 	
 	protected X509Certificate certificate;
 	protected String certificateAlias;
@@ -87,5 +93,19 @@ public abstract class KeyStoreHelper {
 		catch (KeyStoreException e) {
 			throw new Exception("O KeyStore não foi inicializado corretamente!\n" + e);
 		}
+	}
+
+	public void close() {		
+		try {
+			Provider provider = getKeyStore().getProvider();
+			
+			if (provider instanceof AuthProvider) {
+				AuthProvider authProvider = (AuthProvider) provider;
+				authProvider.logout();	
+			}			
+		}
+		catch (Exception e) {
+			logger.error("Erro ao fechar o keyStore, mensagem interna: " + e.getMessage(), e);		
+		}		
 	}
 }

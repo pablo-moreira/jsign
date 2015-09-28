@@ -2,8 +2,11 @@ package com.github.jsign.model;
 
 import java.security.KeyStore;
 import java.security.Provider;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.github.jsign.gui.DlgProtectionCallback;
+import com.github.jsign.util.StringUtils;
 
 public class PKCS11AvailableProvider extends AvailableProvider {
 
@@ -12,16 +15,18 @@ public class PKCS11AvailableProvider extends AvailableProvider {
 	private KeyStore keyStore;
 	private Provider provider;
 	private DlgProtectionCallback dlgProtectionCallback;
+	private String tokenLabel;
 
-	public PKCS11AvailableProvider(Provider provider, TokenConfig tokenConfig, Long slot) {
+	public PKCS11AvailableProvider(Provider provider, TokenConfig tokenConfig, Long slot, String tokenLabel) {
 		this.provider = provider;
 		this.tokenConfig = tokenConfig;
 		this.slot = slot;
+		this.tokenLabel = tokenLabel;
 		this.dlgProtectionCallback = new DlgProtectionCallback(getType().name(), getDescription());
 	}
 
 	public PKCS11AvailableProvider(Provider provider, TokenConfig tokenConfig, Long slot, KeyStore keyStore) {
-		this(provider, tokenConfig, slot); 
+		this(provider, tokenConfig, slot, (String) null); 
 		this.keyStore = keyStore;
 	}
 
@@ -41,17 +46,22 @@ public class PKCS11AvailableProvider extends AvailableProvider {
 	@Override
 	public String getDescription() {
 		
-		String description = "";
-
+		List<String> description = new ArrayList<String>();	
+						
+		if (tokenLabel != null) {
+			description.add("Token: " + tokenLabel); 
+		}
+		
 		if (tokenConfig != null) {
-			description += "Name: " + tokenConfig.getToken().getName() + ", Library: " + tokenConfig.getLibrary();
+			description.add("Name: " + tokenConfig.getToken().getName());
+			description.add("Library: " + tokenConfig.getLibrary());
 		}
 		
 		if (slot != null) {
-			description += ", Slot: " + slot;
+			description.add("Slot: " + slot);
 		}
 		
-		return description;
+		return StringUtils.join(description.toArray(new String[]{}), ", ");
 	}
 
 	public void setKeyStore(KeyStore keyStore) {

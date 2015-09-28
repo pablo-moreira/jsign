@@ -10,6 +10,7 @@ import java.security.Security;
 import java.security.cert.X509Certificate;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -124,11 +125,11 @@ public class PKCS11Manager {
 		return availableTokenConfigs;
 	}
 
-	private long[] tryGetSlotListWithToken(TokenConfig tokenConfig) {
+	private HashMap<Long,String> tryGetSlotListInfoWithToken(TokenConfig tokenConfig) {
 		
 		try {
 			PKCS11Wrapper instance = PKCS11Wrapper.getInstance(new File(tokenConfig.getLibrary()));			
-			return instance.getSlotList();
+			return instance.getSlotListInfo();
 		}
 		catch (Exception e) {}
 		
@@ -156,20 +157,20 @@ public class PKCS11Manager {
 				
 		for (TokenConfig tokenConfig : availableTokenConfigs) {
 
-			long[] slotList = tryGetSlotListWithToken(tokenConfig);
+			HashMap<Long,String> slotListInfo = tryGetSlotListInfoWithToken(tokenConfig);
 			
-			if (slotList != null) {
-				for (long slot : slotList) {
+			if (slotListInfo != null) {
+				for (long slot : slotListInfo.keySet()) {
 
 					Provider provider = tryGetProvider(tokenConfig, slot);
 					
 					if (provider != null) {
-						availableProviders.add(new PKCS11AvailableProvider(provider, tokenConfig, slot));
+						availableProviders.add(new PKCS11AvailableProvider(provider, tokenConfig, slot, slotListInfo.get(slot)));
 					}
 				}
 			}
 			else {
-				availableProviders.add(new PKCS11AvailableProvider(null, tokenConfig, (Long) null));
+				availableProviders.add(new PKCS11AvailableProvider(null, tokenConfig, (Long) null, (String) null));
 			}
 		}
 		
@@ -252,31 +253,9 @@ public class PKCS11Manager {
 	}
 	
 	private KeyStore getKeyStore(Provider provider, DlgProtectionCallback dlgProtectionCallback) throws Exception {		
-		
+
 		KeyStore.ProtectionParameter protectionParameter = new KeyStore.CallbackHandlerProtection(dlgProtectionCallback);	
 		KeyStore.Builder kb = KeyStore.Builder.newInstance("PKCS11", provider, protectionParameter);
-		
-		
-//		AuthProvider authProvider = (AuthProvider) provider;
-//		authProvider.setCallbackHandler(dlgProtectionCallback);
-////		try {
-////			authProvider.login(null, dlgProtectionCallback);
-//////		}
-//////		catch (LoginException e) {
-//////			// TODO Auto-generated catch block
-//////			e.printStackTrace();
-//////		}		
-////				
-//		KeyStore keyStore = KeyStore.getInstance("PKCS11", provider);
-//		
-//		try {
-//			keyStore.load(null, null);
-//			return keyStore;
-//		} 
-//		catch (Exception e) {
-//			throw e;
-//		}
-
 		
 		return kb.getKeyStore();
 	}
@@ -305,7 +284,7 @@ public class PKCS11Manager {
 		
 		if (provider != null) {
 			
-			PKCS11AvailableProvider availableProvider = new PKCS11AvailableProvider(provider, tokenConfig, configuration.getPkcs11Slot());			
+			PKCS11AvailableProvider availableProvider = new PKCS11AvailableProvider(provider, tokenConfig, configuration.getPkcs11Slot(), (String) null);			
 
 			KeyStore keyStore = null;
 			

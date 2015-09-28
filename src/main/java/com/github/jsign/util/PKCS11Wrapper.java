@@ -6,9 +6,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  *
@@ -24,14 +21,11 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class PKCS11Wrapper {
 
-
-    private static volatile Map<String, PKCS11Wrapper> instances = new HashMap<String, PKCS11Wrapper>();
-    private static final Lock lock = new ReentrantLock();
     private final Method getSlotListMethod;
     private final Method getTokenInfoMethod;
     private final Field labelField;
     private final Object p11;
-    private final HashMap<Long, char[]> labelMap;
+    private final HashMap<Long,String> slotListInfo;
     private final long slotList[];
 
     private PKCS11Wrapper(final String fileName) {
@@ -108,10 +102,10 @@ public class PKCS11Wrapper {
                     + "for log.error(msg, e)";            
             throw new IllegalStateException(msg, e);
         }
-        this.labelMap = new HashMap<Long, char[]>();
+        this.slotListInfo = new HashMap<Long,String>();
         this.slotList = C_GetSlotList();
         for( long id : this.slotList) {
-            this.labelMap.put(Long.valueOf(id), getTokenLabelLocal(id));
+            this.slotListInfo.put(Long.valueOf(id), getTokenLabelLocal(id));
         }
     }
 
@@ -122,32 +116,17 @@ public class PKCS11Wrapper {
      * @throws IllegalArgumentException
      */
     public static PKCS11Wrapper getInstance(final File file) throws IllegalArgumentException {
-        final String canonicalFileName;
+        
+    	final String canonicalFileName;
+        
         try {
             canonicalFileName = file.getCanonicalPath();
-        } catch (IOException e) {
+        } 
+        catch (IOException e) {
             throw new IllegalArgumentException(file+" is not a valid filename.",e );
         }
-        {
-            final PKCS11Wrapper storedP11 = instances.get(canonicalFileName);
-            if (storedP11 != null) {
-                return storedP11;// if instance exist we don't have to wait for lock just grab it.
-            }
-        }
-        try {
-            lock.lock();// wait for lock; some other tread might be creating the instance right now.
-            final PKCS11Wrapper storedP11 = instances.get(canonicalFileName);
-            if (storedP11 != null) {
-                return storedP11;// some other thread had already created the instance
-            }
-            // no other thread has created the instance and no other will since this thread is locking.
-            //Pkcs11SlotLabel.doC_Initialize(file);// C_Initialize with multithreading args.
-            final PKCS11Wrapper newP11 = new PKCS11Wrapper(canonicalFileName);
-            instances.put(canonicalFileName, newP11);
-            return newP11;
-        } finally {
-            lock.unlock();// now other threads might get the instance.
-        }
+
+        return new PKCS11Wrapper(canonicalFileName);
     }
 
     /**
@@ -163,8 +142,8 @@ public class PKCS11Wrapper {
      * @param slotID the ID of the slot
      * @return the token label, or null if no matching token was found.
      */
-    public char[] getTokenLabel(long slotID) {
-        return this.labelMap.get(Long.valueOf(slotID));
+    public String getTokenLabel(long slotID) {
+        return this.slotListInfo.get(Long.valueOf(slotID));
     }
 
     private long[] C_GetSlotList() {
@@ -185,7 +164,7 @@ public class PKCS11Wrapper {
         }
     }
 
-    private char[] getTokenLabelLocal(long slotID)  {
+    private String getTokenLabelLocal(long slotID)  {
         final Object tokenInfo;
         try {
             tokenInfo = this.getTokenInfoMethod.invoke(this.p11, new Object[] { Long.valueOf(slotID) });
@@ -209,7 +188,7 @@ public class PKCS11Wrapper {
         }
         try {
             String result = String.copyValueOf((char[]) this.labelField.get(tokenInfo));
-            return result.trim().toCharArray();
+            return result.trim();
         } catch (IllegalArgumentException e) {
             String msg = "Field sun.security.pkcs11.wrapper.PKCS11.C_GetTokenInfo was not of type sun.security.pkcs11.wrapper.CK_TOKEN_INFO"
                     + ", this may be due to a change in the underlying library.";  
@@ -222,7 +201,7 @@ public class PKCS11Wrapper {
         }
     }
 
-	public HashMap<Long, char[]> getLabelMap() {
-		return labelMap;
+	public HashMap<Long,String> getSlotListInfo() {
+		return slotListInfo;
 	}
 }

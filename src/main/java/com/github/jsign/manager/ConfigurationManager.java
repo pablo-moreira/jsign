@@ -2,7 +2,6 @@ package com.github.jsign.manager;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;

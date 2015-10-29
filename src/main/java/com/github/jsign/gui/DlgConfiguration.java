@@ -458,8 +458,8 @@ public class DlgConfiguration extends javax.swing.JDialog {
         
         fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
         fc.setMultiSelectionEnabled(false);
-        fc.setAcceptAllFileFilterUsed(false);
-
+        fc.setAcceptAllFileFilterUsed(true);
+        
         FileNameExtensionFilter filter = new FileNameExtensionFilter("Biblioteca PKCS11 do TOKEN (*.dll,*.dylib,*.so)", "dll", "dylib", "so", "so.8", "so.8.0", "so.1", "so.2");
 
         fc.setFileFilter(filter);

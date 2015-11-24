@@ -12,8 +12,10 @@ import java.util.List;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import com.github.jsign.JSign;
 import com.github.jsign.keystore.KeyStoreHelper;
 import com.github.jsign.keystore.MSCAPIKeyStoreHelper;
+import com.github.jsign.util.CertificateFinder;
 import com.github.jsign.util.CertificateUtils;
 import com.github.jsign.util.EntityColumnWidthTableModel;
 import com.github.jsign.util.JFrameUtils;
@@ -36,12 +38,17 @@ public class DlgConfigurationWindows extends javax.swing.JDialog {
 	private List<MSCAPIKeyStoreHelper> keyStoresHelpers = new ArrayList<MSCAPIKeyStoreHelper>();
 	private KeyStoreHelper keyStoreHelper;
 	private int returnStatus;
+	private JSign jSign;
+	private CertificateFinder certificateFinder;
+	private Thread threadCertificateFinder;
 	
 	/**
 	 * Creates new form DlgConfigurationWindows
+	 * @param jSign
 	 */
-	public DlgConfigurationWindows(java.awt.Frame parent, boolean modal) {
+	public DlgConfigurationWindows(java.awt.Frame parent, boolean modal, JSign jSign) {
 		super(parent , modal);
+		this.jSign = jSign;
 		initComponents();
 		init();
 	}
@@ -221,7 +228,7 @@ public class DlgConfigurationWindows extends javax.swing.JDialog {
 		/* Create and display the dialog */
 		java.awt.EventQueue.invokeLater(new Runnable() {
 			public void run() {
-				DlgConfigurationWindows dialog = new DlgConfigurationWindows(new javax.swing.JFrame(), true);
+				DlgConfigurationWindows dialog = new DlgConfigurationWindows(new javax.swing.JFrame(), true, null);
 				dialog.addWindowListener(new java.awt.event.WindowAdapter() {
 					@Override
 					public void windowClosing(java.awt.event.WindowEvent e) {
@@ -308,10 +315,33 @@ public class DlgConfigurationWindows extends javax.swing.JDialog {
 	}
 	
 	public void start(List<MSCAPIKeyStoreHelper> keyStoresHelpers) {
-    
+				
 		this.keyStoresHelpers = keyStoresHelpers;
 		
-		tblCertificates.clearSelection();
+		this.tblCertificates.clearSelection();
+		
+		this.certificateFinder = new CertificateFinder() {
+			
+			@Override
+			public void run() {
+				
+				while(!isStop()) {
+					
+					DlgConfigurationWindows.this.keyStoresHelpers = jSign.getManager().getConfigurationManager().getKeyStoresHelpersAvailableOnMsCapi();					
+					DlgConfigurationWindows.this.tblCertificates.updateUI();
+					
+					try {
+						Thread.sleep(1000);
+					}
+					catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		};
+		
+		this.threadCertificateFinder = new Thread(this.certificateFinder);
+		this.threadCertificateFinder.start();
 		
 		pack();
 
@@ -324,8 +354,14 @@ public class DlgConfigurationWindows extends javax.swing.JDialog {
     }
 	
 	private void doClose(int retStatus) {
-        returnStatus = retStatus;
-        setVisible(false);
+        
+		this.returnStatus = retStatus;
+		
+		if (this.certificateFinder != null) {
+			this.certificateFinder.stop();
+		}
+		
+        setVisible(false);        
         dispose();
     }
 

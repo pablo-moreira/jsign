@@ -147,6 +147,10 @@ public class PKCS11Manager {
 		}
 	}
 	
+	public List<PKCS11AvailableProvider> getAvailableProviders(Configuration configuration, boolean onlyWithSlotListInfo) {
+		return getAvailableProviders(configuration, true);
+	}
+		
 	public List<PKCS11AvailableProvider> getAvailableProviders(Configuration configuration) {
 
 		List<PKCS11AvailableProvider> availableProviders = new ArrayList<PKCS11AvailableProvider>();

@@ -8,6 +8,8 @@ import com.github.jsign.model.KeyStoreType;
 
 public class MSCAPIKeyStoreHelper extends KeyStoreHelper {
 			
+	private boolean pinUnlocked;
+
 	public MSCAPIKeyStoreHelper(KeyStore keyStore, X509Certificate certificate) throws Exception  {
 		
 		super(keyStore, certificate);
@@ -29,4 +31,12 @@ public class MSCAPIKeyStoreHelper extends KeyStoreHelper {
 	public String getDescription() {
 		return getCertificateAlias();
 	}
+
+	public boolean isPinUnlocked() {
+		return pinUnlocked;
+	}
+
+	public void setPinUnlocked(boolean pinUnlocked) {
+		this.pinUnlocked = pinUnlocked;
+	}	
 }

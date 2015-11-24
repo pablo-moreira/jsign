@@ -1,17 +1,23 @@
 package com.github.jsign.keystore;
 
+import java.security.AuthProvider;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
+import java.security.Provider;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.X509Certificate;
+
+import org.apache.log4j.Logger;
 
 import com.github.jsign.model.KeyStoreType;
 import com.github.jsign.model.TokenConfig;
 
 
 public class PKCS11KeyStoreHelper extends KeyStoreHelper {
+
+	private static Logger logger = Logger.getLogger(PKCS11KeyStoreHelper.class);
 	
 	private TokenConfig tokenConfig;
 	private long slot;
@@ -35,6 +41,7 @@ public class PKCS11KeyStoreHelper extends KeyStoreHelper {
 		
 		this.tokenConfig = tokenConfig;
 		this.slot = slot;
+		this.logged = true;
 	}
 
 	@Override
@@ -53,5 +60,23 @@ public class PKCS11KeyStoreHelper extends KeyStoreHelper {
 	@Override
 	public String getDescription() {
 		return getTokenConfig().getLibrary() + ", " + getSlot();
+	}
+
+	@Override
+	public void logout() {
+		
+		try {
+			Provider provider = getKeyStore().getProvider();
+			
+			if (provider instanceof AuthProvider) {
+				AuthProvider authProvider = (AuthProvider) provider;
+				authProvider.logout();
+			}
+			
+			super.logout();
+		}
+		catch (Exception e) {
+			logger.error("Erro ao fechar o keyStore, mensagem interna: " + e.getMessage(), e);		
+		}		
 	}
 }

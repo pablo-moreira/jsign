@@ -2,12 +2,15 @@ package com.github.jsign.manager;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.security.InvalidKeyException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.KeyStoreSpi;
 import java.security.NoSuchAlgorithmException;
 import java.security.Provider;
 import java.security.Security;
+import java.security.Signature;
+import java.security.SignatureException;
 import java.security.cert.X509Certificate;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -188,6 +191,27 @@ public class MSCAPIManager {
 		catch (Exception e) {
 			e.printStackTrace();
 			throw new Exception(MessageFormat.format("Erro ao realizar o unificação dos alias dos certificados da MsCAPI, {0}", e.getMessage()));
+		}
+	}
+	
+	public void initMscapiKeyStore(MSCAPIKeyStoreHelper keyStoreHelper) throws Exception {
+
+		try {
+			Signature signature = Signature.getInstance("SHA1withRSA");
+			signature.initSign(keyStoreHelper.getPrivateKey());
+			signature.update("UNLOKED_PIN".getBytes());
+			signature.sign();
+			
+			keyStoreHelper.login();
+		}
+		catch (SignatureException e){
+			throw new Exception("Não foi possível inicializar o token, mensagem interna: " + e.getMessage());
+		}
+		catch (NoSuchAlgorithmException e) {
+			throw new Exception("Não foi possível inicializar o token, mensagem interna: " + e.getMessage());
+		}
+		catch (InvalidKeyException e) {
+			throw new Exception("Não foi possível inicializar o token, mensagem interna: " + e.getMessage());
 		}
 	}
 }

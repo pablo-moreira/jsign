@@ -5,19 +5,21 @@
  */
 package com.github.jsign.gui;
 
-import java.net.URL;
-import java.util.Collection;
-
-import com.github.jsign.model.Token;
-import com.github.jsign.util.EntityColumnWidthTableModel;
-import com.github.jsign.util.JFrameUtils;
 import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.net.URI;
-
+import java.net.URL;
+import java.util.Collection;
 import java.util.List;
+
+import com.github.jsign.JSign;
+import com.github.jsign.keystore.MSCAPIKeyStoreHelper;
+import com.github.jsign.model.Token;
+import com.github.jsign.util.CertificateFinder;
+import com.github.jsign.util.EntityColumnWidthTableModel;
+import com.github.jsign.util.JFrameUtils;
+
 
 /**
  * @author pablo.filetti@gmail.com
@@ -27,24 +29,33 @@ public class DlgCertificateNotFound extends javax.swing.JDialog {
 	private static final long serialVersionUID = 1L;
 	
 	public static final int RET_CANCEL = 0;
-	public static final int RET_TRY_AGAIN = 1;
+	public static final int RET_CERTIFICATE_FOUND = 1;
 	public static final int RET_OPEN_DLG_CONFIGURATION = 2;
 	
 	private int returnStatus;
 	private Collection<Token> tokensDriversInstalledOnSystem;
 	private URL urlDriversInstallationHelpPage;
+	private Thread threadCertificateFinder;
+	private JSign jSign;
+	private CertificateFinder certificateFinder;
 	
 	/**
 	 * Creates new form DlgCertificadoNaoEncontrado
+	 * @param jSign 
 	 */
-	public DlgCertificateNotFound(java.awt.Frame parent, boolean modal) {
+	public DlgCertificateNotFound(java.awt.Frame parent, boolean modal, JSign jSign) {
 		super(parent,modal);
+		this.jSign = jSign;
 		initComponents();
 		init();
 		try {
 			this.urlDriversInstallationHelpPage = new URL("http://driver.token.help.page.com");
 		}
 		catch (Exception e) {}
+	}
+		
+	public JSign getJSign() {
+		return jSign;
 	}
 
 	/**
@@ -68,7 +79,6 @@ public class DlgCertificateNotFound extends javax.swing.JDialog {
         jLabel6 = new javax.swing.JLabel();
         btnConfigurationAdvanced = new javax.swing.JButton();
         btnClose = new javax.swing.JButton();
-        btnTryAgain = new javax.swing.JButton();
         lblDriversInstallationHelpPage = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
@@ -152,13 +162,6 @@ public class DlgCertificateNotFound extends javax.swing.JDialog {
             }
         });
 
-        btnTryAgain.setText("Verificar Novamente");
-        btnTryAgain.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnTryAgainActionPerformed(evt);
-            }
-        });
-
         lblDriversInstallationHelpPage.setForeground(new java.awt.Color(51, 102, 255));
         lblDriversInstallationHelpPage.setText("http://driver.token.help.page.com");
 
@@ -174,8 +177,6 @@ public class DlgCertificateNotFound extends javax.swing.JDialog {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(btnConfigurationAdvanced)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(btnTryAgain)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnClose))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -211,8 +212,7 @@ public class DlgCertificateNotFound extends javax.swing.JDialog {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 114, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnConfigurationAdvanced)
-                    .addComponent(btnClose)
-                    .addComponent(btnTryAgain))
+                    .addComponent(btnClose))
                 .addContainerGap())
         );
 
@@ -222,10 +222,6 @@ public class DlgCertificateNotFound extends javax.swing.JDialog {
     private void btnCloseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCloseActionPerformed
         doClose(RET_CANCEL);
     }//GEN-LAST:event_btnCloseActionPerformed
-
-    private void btnTryAgainActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTryAgainActionPerformed
-        doClose(RET_TRY_AGAIN);
-    }//GEN-LAST:event_btnTryAgainActionPerformed
 
     private void btnConfigurationAdvancedActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnConfigurationAdvancedActionPerformed
         doClose(RET_OPEN_DLG_CONFIGURATION);
@@ -262,7 +258,7 @@ public class DlgCertificateNotFound extends javax.swing.JDialog {
 		/* Create and display the dialog */
 		java.awt.EventQueue.invokeLater(new Runnable() {
 			public void run() {
-				DlgCertificateNotFound dialog = new DlgCertificateNotFound(new javax.swing.JFrame(), true);
+				DlgCertificateNotFound dialog = new DlgCertificateNotFound(new javax.swing.JFrame(), true, null);
 				dialog.addWindowListener(new java.awt.event.WindowAdapter() {
 					@Override
 					public void windowClosing(java.awt.event.WindowEvent e) {
@@ -277,7 +273,6 @@ public class DlgCertificateNotFound extends javax.swing.JDialog {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnClose;
     private javax.swing.JButton btnConfigurationAdvanced;
-    private javax.swing.JButton btnTryAgain;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
@@ -292,26 +287,61 @@ public class DlgCertificateNotFound extends javax.swing.JDialog {
     // End of variables declaration//GEN-END:variables
 
 	private void doClose(int retStatus) {
-        this.returnStatus = retStatus;
+        
+		this.returnStatus = retStatus;
+		
+		if (this.certificateFinder != null) {
+			this.certificateFinder.stop();
+		}
+		
         setVisible(false);
-        dispose();
+        
+        dispose();        
     }
 
 	public int getReturnStatus() {
 		return returnStatus;
 	}
 	
-	public void start(Collection<Token> tokensDriversInstalledOnSystem) {
+	public void start() {
 		
-		this.tokensDriversInstalledOnSystem = tokensDriversInstalledOnSystem;
+		this.tokensDriversInstalledOnSystem = jSign.getManager().getConfigurationManager().getTokensDriversInstalledOnSystem(jSign.getConfiguration());
 
 		this.lblDriversInstallationHelpPage.setText(this.urlDriversInstallationHelpPage.toString());
+
+		certificateFinder = new CertificateFinder() {
+			
+			@Override
+			public void run() {
+				
+				while(!isStop()) {
+					
+					List<MSCAPIKeyStoreHelper> keyStoresHelpersAvailable = jSign.getManager().getConfigurationManager().getKeyStoresHelpersAvailableOnMsCapi();
+					
+					if (keyStoresHelpersAvailable.size() > 0) {
+						doClose(RET_CERTIFICATE_FOUND);
+					}
+					else {
+						try {
+							Thread.sleep(1000);
+						}
+						catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+			}
+		};
+		
+		threadCertificateFinder = new Thread(certificateFinder);
+		threadCertificateFinder.start();
 		
 		pack();
+		
         JFrameUtils.setCenterLocation(this);
         setVisible(true);   
 	}
-
+	
 	private void init() {	
 		
 		this.lblDriversInstallationHelpPage.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));

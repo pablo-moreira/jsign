@@ -8,6 +8,8 @@ import java.security.Security;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.swing.JOptionPane;
+
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import com.github.jsign.gui.DlgCertificateNotFound;
@@ -18,6 +20,7 @@ import com.github.jsign.interfaces.SignLogProgress;
 import com.github.jsign.interfaces.SignProgress;
 import com.github.jsign.keystore.KeyStoreHelper;
 import com.github.jsign.keystore.MSCAPIKeyStoreHelper;
+import com.github.jsign.keystore.PKCS11KeyStoreHelper;
 import com.github.jsign.manager.Manager;
 import com.github.jsign.model.Configuration;
 import com.github.jsign.model.MessageToSign;
@@ -56,9 +59,9 @@ public class JSign implements SignLogProgress {
 			
 			dlgConfiguration = new DlgConfiguration(parent, true, this);
 			dlgConfiguration.setAlwaysOnTop(true);
-			dlgConfigurationWindows = new DlgConfigurationWindows(parent, true);
+			dlgConfigurationWindows = new DlgConfigurationWindows(parent, true, this);
 			dlgConfigurationWindows.setAlwaysOnTop(true);
-			dlgCertificateNotFound = new DlgCertificateNotFound(parent, true);
+			dlgCertificateNotFound = new DlgCertificateNotFound(parent, true, this);
 			dlgCertificateNotFound.setAlwaysOnTop(true);
 		}
 		catch (Exception e) {
@@ -114,7 +117,7 @@ public class JSign implements SignLogProgress {
 	}
 	
 	/**
-	 * Metodo responsavel por iniciar o keyStore, assinar os documentos e fechar o keystore.
+	 * Metodo responsavel por iniciar o keyStore, assinar os documentos e deslogar o keystore.
 	 *  
 	 * @param messages As mensagens que serao assinadas
 	 * @param attached Se o envelope gerado tera a mensagem original atachada ou nao
@@ -127,32 +130,59 @@ public class JSign implements SignLogProgress {
 		
 		List<SignedMessage> signMessages = getManager().getSignManager().signMessages(this.keyStore, messages, attached, isAllowsCoSigning(), this);
 
-		closeKeyStore();
+		logoutKeyStore();
 		
 		return signMessages;
 	}
 	
 	public KeyStoreHelper initKeyStore() throws Exception {
 
-		KeyStoreHelper keyStoreHelper = null;
-		
-		// Verifica se existe algum certificado configurado, se houver utiliza o certificado
-		if (this.configuration.isDefinedKeyStoreType()) {
-			keyStoreHelper = getManager().getConfigurationManager().loadKeyStoreHelperByConfiguration(this.configuration);		
-		}
-		
-		if (keyStoreHelper == null) {
-
-			keyStoreHelper = configKeyStore();
+		if (this.keyStore == null) {
+			
+			KeyStoreHelper keyStoreHelper = null;
+			
+			// Verifica se existe algum certificado configurado, se houver utiliza o certificado
+			if (this.configuration.isDefinedKeyStoreType()) {
+				keyStoreHelper = getManager().getConfigurationManager().loadKeyStoreHelperByConfiguration(this.configuration);		
+			}
 			
 			if (keyStoreHelper == null) {
-				throw new Exception("Por favor, para realizar a assinatura deve-se configurar um certificado digital!");
-			}			
+	
+				keyStoreHelper = configKeyStore();
+				
+				if (keyStoreHelper == null) {
+					throw new Exception("Por favor, para realizar a assinatura deve-se configurar um certificado digital!");
+				}
+			}
+			
+			if (keyStoreHelper instanceof MSCAPIKeyStoreHelper) {
+				getManager().getMscapiManager().initMscapiKeyStore((MSCAPIKeyStoreHelper) keyStoreHelper);
+			}
+			
+			this.keyStore = keyStoreHelper;
+		}
+		else {
+			
+			if (this.keyStore instanceof MSCAPIKeyStoreHelper) {
+								
+				if (!this.keyStore.isLogged()) {
+					
+					String msg = "Deseja autorizar a utilização do dispositivo criptográfico:\n";
+					msg+= this.keyStore.getDescription();
+					
+					int result = JOptionPane.showConfirmDialog(null, msg, "Autorização", JOptionPane.YES_NO_OPTION);
+					
+					if (JOptionPane.OK_OPTION == result) {
+						this.keyStore.login();
+					}
+					else {
+						throw new Exception("A operação não foi autorizada pelo usuário!");
+					}
+				}				
+			}
 		}
 		
-		this.keyStore = keyStoreHelper;
-				
-		return keyStoreHelper;
+		return this.keyStore;
 	}
 	
 	private KeyStoreHelper configKeyStore() {
@@ -161,7 +191,7 @@ public class JSign implements SignLogProgress {
 		List<MSCAPIKeyStoreHelper> keyStoresHelpersAvailableMsCapi = getManager().getConfigurationManager().getKeyStoresHelpersAvailableOnMsCapi();
 		
 		KeyStoreHelper keyStoreHelper = null;
-		
+
 		if (!keyStoresHelpersAvailableMsCapi.isEmpty()) {
 			keyStoreHelper = showDlgConfigurationWindows(keyStoresHelpersAvailableMsCapi);
 		}
@@ -169,14 +199,14 @@ public class JSign implements SignLogProgress {
 			keyStoreHelper = showDlgCertificateNotFound();
 		}
 		
-		return keyStoreHelper;		
+		return keyStoreHelper;
 	}
 
 	private KeyStoreHelper showDlgCertificateNotFound() {
 
-		dlgCertificateNotFound.start(getManager().getConfigurationManager().getTokensDriversInstalledOnSystem(configuration));
+		dlgCertificateNotFound.start();
 		
-		if (dlgCertificateNotFound.getReturnStatus() == DlgCertificateNotFound.RET_TRY_AGAIN) {
+		if (dlgCertificateNotFound.getReturnStatus() == DlgCertificateNotFound.RET_CERTIFICATE_FOUND) {
 			return configKeyStore();
 		}
 		else if (dlgCertificateNotFound.getReturnStatus() == DlgCertificateNotFound.RET_OPEN_DLG_CONFIGURATION) {
@@ -190,21 +220,17 @@ public class JSign implements SignLogProgress {
 	public void resetKeyStore() {
 		this.keyStore = null;
 	}
-	
-	public KeyStoreHelper showDlgConfiguration() {
-		return showDlgConfiguration(true);
-	}
-				
-	public KeyStoreHelper showDlgConfiguration(boolean loadKeyStoreHelper) {		
 		
-		dlgConfiguration.start(loadKeyStoreHelper);
+	public KeyStoreHelper showDlgConfiguration() {
+		
+		dlgConfiguration.start();
 		
 		if (dlgConfiguration.getReturnStatus() == DlgConfiguration.RET_OK) {
 			
 			KeyStoreHelper keyStoreHelper = dlgConfiguration.getKeyStoreHelper();
-			
+									
 			updateKeyStoreHelper(keyStoreHelper);	    	
-			
+						
 			return keyStoreHelper;
 		}
 		else {
@@ -214,8 +240,9 @@ public class JSign implements SignLogProgress {
 
 	private void updateKeyStoreHelper(KeyStoreHelper keyStoreHelper) {
 
-		this.configuration.updateKeyStoreHelper(keyStoreHelper);
-    	
+		this.configuration.updateKeyStoreHelper(keyStoreHelper);		
+		this.keyStore = null;
+
     	try {
     		getManager().getConfigurationManager().writeConfiguration(this.configuration);
     	}
@@ -224,9 +251,9 @@ public class JSign implements SignLogProgress {
     	}
 	}
 
-	private KeyStoreHelper showDlgConfigurationWindows(List<MSCAPIKeyStoreHelper> keyStoresHelpersAvailableMsCapi) {
+	private KeyStoreHelper showDlgConfigurationWindows(List<MSCAPIKeyStoreHelper> keyStoresHelpersAvailable) {
 		
-		dlgConfigurationWindows.start(keyStoresHelpersAvailableMsCapi);
+		dlgConfigurationWindows.start(keyStoresHelpersAvailable);
 		
 		if (dlgConfigurationWindows.getReturnStatus() == DlgConfigurationWindows.RET_FINISH) {
 						
@@ -311,13 +338,18 @@ public class JSign implements SignLogProgress {
 		dlgCertificateNotFound.setIconImage(image);
 	}
 
-	/**
-	 * Metodo responsavel por deslogar o keyStore
-	 */
-	public void closeKeyStore() {
-		if (this.keyStore != null) {					
-			this.keyStore.close();
-			this.keyStore = null;
+	public void logoutKeyStore() {
+		
+		if (this.keyStore != null && this.keyStore.isLogged()) {					
+			
+			this.keyStore.logout();
+			
+			/**
+			 * Quando o provider do keystore for pkcs11 a instancia devera ser removida pois nao podera mais ser utilizada apos o logout 
+			 */
+			if (this.keyStore instanceof PKCS11KeyStoreHelper) {
+				this.keyStore = null;
+			}
 		}
 	}
 }

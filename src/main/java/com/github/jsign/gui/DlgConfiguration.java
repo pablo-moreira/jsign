@@ -19,6 +19,7 @@ import com.github.jsign.JSign;
 import com.github.jsign.keystore.KeyStoreHelper;
 import com.github.jsign.model.AvailableProvider;
 import com.github.jsign.model.Configuration;
+import com.github.jsign.util.CertificateFinder;
 import com.github.jsign.util.CertificateUtils;
 import com.github.jsign.util.EntityColumnWidthTableModel;
 import com.github.jsign.util.EntityTableModel;
@@ -46,7 +47,8 @@ public class DlgConfiguration extends javax.swing.JDialog {
 	private EntityTableModel<File> tblPkcs11DriversModel;
 	private EntityTableModel<AvailableProvider> tblAvailableProvidersModel;
 	private EntityColumnWidthTableModel<KeyStoreHelper> tblCertificatesModel;
-
+	private CertificateFinder certificateFinder;
+	
 	/**
 	 * Creates new form DlgConfiguration
 	 */
@@ -70,7 +72,6 @@ public class DlgConfiguration extends javax.swing.JDialog {
         btnCancel = new javax.swing.JButton();
         tbPanel = new javax.swing.JTabbedPane();
         pnTabConfiguration = new javax.swing.JPanel();
-        btnLoadAvailableProviders = new javax.swing.JButton();
         lblProviders = new javax.swing.JLabel();
         spTblAvailableProviders = new javax.swing.JScrollPane();
         tblAvailableProviders = new javax.swing.JTable();
@@ -96,7 +97,7 @@ public class DlgConfiguration extends javax.swing.JDialog {
         txtCertificateDescription = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setTitle("Formulário de Configuração");
+        setTitle("Configuração de Certificado");
 
         btnOK.setText("Concluir");
         btnOK.addActionListener(new java.awt.event.ActionListener() {
@@ -113,13 +114,6 @@ public class DlgConfiguration extends javax.swing.JDialog {
         });
 
         pnTabConfiguration.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
-
-        btnLoadAvailableProviders.setText("Carregar providers disponíveis");
-        btnLoadAvailableProviders.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnLoadAvailableProvidersActionPerformed(evt);
-            }
-        });
 
         lblProviders.setText("Providers:");
 
@@ -178,32 +172,29 @@ public class DlgConfiguration extends javax.swing.JDialog {
         pnTabConfiguration.setLayout(pnTabConfigurationLayout);
         pnTabConfigurationLayout.setHorizontalGroup(
             pnTabConfigurationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnTabConfigurationLayout.createSequentialGroup()
+            .addGroup(pnTabConfigurationLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(pnTabConfigurationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(spTblAvailableProviders, javax.swing.GroupLayout.DEFAULT_SIZE, 423, Short.MAX_VALUE)
-                    .addComponent(spTblCertificates, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 423, Short.MAX_VALUE)
-                    .addComponent(btnLoadAvailableProviders, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, pnTabConfigurationLayout.createSequentialGroup()
-                        .addGroup(pnTabConfigurationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(lblCertificates, javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(lblProviders, javax.swing.GroupLayout.Alignment.LEADING))
-                        .addGap(0, 324, Short.MAX_VALUE)))
+                .addGroup(pnTabConfigurationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(spTblAvailableProviders, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 458, Short.MAX_VALUE)
+                    .addComponent(spTblCertificates, javax.swing.GroupLayout.DEFAULT_SIZE, 458, Short.MAX_VALUE)
+                    .addGroup(pnTabConfigurationLayout.createSequentialGroup()
+                        .addGroup(pnTabConfigurationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(lblCertificates)
+                            .addComponent(lblProviders))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         pnTabConfigurationLayout.setVerticalGroup(
             pnTabConfigurationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pnTabConfigurationLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(btnLoadAvailableProviders)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(lblProviders)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(spTblAvailableProviders, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(spTblAvailableProviders, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(lblCertificates)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(spTblCertificates, javax.swing.GroupLayout.DEFAULT_SIZE, 113, Short.MAX_VALUE)
+                .addComponent(spTblCertificates, javax.swing.GroupLayout.DEFAULT_SIZE, 115, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -445,13 +436,6 @@ public class DlgConfiguration extends javax.swing.JDialog {
         }
     }//GEN-LAST:event_btnAddPkcs12CertificateActionPerformed
 
-    private void btnLoadAvailableProvidersActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLoadAvailableProvidersActionPerformed
-		
-    	availableProviders = jSign.getManager().getConfigurationManager().getAvailableProviders(jSign.getConfiguration(), jSign.isAllowsPkcs12Certificate());
-    	
-    	loadAvailableProviders();
-    }//GEN-LAST:event_btnLoadAvailableProvidersActionPerformed
-
     private void btnAddPkcs11DriverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddPkcs11DriverActionPerformed
 
         JFileChooser fc = new JFileChooser();
@@ -538,7 +522,6 @@ public class DlgConfiguration extends javax.swing.JDialog {
     private javax.swing.JButton btnCancel;
     private javax.swing.JButton btnDeletePkcs11Driver;
     private javax.swing.JButton btnDeletePkcs12Certificate;
-    private javax.swing.JButton btnLoadAvailableProviders;
     private javax.swing.JButton btnOK;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
@@ -563,14 +546,16 @@ public class DlgConfiguration extends javax.swing.JDialog {
     private javax.swing.JTextField txtCertificateType;
     // End of variables declaration//GEN-END:variables
 
-  	public void start(boolean loadKeyStoreHelper) {
+	private Thread threadCertificateFinder;
+	
+  	public void start() {
     
-  		Configuration configuration = jSign.getConfiguration();
+  		Configuration configuration = this.jSign.getConfiguration();
 		
   		reset();
 		
   		this.btnOK.setEnabled(false);
-                 
+
   		if (jSign.isAllowsPkcs12Certificate()) {
   			tbPanel.setEnabledAt(2, true);
   		}
@@ -578,18 +563,44 @@ public class DlgConfiguration extends javax.swing.JDialog {
         	tbPanel.setEnabledAt(2, false);
         }
 		
-		if (configuration.getKeyStoreType() != null && loadKeyStoreHelper) {			
+		if (configuration.getKeyStoreType() != null) {			
 			try {
 				this.keyStoreHelper = jSign.getManager().getConfigurationManager().loadKeyStoreHelperByConfiguration(configuration);
 			} 
-			catch (Exception e) {}
+			catch (Exception e) {
+				
+			}
 		}
 		
 		if (this.keyStoreHelper != null) {
 			onSelectCertificate(this.keyStoreHelper);
 		}
 		
+		this.certificateFinder = new CertificateFinder() {
+			
+			@Override
+			public void run() {
+				
+				while(!isStop()) {
+					
+				   	availableProviders = jSign.getManager().getConfigurationManager().getAvailableProviders(jSign.getConfiguration(), jSign.isAllowsPkcs12Certificate());			    	
+				   	tblAvailableProviders.updateUI();
+				   	
+				   	try {
+						Thread.sleep(1000);
+					}
+					catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		};
+		
+		this.threadCertificateFinder = new Thread(this.certificateFinder);
+		this.threadCertificateFinder.start();
+		
         pack();
+        
 		JFrameUtils.setCenterLocation(this);
 		setVisible(true);
     }    
@@ -599,33 +610,22 @@ public class DlgConfiguration extends javax.swing.JDialog {
     }
 	
 	private void doClose(int retStatus) {
-        returnStatus = retStatus;
+        
+		this.returnStatus = retStatus;
+		
+		if (this.certificateFinder != null) {
+			this.certificateFinder.stop();
+		}
+		
         setVisible(false);
+        
         dispose();
     }
 		
-	private void loadAvailableProviders() {
-				
-		if (availableProviders.size() > 0) {
-			
-			showAvailableProviders();
-			
-			tblAvailableProviders.updateUI();
-			
-			if (availableProviders.size() == 1) {
-				tblAvailableProviders.getSelectionModel().setSelectionInterval(0, 0);
-				onSelectAvailableProvider();
-			}
-		}
-		else {
-			JFrameUtils.showAlerta("Nenhum provider disponível", "Não foi encontrado nenhum provider disponível!", this);
-		}
-	}
-	
 	private void onSelectAvailableProvider() {
 		
-		hideCertificates();
-
+		tblCertificates.getSelectionModel().clearSelection();
+		
 		availableProvider = tblAvailableProvidersModel.getEntitySelected();
 
 		if (availableProvider != null) {
@@ -635,7 +635,7 @@ public class DlgConfiguration extends javax.swing.JDialog {
 
 				if (keyStoresHelpersAvailable.size() > 0) {
 
-					showCertificates();
+					tblCertificates.updateUI();
 
 					if (keyStoresHelpersAvailable.size() == 1) {
 						tblCertificates.getSelectionModel().setSelectionInterval(0, 0);
@@ -673,36 +673,7 @@ public class DlgConfiguration extends javax.swing.JDialog {
 			}
 		}
 	}
-	
-	private void showCertificates() {
-		changeVisibleCertificates(true);
-		tblCertificates.updateUI();
-	}
-	
-	private void hideCertificates() {
-		changeVisibleCertificates(false);
-		tblCertificates.getSelectionModel().clearSelection();
-	}
-	
-	private void changeVisibleCertificates(boolean visible) {
-		lblCertificates.setVisible(visible);
-		spTblCertificates.setVisible(visible);
-	}
-	
-	private void showAvailableProviders() {
-		changeVisibleAvailableProviders(true);
-	}
-	
-	private void hideAvailableProviders() {
-		changeVisibleAvailableProviders(false);
-		tblAvailableProviders.getSelectionModel().clearSelection();
-	}
-	
-	private void changeVisibleAvailableProviders(boolean visible) {
-		lblProviders.setVisible(visible);
-		spTblAvailableProviders.setVisible(visible);
-	}
-			
+		
 	private void addPkcs11Driver(File pkcs11Driver) {
 		try {
 			jSign.getManager().getPkcs11Manager().addPkcs11Driver(jSign.getConfiguration(), pkcs11Driver);
@@ -822,8 +793,6 @@ public class DlgConfiguration extends javax.swing.JDialog {
             @Override
             public void valueChanged(ListSelectionEvent e) {
 				onSelectCertificate(tblCertificatesModel.getEntitySelected());
-					
-
             }
         });
 		
@@ -845,7 +814,7 @@ public class DlgConfiguration extends javax.swing.JDialog {
             public Object getValueAt(File entity, int columnIndex) {
                 switch (columnIndex) {
                     case 0 :
-                        return entity.getAbsoluteFile();                   
+                        return entity.getAbsoluteFile();
                     default :
                         return null;
                 }
@@ -898,8 +867,8 @@ public class DlgConfiguration extends javax.swing.JDialog {
 	
 	private void reset() {
 		
-		hideAvailableProviders();
-		hideCertificates();		
+		tblCertificates.getSelectionModel().clearSelection();
+		tblAvailableProviders.getSelectionModel().clearSelection();		
 					
 		availableProviders = new ArrayList<AvailableProvider>();
 		keyStoresHelpersAvailable = new ArrayList<KeyStoreHelper>();

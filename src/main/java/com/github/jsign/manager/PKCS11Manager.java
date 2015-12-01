@@ -268,14 +268,14 @@ public class PKCS11Manager {
 		
 		configuration.addPkcs11Driver(pkcs11Driver);
 		
-		getManager().getConfigurationManager().writeConfiguration(configuration);
+		getManager().getConfigurationManager().writeConfiguration(configuration, getManager().getJSign().getPreferencesPath());
 	}
 
 	public void deletePkcs11Driver(Configuration configuration, File pkcs11Driver) throws Exception {
 		
 		configuration.getPkcs11Drivers().remove(pkcs11Driver);
 		
-		getManager().getConfigurationManager().writeConfiguration(configuration);
+		getManager().getConfigurationManager().writeConfiguration(configuration, getManager().getJSign().getPreferencesPath());
 	}
 	
 	public KeyStoreHelper retrieveKeyStoreHelperByConfiguration(Configuration configuration) throws Exception {

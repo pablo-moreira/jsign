@@ -9,13 +9,13 @@ import java.security.KeyStoreSpi;
 import java.security.NoSuchAlgorithmException;
 import java.security.Provider;
 import java.security.Security;
-import java.security.Signature;
-import java.security.SignatureException;
 import java.security.cert.X509Certificate;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
+import javax.crypto.Cipher;
 
 import com.github.jsign.keystore.KeyStoreHelper;
 import com.github.jsign.keystore.MSCAPIKeyStoreHelper;
@@ -196,16 +196,13 @@ public class MSCAPIManager {
 	
 	public void initMscapiKeyStore(MSCAPIKeyStoreHelper keyStoreHelper) throws Exception {
 
-		try {
-			Signature signature = Signature.getInstance("SHA1withRSA");
-			signature.initSign(keyStoreHelper.getPrivateKey());
-			signature.update("UNLOKED_PIN".getBytes());
-			signature.sign();
+		try {			
+			Cipher cipher = null;
 			
-			keyStoreHelper.login();
-		}
-		catch (SignatureException e){
-			throw new Exception("Não foi possível inicializar o token, mensagem interna: " + e.getMessage());
+			cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+			cipher.init(Cipher.ENCRYPT_MODE, keyStoreHelper.getPrivateKey());
+
+			cipher.doFinal("UNLOKED_PIN".getBytes());
 		}
 		catch (NoSuchAlgorithmException e) {
 			throw new Exception("Não foi possível inicializar o token, mensagem interna: " + e.getMessage());

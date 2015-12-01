@@ -19,7 +19,7 @@ import com.github.jsign.util.StringUtils;
 
 public class ConfigurationManager {
 
-	public static final String PREFERENCES_PATH = "com/github/jsign";
+	public static final String PREFERENCES_PATH_DEFAULT = "com/github/jsign";
 	
 	public static final String KEY_KEYSTORE_TYPE = "keyStoreType";
 	public static final String KEY_CERTIFICATE_ALIAS = "certificateAlias";
@@ -44,10 +44,10 @@ public class ConfigurationManager {
 		return manager;
 	}
 
-	public Configuration clearConfiguration() {
+	public Configuration clearConfiguration(String preferencesPath) {
 
 		try {
-			Preferences preferences = getPreferences(PREFERENCES_PATH);
+			Preferences preferences = getPreferences(preferencesPath);
 			preferences.clear();
 		} 
 		catch (BackingStoreException e) {
@@ -57,10 +57,10 @@ public class ConfigurationManager {
 		return new Configuration();
 	}
 	
-	public void writeConfiguration(Configuration configuration) throws Exception {
+	public void writeConfiguration(Configuration configuration, String preferencesPath) throws Exception {
 	
 		try {
-			Preferences preferences = getPreferences(PREFERENCES_PATH);
+			Preferences preferences = getPreferences(preferencesPath);
 
 			preferences.clear();
 
@@ -122,13 +122,13 @@ public class ConfigurationManager {
 		return preferences;
 	}
 	
-	public Configuration loadConfigurations() throws Exception {
+	public Configuration loadConfigurations(String preferencesPath) throws Exception {
 
 		try {
 			Configuration configuration = new Configuration();
 			
 			// Verifica se encontra as configuracoes salvas nas preferencias
-			Preferences preferences = getPreferences(PREFERENCES_PATH);
+			Preferences preferences = getPreferences(preferencesPath);
 
 			if (preferences != null && preferences.keys().length != 0) {
 				

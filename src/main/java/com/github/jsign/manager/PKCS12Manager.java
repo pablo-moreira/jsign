@@ -109,13 +109,13 @@ public class PKCS12Manager {
 		
 		configuration.addPkcs12Certificate(pkcs12Certificate);
 		
-		getManager().getConfigurationManager().writeConfiguration(configuration);
+		getManager().getConfigurationManager().writeConfiguration(configuration, getManager().getJSign().getPreferencesPath());
 	}
 
 	public void deletePkcs12Certificate(Configuration configuration, File pkcs12Certificate) throws Exception {		
 		
 		configuration.getPkcs12Certificates().remove(pkcs12Certificate);
 		
-		getManager().getConfigurationManager().writeConfiguration(configuration);		
+		getManager().getConfigurationManager().writeConfiguration(configuration, getManager().getJSign().getPreferencesPath());		
 	}
 }

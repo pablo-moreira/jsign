@@ -21,6 +21,7 @@ import com.github.jsign.interfaces.SignProgress;
 import com.github.jsign.keystore.KeyStoreHelper;
 import com.github.jsign.keystore.MSCAPIKeyStoreHelper;
 import com.github.jsign.keystore.PKCS11KeyStoreHelper;
+import com.github.jsign.manager.ConfigurationManager;
 import com.github.jsign.manager.Manager;
 import com.github.jsign.model.Configuration;
 import com.github.jsign.model.MessageToSign;
@@ -37,32 +38,44 @@ public class JSign implements SignLogProgress {
 	private SignLog log;
 	private boolean allowsCoSigning;
 	private boolean allowsPkcs12Certificate = true;
-	private Manager manager = new Manager();
+	private Manager manager;
 	private KeyStoreHelper keyStore;
 	private DlgCertificateNotFound dlgCertificateNotFound;
+	private String preferencesPath;
 	
 	public JSign() throws Exception {
-		this(null);
+		this(null, null);
+	}
+	
+	public JSign(String preferencesPath) throws Exception {
+		this(null, preferencesPath);
 	}
 	
 	public JSign(Frame parent) throws Exception {
+		this(parent, null);
+	}
+	
+	public JSign(Frame parent, String preferencesPath) throws Exception {
 		try {						
 			Security.addProvider(new BouncyCastleProvider());
-						
+
+			this.preferencesPath = preferencesPath != null ? preferencesPath : ConfigurationManager.PREFERENCES_PATH_DEFAULT;
+			this.manager = new Manager(this);
+			
 			try {
-				this.configuration = manager.getConfigurationManager().loadConfigurations();
+				this.configuration = this.manager.getConfigurationManager().loadConfigurations(getPreferencesPath());
 			}
 			catch (Exception e) {
 				System.out.println(e.getMessage());
 				this.configuration = new Configuration();
 			}
 			
-			dlgConfiguration = new DlgConfiguration(parent, true, this);
-			dlgConfiguration.setAlwaysOnTop(true);
-			dlgConfigurationWindows = new DlgConfigurationWindows(parent, true, this);
-			dlgConfigurationWindows.setAlwaysOnTop(true);
-			dlgCertificateNotFound = new DlgCertificateNotFound(parent, true, this);
-			dlgCertificateNotFound.setAlwaysOnTop(true);
+			this.dlgConfiguration = new DlgConfiguration(parent, true, this);
+			this.dlgConfiguration.setAlwaysOnTop(true);
+			this.dlgConfigurationWindows = new DlgConfigurationWindows(parent, true, this);
+			this.dlgConfigurationWindows.setAlwaysOnTop(true);
+			this.dlgCertificateNotFound = new DlgCertificateNotFound(parent, true, this);
+			this.dlgCertificateNotFound.setAlwaysOnTop(true);
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -244,7 +257,7 @@ public class JSign implements SignLogProgress {
 		this.keyStore = null;
 
     	try {
-    		getManager().getConfigurationManager().writeConfiguration(this.configuration);
+    		getManager().getConfigurationManager().writeConfiguration(this.configuration, getPreferencesPath());
     	}
     	catch (Exception e) {
     		JFrameUtils.showErro("Erro", "Erro ao persistir as configurações!\nMensagem Interna: " + e.getMessage());
@@ -321,11 +334,11 @@ public class JSign implements SignLogProgress {
 
 	public void writeConfiguration(Configuration configuration) throws Exception {
 		this.configuration = configuration;
-		this.getManager().getConfigurationManager().writeConfiguration(configuration);
+		this.getManager().getConfigurationManager().writeConfiguration(configuration, getPreferencesPath());
 	}
 	
 	public void clearConfiguration() {
-		this.configuration = this.getManager().getConfigurationManager().clearConfiguration();
+		this.configuration = this.getManager().getConfigurationManager().clearConfiguration(getPreferencesPath());
 	}
 
 	public void setUrlDriversInstallationHelpPage(URL url) {
@@ -351,5 +364,9 @@ public class JSign implements SignLogProgress {
 				this.keyStore = null;
 			}
 		}
+	}
+	
+	public String getPreferencesPath() {
+		return preferencesPath;
 	}
 }

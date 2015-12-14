@@ -13,6 +13,7 @@ import java.security.cert.X509Certificate;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 import javax.crypto.Cipher;
@@ -201,8 +202,10 @@ public class MSCAPIManager {
 			
 			cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
 			cipher.init(Cipher.ENCRYPT_MODE, keyStoreHelper.getPrivateKey());
-
-			cipher.doFinal("UNLOKED_PIN".getBytes());
+			String msg = "UNLOKED_PIN" + new Date().getTime();
+			cipher.doFinal(msg.getBytes());
+			
+			keyStoreHelper.login();
 		}
 		catch (NoSuchAlgorithmException e) {
 			throw new Exception("Não foi possível inicializar o token, mensagem interna: " + e.getMessage());

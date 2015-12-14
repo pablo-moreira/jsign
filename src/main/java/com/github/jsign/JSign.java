@@ -6,6 +6,7 @@ import java.io.File;
 import java.net.URL;
 import java.security.Security;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 import javax.swing.JOptionPane;
@@ -26,6 +27,7 @@ import com.github.jsign.manager.Manager;
 import com.github.jsign.model.Configuration;
 import com.github.jsign.model.MessageToSign;
 import com.github.jsign.model.SignedMessage;
+import com.github.jsign.util.CertificateFinder;
 import com.github.jsign.util.FileUtils;
 import com.github.jsign.util.JFrameUtils;
 
@@ -42,6 +44,8 @@ public class JSign implements SignLogProgress {
 	private KeyStoreHelper keyStore;
 	private DlgCertificateNotFound dlgCertificateNotFound;
 	private String preferencesPath;
+	private int timeoutToLogoutKeyStore = 30 * 60 * 1000; // 30 Minutes
+	private Date keyStoreInitializedDate;
 	
 	public JSign() throws Exception {
 		this(null, null);
@@ -76,6 +80,8 @@ public class JSign implements SignLogProgress {
 			this.dlgConfigurationWindows.setAlwaysOnTop(true);
 			this.dlgCertificateNotFound = new DlgCertificateNotFound(parent, true, this);
 			this.dlgCertificateNotFound.setAlwaysOnTop(true);
+			
+			this.initKeyStoreMonitor();
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -148,6 +154,38 @@ public class JSign implements SignLogProgress {
 		return signMessages;
 	}
 	
+	public void initKeyStoreMonitor() {
+		
+		Runnable keyStoreMonitor = new CertificateFinder() {
+			
+			@Override
+			public void run() {
+				
+				while(!isStop()) {
+					
+					if (JSign.this.keyStore != null && JSign.this.keyStore.isLogged()) {
+					
+						long diff = new Date().getTime() - JSign.this.keyStoreInitializedDate.getTime(); 
+						
+						if (diff > getTimeoutToLogoutKeyStore()) {
+							logoutKeyStore();
+						}
+					}
+										
+					try {
+						Thread.sleep(5000);
+					}
+					catch (InterruptedException e) {					
+						e.printStackTrace();
+					}
+				}				
+			}
+		};
+		
+		Thread keyStoreMonitorThread = new Thread(keyStoreMonitor);
+		keyStoreMonitorThread.start();		
+	}
+	
 	public KeyStoreHelper initKeyStore() throws Exception {
 
 		if (this.keyStore == null) {
@@ -172,12 +210,12 @@ public class JSign implements SignLogProgress {
 				getManager().getMscapiManager().initMscapiKeyStore((MSCAPIKeyStoreHelper) keyStoreHelper);
 			}
 			
-			this.keyStore = keyStoreHelper;
+			this.keyStore = keyStoreHelper;			
 		}
 		else {
 			
 			if (this.keyStore instanceof MSCAPIKeyStoreHelper) {
-								
+
 				if (!this.keyStore.isLogged()) {
 					
 					String msg = "Deseja autorizar a utilização do dispositivo criptográfico:\n";
@@ -194,7 +232,9 @@ public class JSign implements SignLogProgress {
 				}				
 			}
 		}
-		
+				
+		this.keyStoreInitializedDate = new Date();
+			
 		return this.keyStore;
 	}
 	
@@ -368,5 +408,13 @@ public class JSign implements SignLogProgress {
 	
 	public String getPreferencesPath() {
 		return preferencesPath;
+	}
+
+	public int getTimeoutToLogoutKeyStore() {
+		return timeoutToLogoutKeyStore;
+	}
+
+	public void setTimeoutToLogoutKeyStore(int timeoutToLogoutKeyStore) {
+		this.timeoutToLogoutKeyStore = timeoutToLogoutKeyStore;
 	}
 }

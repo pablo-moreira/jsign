@@ -4,6 +4,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.GridLayout;
+import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -93,9 +94,9 @@ public class JFrameUtils {
 		showMsg(titulo, msg, parent, JOptionPane.INFORMATION_MESSAGE);
 	}
 	
-	private static void showMsg(String title, String msg, Component parent, int tipo) {
+	private static void showMsg(String title, String msg, Component parent, int type) {
 		if (parent == null) {
-			JOptionPane op = new JOptionPane(msg, tipo);
+			JOptionPane op = new JOptionPane(msg, type);
 			JDialog dialog = op.createDialog(title);
 			dialog.setAlwaysOnTop(true);
 			dialog.setModal(true);
@@ -107,8 +108,12 @@ public class JFrameUtils {
 					parent,
 					msg,
 					title,
-					tipo);
+					type);
 		}
+	}
+	
+	public static Integer showConfirmDialog(String title, String msg, Component parent, int type) {
+		return showOptionDialogAlwaysOnTop(title, msg, JOptionPane.QUESTION_MESSAGE, type, null, null, null);
 	}
 
 	@SuppressWarnings("deprecation")
@@ -131,5 +136,51 @@ public class JFrameUtils {
 
 	public static void showErro(String titulo, String msg) {
 		showErro(titulo, msg, null);		
+	}
+	
+	/**
+	 * O metodo da classe JOptionPane.showOptionDialog(parentComponent, message, title, optionType, messageType, icon, options, initialValue) foi copiado
+	 * com a finalidade de alterar o dialog para setar a configuracao: dialog.setAlwaysOnTop(true);
+	 * 
+	 * @param title O titulo do dialogo
+	 * @param message A mensagem do dialogo
+	 * @param messageType O tipo de mensagem
+	 * @param optionType O tipo de opcao
+	 * @param icon O icone
+	 * @param options As opcoes que o usuario poderar escolher dentre
+	 * @param initialValue A opcao padrao
+	 * @return A resposta do usuario
+	 */
+	@SuppressWarnings("deprecation")
+	public static Integer showOptionDialogAlwaysOnTop(String title, Object message, int messageType, int optionType, Image icon, Object[] options, Object initialValue) {
+				
+		JOptionPane jop = new JOptionPane(message, messageType, optionType, null, options, initialValue);
+		jop.setInitialValue(initialValue);
+					
+		JDialog dialog = jop.createDialog(title);			
+		dialog.setAlwaysOnTop(true);
+		dialog.setModal(true);
+		dialog.setIconImage(icon);
+		
+		jop.selectInitialValue();
+		
+		dialog.show();
+		dialog.dispose();
+		
+		Object selectedValue = jop.getValue();
+		
+		if(selectedValue == null)
+            return JOptionPane.CLOSED_OPTION;
+        if(options == null) {
+            if(selectedValue instanceof Integer)
+                return ((Integer)selectedValue).intValue();
+            return JOptionPane.CLOSED_OPTION;
+        }
+        for(int counter = 0, maxCounter = options.length;
+            counter < maxCounter; counter++) {
+            if(options[counter].equals(selectedValue))
+                return counter;
+        }
+        return JOptionPane.CLOSED_OPTION;		
 	}
 }

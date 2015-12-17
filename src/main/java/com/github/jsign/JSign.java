@@ -221,7 +221,7 @@ public class JSign implements SignLogProgress {
 					String msg = "Deseja autorizar a utilização do dispositivo criptográfico:\n";
 					msg+= this.keyStore.getDescription();
 					
-					int result = JOptionPane.showConfirmDialog(null, msg, "Autorização", JOptionPane.YES_NO_OPTION);
+					int result = JFrameUtils.showConfirmDialog("Autorização", msg, null, JOptionPane.YES_NO_OPTION);
 					
 					if (JOptionPane.OK_OPTION == result) {
 						this.keyStore.login();

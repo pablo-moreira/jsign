@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.github</groupId>
 	<artifactId>jsign</artifactId>
-	<version>0.0.1</version>
+	<version>0.0.2</version>
 	<name>JSign</name>
 	<url>http://github.com/pablo-moreira/jsign</url>
 	<properties>
@@ -62,4 +62,16 @@
 		</plugins>		
 	</build>
 	<description>Digital Signature in Java</description>
+		<distributionManagement>
+		<repository>
+			<id>tjro</id>
+			<name>Repositorio de Releases</name>
+			<url>http://repositorio.tjro.jus.br/content/repositories/releases</url>
+		</repository>
+		<snapshotRepository>
+			<id>tjro</id>
+			<name>Repositorios de Snapshots</name>
+			<url>http://repositorio.tjro.jus.br/content/repositories/snapshots</url>
+		</snapshotRepository>
+	</distributionManagement>
 </project>

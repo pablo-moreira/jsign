@@ -273,7 +273,6 @@ public class DlgConfiguration extends javax.swing.JDialog {
                 return types [columnIndex];
             }
         });
-        tblPkcs12Certificates.setEnabled(false);
         tblPkcs12Certificates.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         spTblPkcs12Certificates.setViewportView(tblPkcs12Certificates);
 

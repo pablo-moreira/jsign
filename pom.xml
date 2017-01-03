@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.github</groupId>
 	<artifactId>jsign</artifactId>
-	<version>0.0.2</version>
+	<version>0.0.3</version>
 	<name>JSign</name>
 	<url>http://github.com/pablo-moreira/jsign</url>
 	<properties>
